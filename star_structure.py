@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
+from scipy.interpolate import CubicSpline
 
 class Star:
 
@@ -8,10 +9,12 @@ class Star:
 
         # Set the density function as the EOS given (rho(p))
         self.rho = rho_eos
-        # Set the integration constants: mass, pressure, and density at r=0
-        self.m_0 = 0
+
+        # Set the integration constants: pressure, mass, and density at r=0
         self.p_0 = p_c
+        self.m_0 = 0
         self.rho_0 = self.rho(self.p_0)
+
         # Initialize star properties: radius and total mass
         self.star_radius = 0
         self.star_mass = 0
@@ -27,21 +30,28 @@ class Star:
 
     def solve_tov(self, r_begin, r_end, r_nsamples, method='RK45'):
 
-        # Solve the ODE system
-        num_sol = solve_ivp(self._ode_system, [r_begin, r_end], [self.p_0, self.m_0], method=method, dense_output=True)
-        # Get the arrays with the numerical solution interpolated according to the desired linspace
+        # Solve the ODE system and calculate the density for the ODE solution
+        ode_solution = solve_ivp(self._ode_system, [r_begin, r_end], [self.p_0, self.m_0], method=method)
+        rho_ode_solution = self.rho(ode_solution.y[0])
+
+        # Create interpolated functions for the solution using CubicSpline
+        self.p_spline_function = CubicSpline(ode_solution.t, ode_solution.y[0])
+        self.m_spline_function = CubicSpline(ode_solution.t, ode_solution.y[1])
+        self.rho_spline_function = CubicSpline(ode_solution.t, rho_ode_solution)
+
+        # Calculate the arrays for the solution according to the desired linspace
         self.r_space = np.linspace(r_begin, r_end, r_nsamples)
-        pm_num_sol = num_sol.sol(self.r_space)
-        self.p_num_sol = pm_num_sol[0]
-        self.m_num_sol = pm_num_sol[1]
+        self.p_num_solution = self.p_spline_function(self.r_space)
+        self.m_num_solution = self.m_spline_function(self.r_space)
+        self.rho_num_solution = self.rho_spline_function(self.r_space)
 
     def plot_result(self):
 
         # Show simple plot of the solution
         plt.figure()
-        plt.plot(self.r_space, self.p_num_sol, linewidth=1, label='pressure')
-        plt.plot(self.r_space, self.m_num_sol, linewidth=1, label='mass function')
-        plt.plot(self.r_space, self.rho(self.p_num_sol), linewidth=1, label='density')
+        plt.plot(self.r_space, self.p_num_solution, linewidth=1, label='pressure')
+        plt.plot(self.r_space, self.m_num_solution, linewidth=1, label='mass function')
+        plt.plot(self.r_space, self.rho_num_solution, linewidth=1, label='density')
         plt.title('TOV solution for the star')
         plt.xlabel('r')
         plt.legend()

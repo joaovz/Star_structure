@@ -5,19 +5,22 @@ from scipy.interpolate import CubicSpline
 
 class Star:
 
-    def __init__(self, rho_eos, p_c):
+    def __init__(self, rho_eos, p_center, p_surface):
 
         # Set the density function as the EOS given (rho(p))
         self.rho = rho_eos
 
         # Set the integration constants: pressure, mass, and density at r=0
-        self.p_0 = p_c
-        self.m_0 = 0
+        self.p_0 = p_center
+        self.m_0 = 0.0
         self.rho_0 = self.rho(self.p_0)
 
+        # Set the boundary value for the termination of the ODE integration: pressure at r=R, on the surface
+        self.p_surface = p_surface
+
         # Initialize star properties: radius and total mass
-        self.star_radius = 0
-        self.star_mass = 0
+        self.star_radius = 0.0
+        self.star_mass = 0.0
 
     def _ode_system(self, r, y):
 
@@ -28,11 +31,25 @@ class Star:
         dm_dr = 4*np.pi*r**2*self.rho(p)                                        # Rate of change of the mass function
         return [dp_dr, dm_dr]
 
-    def solve_tov(self, r_begin, r_end, r_nsamples, method='RK45'):
+    def _ode_termination_event(self, r, y):
+        return y[0] - self.p_surface                # Condition of the event (event happens when condition == 0 ==> when p == p_surface)
+    _ode_termination_event.terminal = True          # Set the event as a terminal event, terminating the integration of the ODE
 
-        # Solve the ODE system and calculate the density for the ODE solution
-        ode_solution = solve_ivp(self._ode_system, [r_begin, r_end], [self.p_0, self.m_0], method=method)
+    def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=1*10**6, method='RK45'):
+
+        # Solve the ODE system, and calculate the density for the ODE solution
+        ode_solution = solve_ivp(self._ode_system, [r_begin, r_end], [self.p_0, self.m_0], method=method, events=[self._ode_termination_event])
         rho_ode_solution = self.rho(ode_solution.y[0])
+
+        # Check if the ODE termination event was triggered, and treat each case
+        if ode_solution.status == -1:
+            raise Exception(ode_solution.message)
+        elif ode_solution.status == 0:
+            raise Exception("The solver did not find the ODE termination event")
+        elif ode_solution.status == 1:
+            # Get the star radius from the ODE termination event
+            self.star_radius = ode_solution.t_events[0][0]
+            print(f"Star radius = {self.star_radius}")
 
         # Create interpolated functions for the solution using CubicSpline
         self.p_spline_function = CubicSpline(ode_solution.t, ode_solution.y[0])
@@ -40,7 +57,7 @@ class Star:
         self.rho_spline_function = CubicSpline(ode_solution.t, rho_ode_solution)
 
         # Calculate the arrays for the solution according to the desired linspace
-        self.r_space = np.linspace(r_begin, r_end, r_nsamples)
+        self.r_space = np.linspace(r_begin, self.star_radius, r_nsamples)
         self.p_num_solution = self.p_spline_function(self.r_space)
         self.m_num_solution = self.m_spline_function(self.r_space)
         self.rho_num_solution = self.rho_spline_function(self.r_space)
@@ -60,23 +77,23 @@ class Star:
 
 if __name__ == "__main__":
 
-    # Set the EOS and central pressure
+    # Set the EOS and pressure at the center and surface of the star
     # def rho(p):
     #     c = 1.0
     #     return 12*(c * p)**(1/2)
-    # p_c = 1*10**6
+    # p_center = 1*10**6
 
     def rho(p):
         c = 10**12
-        return (p/c)**(1/2)
-    p_c = 1*10**6
+        return (np.abs(p/c))**(1/2)
+    p_center = 1*10**6
+    p_surface = 1*10**3
 
     # Define the object
-    star_object = Star(rho, p_c)
+    star_object = Star(rho, p_center, p_surface)
 
     # Solve the TOV equation
-    r_begin, r_end, r_nsamples = 1*10**(-12), 5*10**(-3), 1*10**6
-    star_object.solve_tov(r_begin, r_end, r_nsamples)
+    star_object.solve_tov()
 
     # Plot the result
     star_object.plot_result()

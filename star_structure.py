@@ -37,8 +37,11 @@ class Star:
 
     def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=1*10**6, method='RK45'):
 
-        # Solve the ODE system, and calculate the density for the ODE solution
+        # Solve the ODE system
         ode_solution = solve_ivp(self._ode_system, [r_begin, r_end], [self.p_0, self.m_0], method=method, events=[self._ode_termination_event])
+        r_ode_solution = ode_solution.t
+        p_ode_solution = ode_solution.y[0]
+        m_ode_solution = ode_solution.y[1]
         rho_ode_solution = self.rho(ode_solution.y[0])
 
         # Check if the ODE termination event was triggered, and treat each case
@@ -47,20 +50,29 @@ class Star:
         elif ode_solution.status == 0:
             raise Exception("The solver did not find the ODE termination event")
         elif ode_solution.status == 1:
-            # Get the star radius from the ODE termination event
+            # Get the star radius and mass from the ODE termination event
             self.star_radius = ode_solution.t_events[0][0]
+            self.star_mass = ode_solution.y_events[0][0][1]
             print(f"Star radius = {self.star_radius}")
+            print(f"Star mass = {self.star_mass}")
 
         # Create interpolated functions for the solution using CubicSpline
-        self.p_spline_function = CubicSpline(ode_solution.t, ode_solution.y[0])
-        self.m_spline_function = CubicSpline(ode_solution.t, ode_solution.y[1])
-        self.rho_spline_function = CubicSpline(ode_solution.t, rho_ode_solution)
+        self.p_spline_function = CubicSpline(r_ode_solution, p_ode_solution)
+        self.m_spline_function = CubicSpline(r_ode_solution, m_ode_solution)
+        self.rho_spline_function = CubicSpline(r_ode_solution, rho_ode_solution)
 
         # Calculate the arrays for the solution according to the desired linspace
         self.r_space = np.linspace(r_begin, self.star_radius, r_nsamples)
         self.p_num_solution = self.p_spline_function(self.r_space)
         self.m_num_solution = self.m_spline_function(self.r_space)
         self.rho_num_solution = self.rho_spline_function(self.r_space)
+
+        # Calculate the total star mass with other methods
+        integrand_ode_solution = 4*np.pi*r_ode_solution**2*rho_ode_solution
+        integrand_spline_function = CubicSpline(r_ode_solution, integrand_ode_solution)
+        integrated_star_mass = integrand_spline_function.integrate(0.0, self.star_radius)
+        print(f"Star mass with the integral = {integrated_star_mass}")
+        print(f"Star mass with m(R) = {self.m_spline_function(self.star_radius)}")
 
     def plot_result(self):
 
@@ -87,7 +99,7 @@ if __name__ == "__main__":
         c = 10**12
         return (np.abs(p/c))**(1/2)
     p_center = 1*10**6
-    p_surface = 1*10**3
+    p_surface = 0.0
 
     # Define the object
     star_object = Star(rho, p_center, p_surface)

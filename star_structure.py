@@ -44,7 +44,7 @@ class Star:
         m_ode_solution = ode_solution.y[1]
         rho_ode_solution = self.rho(ode_solution.y[0])
 
-        # Check if the ODE termination event was triggered, and treat each case
+        # Check the ODE solution status, and treat each case
         if ode_solution.status == -1:
             raise Exception(ode_solution.message)
         elif ode_solution.status == 0:
@@ -66,13 +66,6 @@ class Star:
         self.p_num_solution = self.p_spline_function(self.r_space)
         self.m_num_solution = self.m_spline_function(self.r_space)
         self.rho_num_solution = self.rho_spline_function(self.r_space)
-
-        # Calculate the total star mass with other methods
-        integrand_ode_solution = 4*np.pi*r_ode_solution**2*rho_ode_solution
-        integrand_spline_function = CubicSpline(r_ode_solution, integrand_ode_solution)
-        integrated_star_mass = integrand_spline_function.integrate(0.0, self.star_radius)
-        print(f"Star mass with the integral = {integrated_star_mass}")
-        print(f"Star mass with m(R) = {self.m_spline_function(self.star_radius)}")
 
     def plot_result(self):
 

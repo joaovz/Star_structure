@@ -27,15 +27,16 @@ class Star:
         # ODE System that describes the interior structure of the star
         p = y[0]
         m = y[1]
-        dp_dr = -((self.rho(p) + p)*(m + 4*np.pi*r**3*p))/(r*(r - 2*m))         # TOV equation
-        dm_dr = 4*np.pi*r**2*self.rho(p)                                        # Rate of change of the mass function
+        rho = self.rho(p)
+        dp_dr = -((rho + p)*(m + 4*np.pi*r**3*p))/(r*(r - 2*m))         # TOV equation
+        dm_dr = 4*np.pi*r**2*rho                                        # Rate of change of the mass function
         return [dp_dr, dm_dr]
 
     def _ode_termination_event(self, r, y):
         return y[0] - self.p_surface                # Condition of the event (event happens when condition == 0 ==> when p == p_surface)
     _ode_termination_event.terminal = True          # Set the event as a terminal event, terminating the integration of the ODE
 
-    def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=1*10**6, method='RK45'):
+    def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45'):
 
         # Solve the ODE system
         ode_solution = solve_ivp(self._ode_system, [r_begin, r_end], [self.p_0, self.m_0], method=method, events=[self._ode_termination_event])
@@ -83,15 +84,16 @@ class Star:
 if __name__ == "__main__":
 
     # Set the EOS and pressure at the center and surface of the star
-    # def rho(p):
-    #     c = 1.0
-    #     return 12*(c * p)**(1/2)
-    # p_center = 1*10**6
-
     def rho(p):
-        c = 10**12
+        c = 1.0e12          # [cm^2]
         return (np.abs(p/c))**(1/2)
-    p_center = 1*10**6
+
+    def p(rho):
+        c = 1.0e12          # [cm^2]
+        return c*rho**2
+
+    rho_center = 2.376364e-13           # Center density in GU [cm^-2]
+    p_center = rho(rho_center)          # Center pressure in GU [cm^-2]
     p_surface = 0.0
 
     # Define the object

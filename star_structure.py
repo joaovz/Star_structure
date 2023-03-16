@@ -3,13 +3,24 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.interpolate import CubicSpline
 
+
 class Star:
+    """Class with all the properties and methods necessary to describe a single star
+    """
 
     # Defining some constants
     SOLAR_MASS = 1.48e3             # Solar mass [m]
     SOLAR_RADIUS = 6.957e8          # Solar radius [m]
 
+
     def __init__(self, rho_eos, p_center, p_surface):
+        """Initialization method
+
+        Args:
+            rho_eos (function): Python function in the format rho(p) that describes the EOS of the star
+            p_center (float): Center pressure of the star [m^-2]
+            p_surface (float): Surface pressure of the star [m^-2]
+        """
 
         # Set the density function as the EOS given (rho(p))
         self.rho = rho_eos
@@ -26,7 +37,17 @@ class Star:
         self.star_radius = 0.0                  # Star radius [m]
         self.star_mass = 0.0                    # Star mass [m]
 
+
     def _ode_system(self, r, y):
+        """Method that implements the TOV ODE system in the form ``dy/dr = f(r, y)``, used by the IVP solver
+
+        Args:
+            r (float): Independent variable of the ODE system (radial coordinate r)
+            y (array of float): Array with the dependent variables of the ODE system (p and m)
+
+        Returns:
+            array of float: Right hand side of the equation ``dy/dr = f(r, y)`` ([dp_dr, dm_dr])
+        """
 
         # ODE System that describes the interior structure of the star
         p = y[0]
@@ -36,11 +57,36 @@ class Star:
         dm_dr = 4*np.pi*r**2*rho                                        # Rate of change of the mass function
         return [dp_dr, dm_dr]
 
+
     def _ode_termination_event(self, r, y):
+        """Event method used by the IVP solver. The solver will find an accurate value of r at which
+        ``event(r, y(r)) = 0`` using a root-finding algorithm
+
+        Args:
+            r (float): Independent variable of the ODE system (radial coordinate r)
+            y (array of float): Array with the dependent variables of the ODE system (p and m)
+
+        Returns:
+            float: ``p - p_surface``
+        """
+
         return y[0] - self.p_surface                # Condition of the event (event happens when condition == 0 ==> when p == p_surface)
     _ode_termination_event.terminal = True          # Set the event as a terminal event, terminating the integration of the ODE
 
+
     def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45'):
+        """Method that solves the TOV system for the star, finding the functions p(r), m(r), and rho(r)
+
+        Args:
+            r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to np.finfo(float).eps
+            r_end (float, optional): Radial coordinate r at the end of the IVP solve. Defaults to np.inf
+            r_nsamples (int, optional): Number of samples used to create the r_space array. Defaults to 10**6
+            method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
+
+        Raises:
+            Exception: Exception in case the IVP fails to solve the equation
+            Exception: Exception in case the IVP fails to find the ODE termination event
+        """
 
         # Solve the ODE system
         ode_solution = solve_ivp(self._ode_system, [r_begin, r_end], [self.p_0, self.m_0], method=method, events=[self._ode_termination_event])
@@ -70,7 +116,10 @@ class Star:
         self.m_num_solution = self.m_spline_function(self.r_space)
         self.rho_num_solution = self.rho_spline_function(self.r_space)
 
+
     def show_result(self):
+        """Method that print the star radius and mass and plot the solution found
+        """
 
         # Print the star radius and mass
         print(f"Star radius = {self.star_radius/self.SOLAR_RADIUS} [solar radius]")
@@ -87,6 +136,7 @@ class Star:
         plt.show()
 
 
+# This logic is a simple example, only executed when this file is run directly in the command prompt
 if __name__ == "__main__":
 
     # Set the EOS and pressure at the center and surface of the star

@@ -12,7 +12,6 @@ class Star:
     SOLAR_MASS = 1.48e3             # Solar mass [m]
     SOLAR_RADIUS = 6.957e8          # Solar radius [m]
 
-
     def __init__(self, rho_eos, p_center, p_surface):
         """Initialization method
 
@@ -37,7 +36,6 @@ class Star:
         self.star_radius = 0.0                  # Star radius [m]
         self.star_mass = 0.0                    # Star mass [m]
 
-
     def _ode_system(self, r, y):
         """Method that implements the TOV ODE system in the form ``dy/dr = f(r, y)``, used by the IVP solver
 
@@ -53,10 +51,9 @@ class Star:
         p = y[0]
         m = y[1]
         rho = self.rho(p)
-        dp_dr = -((rho + p)*(m + 4*np.pi*r**3*p))/(r*(r - 2*m))         # TOV equation
-        dm_dr = 4*np.pi*r**2*rho                                        # Rate of change of the mass function
+        dp_dr = -((rho + p) * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))           # TOV equation
+        dm_dr = 4 * np.pi * r**2 * rho                                                  # Rate of change of the mass function
         return [dp_dr, dm_dr]
-
 
     def _ode_termination_event(self, r, y):
         """Event method used by the IVP solver. The solver will find an accurate value of r at which
@@ -72,7 +69,6 @@ class Star:
 
         return y[0] - self.p_surface                # Condition of the event (event happens when condition == 0 ==> when p == p_surface)
     _ode_termination_event.terminal = True          # Set the event as a terminal event, terminating the integration of the ODE
-
 
     def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45'):
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), and rho(r)
@@ -116,7 +112,6 @@ class Star:
         self.m_num_solution = self.m_spline_function(self.r_space)
         self.rho_num_solution = self.rho_spline_function(self.r_space)
 
-
     def show_result(self):
         """Method that print the star radius and mass and plot the solution found
         """
@@ -125,11 +120,11 @@ class Star:
         print(f"Star radius = {self.star_radius/self.SOLAR_RADIUS} [solar radius]")
         print(f"Star mass = {self.star_mass/self.SOLAR_MASS} [solar mass]")
 
-        # Show simple plot of the solution
+        # Show a simple plot of the solution
         plt.figure()
-        plt.plot(self.r_space, self.p_num_solution*10**8, linewidth=1, label="pressure [10^8 m^-2]")
-        plt.plot(self.r_space, self.m_num_solution/self.SOLAR_MASS, linewidth=1, label="mass function [solar mass]")
-        plt.plot(self.r_space, self.rho_num_solution*10**8, linewidth=1, label="density [10^8 m^-2]")
+        plt.plot(self.r_space, self.p_num_solution * 10**8, linewidth=1, label="pressure [10^8 m^-2]")
+        plt.plot(self.r_space, self.m_num_solution / self.SOLAR_MASS, linewidth=1, label="mass function [solar mass]")
+        plt.plot(self.r_space, self.rho_num_solution * 10**8, linewidth=1, label="density [10^8 m^-2]")
         plt.title("TOV solution for the star")
         plt.xlabel("r [m]")
         plt.legend()
@@ -142,11 +137,11 @@ if __name__ == "__main__":
     # Set the EOS and pressure at the center and surface of the star
     def rho(p):
         c = 1.0e8           # [m^2]
-        return (np.abs(p/c))**(1/2)
+        return (np.abs(p / c))**(1 / 2)
 
     def p(rho):
         c = 1.0e8           # [m^2]
-        return c*rho**2
+        return c * rho**2
 
     rho_center = 2.376364e-9            # Center density in GU [m^-2]
     p_center = rho(rho_center)          # Center pressure in GU [m^-2]

@@ -52,7 +52,7 @@ class StarFamily:
         plt.plot(self.radius_array / 10**3, self.mass_array / self.star_object.SOLAR_MASS, linewidth=1)
         plt.title("Radius-Mass curve for the star family")
         plt.xlabel("R [km]")
-        plt.ylabel("$M / M_{\odot}$")
+        plt.ylabel("$M / M_{\\odot}$")
         plt.show()
 
 

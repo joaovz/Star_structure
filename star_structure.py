@@ -70,10 +70,11 @@ class Star:
         return y[0] - self.p_surface            # Condition of the event: trigger when condition == 0 (p == p_surface)
     _ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
 
-    def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45'):
+    def solve_tov(self, p_center=None, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45'):
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), and rho(r)
 
         Args:
+            p_center (float, optional): Center pressure of the star [m^-2]
             r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to np.finfo(float).eps
             r_end (float, optional): Radial coordinate r at the end of the IVP solve. Defaults to np.inf
             r_nsamples (int, optional): Number of samples used to create the r_space array. Defaults to 10**6
@@ -83,6 +84,10 @@ class Star:
             Exception: Exception in case the IVP fails to solve the equation
             Exception: Exception in case the IVP fails to find the ODE termination event
         """
+
+        # Transfer the p_center parameter if it was passed as an argument
+        if p_center is not None:
+            self.p_0 = p_center
 
         # Solve the ODE system
         ode_solution = solve_ivp(self._ode_system, [r_begin, r_end], [self.p_0, self.m_0], method, events=[self._ode_termination_event])
@@ -121,11 +126,11 @@ class Star:
 
         # Show a simple plot of the solution
         plt.figure()
-        plt.plot(self.r_space, self.p_num_solution * 10**8, linewidth=1, label="pressure [10^8 m^-2]")
-        plt.plot(self.r_space, self.m_num_solution / self.SOLAR_MASS, linewidth=1, label="mass function [solar mass]")
-        plt.plot(self.r_space, self.rho_num_solution * 10**8, linewidth=1, label="density [10^8 m^-2]")
+        plt.plot(self.r_space / 10**3, self.p_num_solution * 10**8, linewidth=1, label="pressure [10^-8 m^-2]")
+        plt.plot(self.r_space / 10**3, self.m_num_solution / self.SOLAR_MASS, linewidth=1, label="mass function [solar mass]")
+        plt.plot(self.r_space / 10**3, self.rho_num_solution * 10**8, linewidth=1, label="density [10^-8 m^-2]")
         plt.title("TOV solution for the star")
-        plt.xlabel("r [m]")
+        plt.xlabel("r [km]")
         plt.legend()
         plt.show()
 
@@ -144,7 +149,7 @@ if __name__ == "__main__":
 
     rho_center = 2.376364e-9        # Center density [m^-2]
     p_center = rho(rho_center)      # Center pressure [m^-2]
-    p_surface = 0.0
+    p_surface = 0.0                 # Surface pressure [m^-2]
 
     # Define the object
     star_object = Star(rho, p_center, p_surface)

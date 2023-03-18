@@ -21,7 +21,7 @@ class StarFamily:
         self.p_center_space = p_center_space
 
         # Create a star object with the first p_center value
-        self.star_object = Star(rho_eos, p_center_space[0], p_surface)
+        self.star_object = Star(rho_eos, self.p_center_space[0], p_surface)
 
     def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45'):
         """Method that solves the TOV system, finding the radius and mass of each star in the family
@@ -39,7 +39,7 @@ class StarFamily:
 
         # Solve the TOV equation for each star in the family
         for k in range(self.p_center_space.size):
-            self.star_object.solve_tov(p_center_space[k], r_begin, r_end, r_nsamples, method)
+            self.star_object.solve_tov(self.p_center_space[k], r_begin, r_end, r_nsamples, method)
             self.radius_array[k] = self.star_object.star_radius
             self.mass_array[k] = self.star_object.star_mass
 
@@ -69,11 +69,11 @@ if __name__ == "__main__":
         return c * rho**2
 
     rho_center = 2.376364e-9        # Center density [m^-2]
-    p_center = rho(rho_center)      # Center pressure [m^-2]
+    p_center = p(rho_center)        # Center pressure [m^-2]
     p_surface = 0.0                 # Surface pressure [m^-2]
 
     # Set the p_center space that characterizes the star family
-    p_center_space = p_center * np.linspace(1.0, 2.0, 100)
+    p_center_space = p_center * np.linspace(0.1, 1.0, 100)
 
     # Define the object
     star_family_object = StarFamily(rho, p_center_space, p_surface)

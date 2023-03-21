@@ -45,12 +45,29 @@ class Star:
 
         Returns:
             array of float: Right hand side of the equation ``dy/dr = f(r, y)`` ([dp_dr, dm_dr])
+
+        Raises:
+            Exception: Exception in case the pressure is outside the acceptable range (p < 0.0)
+            Exception: Exception in case the pressure is outside the acceptable range (p > p_0)
+            Exception: Exception in case the EOS function didn't return a number
         """
 
-        # ODE System that describes the interior structure of the star
+        # Variables of the system
         p = y[0]
         m = y[1]
         rho = self.rho(p)
+
+        # Check if p is outside the acceptable range, and raise an exception in that case
+        if p < 0.0:
+            raise Exception(f"The pressure is outside the acceptable range (p = {p}): p < 0.0")
+        elif p > self.p_0:
+            raise Exception(f"The pressure is outside the acceptable range (p = {p}): p > p_0")
+
+        # Check if there is some invalid value for rho, and raise an exception in that case
+        if np.isnan(rho):
+            raise Exception(f"The EOS function didn't return a number: p = {p}, rho = {rho}")
+
+        # ODE System that describes the interior structure of the star
         dp_dr = -((rho + p) * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))       # TOV equation
         dm_dr = 4 * np.pi * r**2 * rho                                              # Rate of change of the mass
         return [dp_dr, dm_dr]
@@ -106,9 +123,9 @@ class Star:
         self.star_mass = ode_solution.y_events[0][0][1]
 
         # Create interpolated functions for the solution using CubicSpline
-        self.p_spline_function = CubicSpline(r_ode_solution, p_ode_solution)
-        self.m_spline_function = CubicSpline(r_ode_solution, m_ode_solution)
-        self.rho_spline_function = CubicSpline(r_ode_solution, rho_ode_solution)
+        self.p_spline_function = CubicSpline(r_ode_solution, p_ode_solution, extrapolate=False)
+        self.m_spline_function = CubicSpline(r_ode_solution, m_ode_solution, extrapolate=False)
+        self.rho_spline_function = CubicSpline(r_ode_solution, rho_ode_solution, extrapolate=False)
 
         # Calculate the arrays for the solution according to the desired linspace
         self.r_space = np.linspace(r_begin, self.star_radius, r_nsamples)
@@ -148,8 +165,12 @@ if __name__ == "__main__":
         return c * rho**2
 
     rho_center = 2.376364e-9        # Center density [m^-2]
-    p_center = rho(rho_center)      # Center pressure [m^-2]
-    p_surface = 0.0                 # Surface pressure [m^-2]
+    p_center = p(rho_center)        # Center pressure [m^-2]
+    p_surface = 1e-12               # Surface pressure [m^-2]
+
+    # Print the values used for p_center and p_surface
+    print(f"p_center = {p_center} [m^-2]")
+    print(f"p_surface = {p_surface} [m^-2]")
 
     # Define the object
     star_object = Star(rho, p_center, p_surface)

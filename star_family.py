@@ -70,10 +70,14 @@ if __name__ == "__main__":
 
     rho_center = 2.376364e-9        # Center density [m^-2]
     p_center = p(rho_center)        # Center pressure [m^-2]
-    p_surface = 0.0                 # Surface pressure [m^-2]
+    p_surface = 1e-12               # Surface pressure [m^-2]
+
+    # Print the values used for p_center and p_surface
+    print(f"p_center = {p_center} [m^-2]")
+    print(f"p_surface = {p_surface} [m^-2]")
 
     # Set the p_center space that characterizes the star family
-    p_center_space = p_center * np.linspace(0.1, 1.0, 100)
+    p_center_space = p_center * np.linspace(1.0, 5.0, 100)
 
     # Define the object
     star_family_object = StarFamily(rho, p_center_space, p_surface)

@@ -87,7 +87,7 @@ class Star:
         return y[0] - self.p_surface            # Condition of the event: trigger when condition == 0 (p == p_surface)
     _ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
 
-    def solve_tov(self, p_center=None, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45'):
+    def solve_tov(self, p_center=None, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45', max_step=np.inf):
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), and rho(r)
 
         Args:
@@ -96,6 +96,7 @@ class Star:
             r_end (float, optional): Radial coordinate r at the end of the IVP solve. Defaults to np.inf
             r_nsamples (int, optional): Number of samples used to create the r_space array. Defaults to 10**6
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
+            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
 
         Raises:
             Exception: Exception in case the IVP fails to solve the equation
@@ -107,7 +108,8 @@ class Star:
             self.p_0 = p_center
 
         # Solve the ODE system
-        ode_solution = solve_ivp(self._ode_system, [r_begin, r_end], [self.p_0, self.m_0], method, events=[self._ode_termination_event])
+        ode_solution = solve_ivp(
+            self._ode_system, [r_begin, r_end], [self.p_0, self.m_0], method, events=[self._ode_termination_event], max_step=max_step)
         r_ode_solution = ode_solution.t
         p_ode_solution = ode_solution.y[0]
         m_ode_solution = ode_solution.y[1]
@@ -138,8 +140,8 @@ class Star:
         """
 
         # Print the star radius and mass
-        print(f"Star radius = {self.star_radius/self.SOLAR_RADIUS} [solar radius]")
-        print(f"Star mass = {self.star_mass/self.SOLAR_MASS} [solar mass]")
+        print(f"Star radius = {self.star_radius / 10**3} [km]")
+        print(f"Star mass = {self.star_mass / self.SOLAR_MASS} [solar mass]")
 
         # Show a simple plot of the solution
         plt.figure()
@@ -176,7 +178,7 @@ if __name__ == "__main__":
     star_object = Star(rho, p_center, p_surface)
 
     # Solve the TOV equation
-    star_object.solve_tov()
+    star_object.solve_tov(max_step=100.0)
 
     # Show the result
     star_object.show_result()

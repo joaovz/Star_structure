@@ -15,7 +15,7 @@ rho_spline_function = CubicSpline(p, rho, extrapolate=False)
 
 # Set the pressure at the center and surface of the star
 p_center = p[-1]        # Center pressure [m^-2]
-p_surface = 1e-9        # Surface pressure [m^-2]
+p_surface = 1e-12       # Surface pressure [m^-2]
 
 # Print the values used for p_center and p_surface
 print(f"p_center = {p_center} [m^-2]")
@@ -28,7 +28,7 @@ p_center_space = p_center * np.linspace(0.1, 1.0, 100)
 star_family_object = StarFamily(rho_spline_function, p_center_space, p_surface)
 
 # Solve the TOV equation
-star_family_object.solve_tov()
+star_family_object.solve_tov(max_step=100.0)
 
 # Show the radius-mass curve
 star_family_object.show_radius_mass_curve()

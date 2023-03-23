@@ -44,17 +44,23 @@ class StarFamily:
             self.radius_array[k] = self.star_object.star_radius
             self.mass_array[k] = self.star_object.star_mass
 
-    def show_radius_mass_curve(self):
+    def plot_radius_mass_curve(self, show_plot=True):
         """Method that plots the radius-mass curve of the star family
+
+        Args:
+            show_plot (bool, optional): Flag to enable the command to show the plot at the end. Defaults to True
         """
 
-        # Show a simple plot of the radius-mass curve
+        # Create a simple plot of the radius-mass curve
         plt.figure()
-        plt.plot(self.radius_array / 10**3, self.mass_array / self.star_object.SOLAR_MASS, linewidth=1)
+        plt.plot(self.radius_array / 10**3, self.mass_array / self.star_object.SOLAR_MASS, linewidth=1, label="Calculated curve")
         plt.title("Radius-Mass curve for the star family")
         plt.xlabel("R [km]")
         plt.ylabel("$M [M_{\\odot}]$")
-        plt.show()
+
+        # Show plot if requested
+        if show_plot is True:
+            plt.show()
 
 
 # This logic is a simple example, only executed when this file is run directly in the command prompt
@@ -87,4 +93,4 @@ if __name__ == "__main__":
     star_family_object.solve_tov(max_step=100.0)
 
     # Show the radius-mass curve
-    star_family_object.show_radius_mass_curve()
+    star_family_object.plot_radius_mass_curve()

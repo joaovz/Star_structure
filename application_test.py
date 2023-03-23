@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
 from star_family import StarFamily
 from data_handling import *
@@ -12,6 +13,11 @@ rho, p = dat_to_array(
 
 # Convert the EOS to a spline function
 rho_spline_function = CubicSpline(p, rho, extrapolate=False)
+
+# Open the .dat file with the expected radius-mass curve (units in solar mass and km)
+expected_mass, expected_radius = dat_to_array(
+    fname='data/MIR-GM1-HT-Local.dat',
+    usecols=(0, 2))
 
 # Set the pressure at the center and surface of the star
 p_center = p[-1]        # Center pressure [m^-2]
@@ -30,5 +36,10 @@ star_family_object = StarFamily(rho_spline_function, p_center_space, p_surface)
 # Solve the TOV equation
 star_family_object.solve_tov(max_step=100.0)
 
-# Show the radius-mass curve
-star_family_object.show_radius_mass_curve()
+# Plot the calculated radius-mass curve
+star_family_object.plot_radius_mass_curve(show_plot=False)
+
+# Add the expected radius-mass curve to the plot, enable legend, and show the plot
+plt.plot(expected_radius, expected_mass, linewidth=1, label="Expected curve")
+plt.legend()
+plt.show()

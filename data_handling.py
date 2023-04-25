@@ -7,20 +7,20 @@ DENSITY_CGS_TO_GU = 10**3 * constants.c**(-2) * constants.G
 PRESSURE_CGS_TO_GU = 0.1 * constants.c**(-4) * constants.G
 
 
-def dat_to_array(fname='file_name.dat', usecols=(0, 1), unit_convertion=(1.0, 1.0)):
+def dat_to_array(fname='file_name.dat', usecols=(0, 1), unit_conversion=(1.0, 1.0)):
     """Converts data in a .dat file into numpy arrays
 
     Args:
         fname (str, optional): Name of the .dat file, including the path. Defaults to 'file_name.dat'
         usecols (tuple, optional): Set the column numbers to read in the .dat file. Defaults to (0, 1)
-        unit_convertion (tuple, optional): Conversion multiplicative factor for each column. Defaults to (1.0, 1.0)
+        unit_conversion (tuple, optional): Conversion multiplicative factor for each column. Defaults to (1.0, 1.0)
 
     Returns:
         tuple of arrays: Numpy arrays with the data read from the .dat file
     """
 
     x, y = np.loadtxt(fname=fname, usecols=usecols, unpack=True)
-    x_converted, y_converted = x * unit_convertion[0], y * unit_convertion[1]
+    x_converted, y_converted = x * unit_conversion[0], y * unit_conversion[1]
 
     return x_converted, y_converted
 
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     rho, p = dat_to_array(
         fname='data/EOSFull_GM1_BPS.dat',
         usecols=(0, 1),
-        unit_convertion=(DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
+        unit_conversion=(DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
 
     # Plot the curve given in the example .dat file
     plt.figure()

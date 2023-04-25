@@ -21,7 +21,7 @@ class Star:
             p_surface (float): Surface pressure of the star [m^-2]
         """
 
-        # Set the density function as the EOS given (rho(p))
+        # Set the density function as the given EOS (rho(p))
         self.rho = rho_eos
 
         # Set the integration constants: pressure, mass, and density at r=0, at the center
@@ -136,7 +136,7 @@ class Star:
         self.rho_num_solution = self.rho_spline_function(self.r_space)
 
     def show_result(self):
-        """Method that print the star radius and mass and plot the solution found
+        """Method that prints the star radius and mass and plots the solution found
         """
 
         # Print the star radius and mass

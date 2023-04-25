@@ -10,7 +10,7 @@ from data_handling import *
 rho, p = dat_to_array(
     fname='data/EOSFull_GM1_BPS.dat',
     usecols=(0, 1),
-    unit_convertion=(DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
+    unit_conversion=(DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
 
 # Convert the EOS to a spline function
 rho_spline_function = CubicSpline(p, rho, extrapolate=False)

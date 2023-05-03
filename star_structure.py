@@ -24,9 +24,10 @@ class Star:
         # Set the density function as the given EOS (rho(p))
         self.rho = rho_eos
 
-        # Set the integration constants: pressure, mass, and density at r=0, at the center
+        # Set the integration constants: pressure, mass, metric function, and density at r=0, at the center
         self.p_0 = p_center                 # Center pressure [m^-2]
         self.m_0 = 0.0                      # Center mass [m]
+        self.nu_0 = 0.0                     # Center metric function (g_tt = -e^nu) [dimensionless]
         self.rho_0 = self.rho(self.p_0)     # Center energy density [m^-2]
 
         # Set the boundary value for the termination of the ODE integration: pressure at r=R, on the surface
@@ -41,10 +42,10 @@ class Star:
 
         Args:
             r (float): Independent variable of the ODE system (radial coordinate r)
-            y (array of float): Array with the dependent variables of the ODE system (p and m)
+            y (array of float): Array with the dependent variables of the ODE system (p, m, and nu)
 
         Returns:
-            array of float: Right hand side of the equation ``dy/dr = f(r, y)`` ([dp_dr, dm_dr])
+            array of float: Right hand side of the equation ``dy/dr = f(r, y)`` ([dp_dr, dm_dr, dnu_dr])
 
         Raises:
             Exception: Exception in case the pressure is outside the acceptable range (p < 0.0)
@@ -70,7 +71,8 @@ class Star:
         # ODE System that describes the interior structure of the star
         dp_dr = -((rho + p) * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))       # TOV equation
         dm_dr = 4 * np.pi * r**2 * rho                                              # Rate of change of the mass
-        return [dp_dr, dm_dr]
+        dnu_dr = -(2 / (rho + p)) * dp_dr                                           # Rate of change of the metric function
+        return [dp_dr, dm_dr, dnu_dr]
 
     def _ode_termination_event(self, r, y):
         """Event method used by the IVP solver. The solver will find an accurate value of r at which
@@ -78,7 +80,7 @@ class Star:
 
         Args:
             r (float): Independent variable of the ODE system (radial coordinate r)
-            y (array of float): Array with the dependent variables of the ODE system (p and m)
+            y (array of float): Array with the dependent variables of the ODE system (p, m, and nu)
 
         Returns:
             float: ``p - p_surface``
@@ -88,7 +90,7 @@ class Star:
     _ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
 
     def solve_tov(self, p_center=None, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45', max_step=np.inf):
-        """Method that solves the TOV system for the star, finding the functions p(r), m(r), and rho(r)
+        """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)
 
         Args:
             p_center (float, optional): Center pressure of the star [m^-2]
@@ -109,7 +111,7 @@ class Star:
 
         # Solve the ODE system
         ode_solution = solve_ivp(
-            self._ode_system, [r_begin, r_end], [self.p_0, self.m_0], method, events=[self._ode_termination_event], max_step=max_step)
+            self._ode_system, [r_begin, r_end], [self.p_0, self.m_0, self.nu_0], method, events=[self._ode_termination_event], max_step=max_step)
         r_ode_solution = ode_solution.t
         p_ode_solution = ode_solution.y[0]
         m_ode_solution = ode_solution.y[1]
@@ -124,15 +126,20 @@ class Star:
         self.star_radius = ode_solution.t_events[0][0]
         self.star_mass = ode_solution.y_events[0][0][1]
 
+        # Adjust metric function with the correct boundary condition (nu(R) = ln(1 - 2M/R))
+        nu_ode_solution = ode_solution.y[2] - ode_solution.y_events[0][0][2] + np.log(1 - 2 * self.star_mass / self.star_radius)
+
         # Create interpolated functions for the solution using CubicSpline
         self.p_spline_function = CubicSpline(r_ode_solution, p_ode_solution, extrapolate=False)
         self.m_spline_function = CubicSpline(r_ode_solution, m_ode_solution, extrapolate=False)
+        self.nu_spline_function = CubicSpline(r_ode_solution, nu_ode_solution, extrapolate=False)
         self.rho_spline_function = CubicSpline(r_ode_solution, rho_ode_solution, extrapolate=False)
 
         # Calculate the arrays for the solution according to the desired linspace
         self.r_space = np.linspace(r_begin, self.star_radius, r_nsamples)
         self.p_num_solution = self.p_spline_function(self.r_space)
         self.m_num_solution = self.m_spline_function(self.r_space)
+        self.nu_num_solution = self.nu_spline_function(self.r_space)
         self.rho_num_solution = self.rho_spline_function(self.r_space)
 
     def show_result(self):
@@ -147,6 +154,7 @@ class Star:
         plt.figure()
         plt.plot(self.r_space / 10**3, self.p_num_solution * 10**8, linewidth=1, label="pressure [10^-8 m^-2]")
         plt.plot(self.r_space / 10**3, self.m_num_solution / self.SOLAR_MASS, linewidth=1, label="mass function [solar mass]")
+        plt.plot(self.r_space / 10**3, self.nu_num_solution, linewidth=1, label="metric function [dimensionless]")
         plt.plot(self.r_space / 10**3, self.rho_num_solution * 10**8, linewidth=1, label="density [10^-8 m^-2]")
         plt.title("TOV solution for the star")
         plt.xlabel("r [km]")

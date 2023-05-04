@@ -41,7 +41,7 @@ class DeformedStar(Star):
         p = self.p_spline_function(r)
         m = self.m_spline_function(r)
         rho = self.rho_spline_function(r)
-        exp_lambda = (1 - 2 * m / r) ** (-1)
+        exp_lambda = (1 - 2 * m / r)**(-1)
 
         # Derivatives of the functions evaluated at current r
         dp_dr = self.dp_dr(r)
@@ -49,17 +49,17 @@ class DeformedStar(Star):
         dnu_dr = self.dnu_dr(r)
         drho_dr = self.drho_dr(r)
         drho_dp = drho_dr / dp_dr
-        dlambda_dr = 2 * exp_lambda * (dm_dr * r - m) / (r ** 2)
+        dlambda_dr = 2 * exp_lambda * (dm_dr * r - m) / r**2
 
         # Coefficients of the ODE
         l = 2
         a0 = (
             exp_lambda * (
-                - (l * (l + 1) / (r ** 2))
+                - (l * (l + 1) / r**2)
                 + 4 * np.pi * (rho + p) * drho_dp
                 + 4 * np.pi * (5 * rho + 9 * p)
             )
-            - (dnu_dr) ** 2
+            - (dnu_dr)**2
         )
         a1 = 2 / r + (dnu_dr + dlambda_dr) / 2
 
@@ -100,10 +100,10 @@ class DeformedStar(Star):
         c = self.star_mass / self.star_radius
         y = self.star_radius * g_ode_solution[-1] / h_ode_solution[-1]
         self.k2 = (
-            (8 / 5) * (c ** 5) * ((1 - 2 * c) ** 2) * (2 + 2 * c * (y - 1) - y) / (
+            (8 / 5) * c**5 * ((1 - 2 * c)**2) * (2 + 2 * c * (y - 1) - y) / (
                 2 * c * (6 - 3 * y + 3 * c * (5 * y - 8))
-                + 4 * (c ** 3) * (13 - 11 * y + c * (3 * y - 2) + 2 * (c ** 2) * (1 + y))
-                + 3 * ((1 - 2 * c) ** 2) * (2 - y + 2 * c * (y - 1)) * np.log(1 - 2 * c)
+                + 4 * c**3 * (13 - 11 * y + c * (3 * y - 2) + 2 * c**2 * (1 + y))
+                + 3 * ((1 - 2 * c)**2) * (2 - y + 2 * c * (y - 1)) * np.log(1 - 2 * c)
             )
         )
 

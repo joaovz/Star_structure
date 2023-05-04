@@ -22,20 +22,20 @@ class Star:
         """
 
         # Set the density function as the given EOS (rho(p))
-        self.rho = rho_eos
+        self.rho_eos = rho_eos
 
         # Set the integration constants: pressure, mass, metric function, and density at r=0, at the center
-        self.p_0 = p_center                 # Center pressure [m^-2]
-        self.m_0 = 0.0                      # Center mass [m]
-        self.nu_0 = 0.0                     # Center metric function (g_tt = -e^nu) [dimensionless]
-        self.rho_0 = self.rho(self.p_0)     # Center energy density [m^-2]
+        self.p_0 = p_center                     # Center pressure [m^-2]
+        self.m_0 = 0.0                          # Center mass [m]
+        self.nu_0 = 0.0                         # Center metric function (g_tt = -e^nu) [dimensionless]
+        self.rho_0 = self.rho_eos(self.p_0)     # Center energy density [m^-2]
 
         # Set the boundary value for the termination of the ODE integration: pressure at r=R, on the surface
-        self.p_surface = p_surface          # Surface pressure [m^-2]
+        self.p_surface = p_surface              # Surface pressure [m^-2]
 
         # Initialize star properties: radius and total mass
-        self.star_radius = 0.0              # Star radius [m]
-        self.star_mass = 0.0                # Star mass [m]
+        self.star_radius = 0.0                  # Star radius [m]
+        self.star_mass = 0.0                    # Star mass [m]
 
     def _ode_system(self, r, y):
         """Method that implements the TOV ODE system in the form ``dy/dr = f(r, y)``, used by the IVP solver
@@ -56,7 +56,7 @@ class Star:
         # Variables of the system
         p = y[0]
         m = y[1]
-        rho = self.rho(p)
+        rho = self.rho_eos(p)
 
         # Check if p is outside the acceptable range, and raise an exception in that case
         if p < 0.0:
@@ -115,7 +115,7 @@ class Star:
         r_ode_solution = ode_solution.t
         p_ode_solution = ode_solution.y[0]
         m_ode_solution = ode_solution.y[1]
-        rho_ode_solution = self.rho(ode_solution.y[0])
+        rho_ode_solution = self.rho_eos(ode_solution.y[0])
 
         # Check the ODE solution status, and treat each case
         if ode_solution.status == -1:

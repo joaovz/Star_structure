@@ -77,14 +77,14 @@ if __name__ == "__main__":
 
     rho_center = 2.376364e-9        # Center density [m^-2]
     p_center = p(rho_center)        # Center pressure [m^-2]
-    p_surface = 1e-16               # Surface pressure [m^-2]
+    p_surface = 0.0                 # Surface pressure [m^-2]
 
     # Print the values used for p_center and p_surface
     print(f"p_center = {p_center} [m^-2]")
     print(f"p_surface = {p_surface} [m^-2]")
 
     # Set the p_center space that characterizes the star family
-    p_center_space = p_center * np.logspace(-3.0, 0.0, 50)
+    p_center_space = p_center * np.logspace(-4.0, 1.0, 50)
 
     # Define the object
     star_family_object = DeformedStarFamily(rho, p_center_space, p_surface)

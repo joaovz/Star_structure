@@ -22,7 +22,7 @@ def p(rho):
 
 rho_center = 2.376364e-9        # Center density [m^-2]
 p_center = p(rho_center)        # Center pressure [m^-2]
-p_surface = 1e-16               # Surface pressure [m^-2]
+p_surface = 0.0                 # Surface pressure [m^-2]
 
 # Print the values used for p_center and p_surface
 print(f"p_center = {p_center} [m^-2]")

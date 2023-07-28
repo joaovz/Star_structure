@@ -48,7 +48,6 @@ class Star:
             array of float: Right hand side of the equation ``dy/dr = f(r, y)`` ([dp_dr, dm_dr, dnu_dr])
 
         Raises:
-            Exception: Exception in case the pressure is outside the acceptable range (p < 0.0)
             Exception: Exception in case the pressure is outside the acceptable range (p > p_0)
             Exception: Exception in case the EOS function didn't return a number
         """
@@ -56,22 +55,27 @@ class Star:
         # Variables of the system
         p = y[0]
         m = y[1]
-        rho = self.rho_eos(p)
 
         # Check if p is outside the acceptable range, and raise an exception in that case
-        if p < 0.0:
-            raise Exception(f"The pressure is outside the acceptable range (p = {p}): p < 0.0")
-        elif p > self.p_0:
+        if p > self.p_0:
             raise Exception(f"The pressure is outside the acceptable range (p = {p}): p > p_0")
 
-        # Check if there is some invalid value for rho, and raise an exception in that case
-        if np.isnan(rho):
-            raise Exception(f"The EOS function didn't return a number: p = {p}, rho = {rho}")
+        # Set derivatives to zero to saturate functions, as this condition indicates the end of integration
+        if p <= 0.0:
+            dp_dr = 0.0
+            dm_dr = 0.0
+            dnu_dr = 0.0
+        else:
+            # Calculate rho, check if it is some invalid value, and raise an exception in that case
+            rho = self.rho_eos(p)
+            if np.isnan(rho):
+                raise Exception(f"The EOS function didn't return a number: p = {p}, rho = {rho}")
 
-        # ODE System that describes the interior structure of the star
-        dp_dr = -((rho + p) * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))       # TOV equation
-        dm_dr = 4 * np.pi * r**2 * rho                                              # Rate of change of the mass
-        dnu_dr = -(2 / (rho + p)) * dp_dr                                           # Rate of change of the metric function
+            # ODE System that describes the interior structure of the star
+            dp_dr = -((rho + p) * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))       # TOV equation
+            dm_dr = 4 * np.pi * r**2 * rho                                              # Rate of change of the mass
+            dnu_dr = -(2 / (rho + p)) * dp_dr                                           # Rate of change of the metric function
+
         return [dp_dr, dm_dr, dnu_dr]
 
     def _ode_termination_event(self, r, y):
@@ -176,7 +180,7 @@ if __name__ == "__main__":
 
     rho_center = 2.376364e-9        # Center density [m^-2]
     p_center = p(rho_center)        # Center pressure [m^-2]
-    p_surface = 1e-12               # Surface pressure [m^-2]
+    p_surface = 0.0                 # Surface pressure [m^-2]
 
     # Print the values used for p_center and p_surface
     print(f"p_center = {p_center} [m^-2]")

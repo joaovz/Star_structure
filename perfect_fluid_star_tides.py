@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 from star_structure import Star
+from eos_library import PolytropicEOS
 
 
 class DeformedStar(Star):
@@ -115,17 +116,12 @@ class DeformedStar(Star):
 # This logic is a simple example, only executed when this file is run directly in the command prompt
 if __name__ == "__main__":
 
-    # Set the EOS and pressure at the center and surface of the star
-    def rho(p):
-        c = 1.0e8       # [m^2]
-        return (np.abs(p / c))**(1 / 2)
+    # Create the EOS object
+    eos = PolytropicEOS(k=1.0e8, n=1)
 
-    def p(rho):
-        c = 1.0e8       # [m^2]
-        return c * rho**2
-
+    # Set the pressure at the center and surface of the star
     rho_center = 2.376364e-9        # Center density [m^-2]
-    p_center = p(rho_center)        # Center pressure [m^-2]
+    p_center = eos.p(rho_center)    # Center pressure [m^-2]
     p_surface = 0.0                 # Surface pressure [m^-2]
 
     # Print the values used for p_center and p_surface
@@ -133,7 +129,7 @@ if __name__ == "__main__":
     print(f"p_surface = {p_surface} [m^-2]")
 
     # Define the object
-    star_object = DeformedStar(rho, p_center, p_surface)
+    star_object = DeformedStar(eos.rho, p_center, p_surface)
 
     # Solve the TOV equation
     star_object.solve_tov(max_step=100.0)

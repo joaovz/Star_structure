@@ -1,4 +1,3 @@
-import time
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
@@ -34,11 +33,8 @@ p_center_space = p_center * np.logspace(-4.7, 0.0, 50)
 # Create the star family object
 star_family_object = StarFamily(rho_spline_function, p_center_space, p_surface)
 
-# Solve the TOV equation, printing the execution time
-start_time = time.process_time()
+# Solve the TOV equation
 star_family_object.solve_tov(max_step=2.0)
-end_time = time.process_time()
-print(f"TOV solver execution time: {end_time - start_time} s")
 
 # Plot the calculated radius-mass curve
 star_family_object.plot_radius_mass_curve(show_plot=False)

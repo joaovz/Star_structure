@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from alive_progress import alive_bar
 from star_structure import Star
 from eos_library import PolytropicEOS
 
@@ -40,10 +41,12 @@ class StarFamily:
         self.mass_array = np.zeros(self.p_center_space.size)
 
         # Solve the TOV equation for each star in the family
-        for k in range(self.p_center_space.size):
-            self.star_object.solve_tov(self.p_center_space[k], r_begin, r_end, r_nsamples, method, max_step)
-            self.radius_array[k] = self.star_object.star_radius
-            self.mass_array[k] = self.star_object.star_mass
+        with alive_bar(self.p_center_space.size) as bar:
+            for k in range(self.p_center_space.size):
+                self.star_object.solve_tov(self.p_center_space[k], r_begin, r_end, r_nsamples, method, max_step)
+                self.radius_array[k] = self.star_object.star_radius
+                self.mass_array[k] = self.star_object.star_mass
+                bar()
 
     def plot_radius_mass_curve(self, show_plot=True):
         """Method that plots the radius-mass curve of the star family

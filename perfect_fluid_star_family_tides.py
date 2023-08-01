@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from alive_progress import alive_bar
 from star_family import StarFamily
 from perfect_fluid_star_tides import DeformedStar
 from eos_library import PolytropicEOS
@@ -38,12 +39,14 @@ class DeformedStarFamily(StarFamily):
         self.k2_array = np.zeros(self.p_center_space.size)
 
         # Solve the TOV equation and the tidal equation for each star in the family
-        for k in range(self.p_center_space.size):
-            self.star_object.solve_tov(self.p_center_space[k], r_begin, r_end, r_nsamples, method, max_step)
-            self.star_object.solve_tidal(r_begin, method, max_step)
-            self.radius_array[k] = self.star_object.star_radius
-            self.mass_array[k] = self.star_object.star_mass
-            self.k2_array[k] = self.star_object.k2
+        with alive_bar(self.p_center_space.size) as bar:
+            for k in range(self.p_center_space.size):
+                self.star_object.solve_tov(self.p_center_space[k], r_begin, r_end, r_nsamples, method, max_step)
+                self.star_object.solve_tidal(r_begin, method, max_step)
+                self.radius_array[k] = self.star_object.star_radius
+                self.mass_array[k] = self.star_object.star_mass
+                self.k2_array[k] = self.star_object.k2
+                bar()
 
     def plot_k2_curve(self, show_plot=True):
         """Method that plots the k2 curve of the star family

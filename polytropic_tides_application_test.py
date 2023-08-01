@@ -1,4 +1,3 @@
-import time
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
@@ -30,11 +29,8 @@ p_center_space = p_center * np.logspace(-4.0, 1.0, 50)
 # Define the object
 star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
 
-# Solve the tidal equation
-start_time = time.process_time()
+# Solve the TOV equation, and the tidal equation
 star_family_object.solve_tidal(max_step=1.0)
-end_time = time.process_time()
-print(f"Tidal solver execution time: {end_time - start_time} s")
 
 # Show the radius-mass curve
 star_family_object.plot_radius_mass_curve()

@@ -21,7 +21,7 @@ expected_mass, expected_radius = dat_to_array(
 
 # Set the pressure at the center and surface of the star
 p_center = p[-1]        # Center pressure [m^-2]
-p_surface = 1e-20       # Surface pressure [m^-2]
+p_surface = 1e-22       # Surface pressure [m^-2]
 
 # Print the values used for p_center and p_surface
 print(f"p_center = {p_center} [m^-2]")

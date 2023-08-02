@@ -1,27 +1,21 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.interpolate import CubicSpline
 from perfect_fluid_star_family_tides import DeformedStarFamily
 from data_handling import *
+from eos_library import TableEOS
 
-
-# Open the .dat file with the EOS
-rho, p = dat_to_array(
-    fname='data/EOSFull_GM1_BPS.dat',
-    usecols=(0, 1),
-    unit_conversion=(DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
-
-# Convert the EOS to a spline function
-rho_spline_function = CubicSpline(p, rho, extrapolate=False)
 
 # Open the .dat file with the expected radius-mass curve (units in solar mass and km)
 expected_mass, expected_radius = dat_to_array(
     fname='data/MIR-GM1-HT-Local.dat',
     usecols=(0, 2))
 
+# Create the EOS object
+eos = TableEOS(fname='data/EOSFull_GM1_BPS.dat')
+
 # Set the pressure at the center and surface of the star
-p_center = p[-1]        # Center pressure [m^-2]
-p_surface = 1e-22       # Surface pressure [m^-2]
+p_center = eos.p_center     # Center pressure [m^-2]
+p_surface = 1e-22           # Surface pressure [m^-2]
 
 # Print the values used for p_center and p_surface
 print(f"p_center = {p_center} [m^-2]")
@@ -31,7 +25,7 @@ print(f"p_surface = {p_surface} [m^-2]")
 p_center_space = p_center * np.logspace(-4.7, 0.0, 50)
 
 # Create the star family object
-star_family_object = DeformedStarFamily(rho_spline_function, p_center_space, p_surface)
+star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
 
 # Solve the TOV equation, and the tidal equation
 star_family_object.solve_tidal(max_step=2.0)

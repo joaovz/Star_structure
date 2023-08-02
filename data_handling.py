@@ -36,8 +36,8 @@ if __name__ == "__main__":
 
     # Plot the curve given in the example .dat file
     plt.figure()
-    plt.plot(np.log10(rho), np.log10(p), linewidth=1)
+    plt.plot(p, rho, linewidth=1, marker='.')
     plt.title("EOS from .dat file")
-    plt.xlabel('$\\log(\\rho[m^{-2}])$')
-    plt.ylabel('$\\log(p[m^{-2}])$')
+    plt.xlabel('$p[m^{-2}]$')
+    plt.ylabel('$\\rho[m^{-2}]$')
     plt.show()

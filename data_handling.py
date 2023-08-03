@@ -5,6 +5,7 @@ import scipy.constants as constants
 # Defining some constants
 DENSITY_CGS_TO_GU = 10**3 * constants.c**(-2) * constants.G
 PRESSURE_CGS_TO_GU = 0.1 * constants.c**(-4) * constants.G
+ELECTRONVOLT_TO_GU = constants.e * constants.c**(-4) * constants.G
 
 
 def dat_to_array(fname='file_name.dat', usecols=(0, 1), unit_conversion=(1.0, 1.0)):

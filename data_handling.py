@@ -3,9 +3,21 @@ import matplotlib.pyplot as plt
 import scipy.constants as constants
 
 # Defining some constants
-DENSITY_CGS_TO_GU = 10**3 * constants.c**(-2) * constants.G
-PRESSURE_CGS_TO_GU = 0.1 * constants.c**(-4) * constants.G
-ELECTRONVOLT_TO_GU = constants.e * constants.c**(-4) * constants.G
+
+# Conversion to SI units
+g_cm3_to_SI = 10**3
+dyn_cm2_to_SI = 0.1
+MeV_fm3_to_SI = 10**6 * constants.e * (10**(-15))**(-3)
+
+# Conversion to geometric units
+ENERGY_SI_TO_GU = constants.c**(-4) * constants.G
+ENERGY_DENSITY_SI_TO_GU = constants.c**(-4) * constants.G
+PRESSURE_SI_TO_GU = constants.c**(-4) * constants.G
+MASS_DENSITY_SI_TO_GU = constants.c**(-2) * constants.G
+
+# Conversion from CGS to SI
+MASS_DENSITY_CGS_TO_GU = g_cm3_to_SI * MASS_DENSITY_SI_TO_GU
+PRESSURE_CGS_TO_GU = dyn_cm2_to_SI * PRESSURE_SI_TO_GU
 
 
 def dat_to_array(fname='file_name.dat', usecols=(0, 1), unit_conversion=(1.0, 1.0)):
@@ -33,7 +45,7 @@ if __name__ == "__main__":
     rho, p = dat_to_array(
         fname='data/EOSFull_GM1_BPS.dat',
         usecols=(0, 1),
-        unit_conversion=(DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
+        unit_conversion=(MASS_DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
 
     # Plot the curve given in the example .dat file
     plt.figure()

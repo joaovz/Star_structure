@@ -77,7 +77,7 @@ class TableEOS(EOS):
         rho, p = dat_to_array(
             fname=fname,
             usecols=(0, 1),
-            unit_conversion=(DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
+            unit_conversion=(MASS_DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
 
         # Convert the EOS to spline functions
         self.rho_spline_function = CubicSpline(p, rho, extrapolate=False)
@@ -121,8 +121,8 @@ class QuarkEOS(EOS):
         """Initialization method
 
         Args:
-            B (float): Model free parameter [m^4]
-            a2 (float): Model free parameter [m^2]
+            B (float): Model free parameter [m^-2]
+            a2 (float): Model free parameter [m^-1]
             a4 (float): Model free parameter [dimensionless]
         """
         self.B = B
@@ -220,8 +220,8 @@ if __name__ == "__main__":
     ## Quark EOS test
 
     # Create the EOS object (values chosen to build a strange star)
-    B = (130e6 * ELECTRONVOLT_TO_GU)**4
-    a2 = (100e6 * ELECTRONVOLT_TO_GU)**2
+    B = 130 * MeV_fm3_to_SI * PRESSURE_SI_TO_GU
+    a2 = (100 * MeV_fm3_to_SI * ENERGY_DENSITY_SI_TO_GU)**(1/2)
     a4 = 0.6
     quark_eos = QuarkEOS(B, a2, a4)
 

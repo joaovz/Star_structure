@@ -6,7 +6,7 @@ from eos_library import QuarkEOS
 
 # Create the EOS object (values chosen to build a strange star)
 B = 130 * MeV_fm3_to_SI * PRESSURE_SI_TO_GU
-a2 = (100 * MeV_fm3_to_SI * ENERGY_DENSITY_SI_TO_GU)**(1/2)
+a2 = (100 * MeV_fm3_to_SI * ENERGY_DENSITY_SI_TO_GU)**(1 / 2)
 a4 = 0.6
 eos = QuarkEOS(B, a2, a4)
 

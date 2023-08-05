@@ -177,7 +177,7 @@ class QuarkEOS(EOS):
 # This logic is a simple example, only executed when this file is run directly in the command prompt
 if __name__ == "__main__":
 
-    ## Polytropic EOS test
+    # Polytropic EOS test
 
     # Create the EOS object
     polytropic_eos = PolytropicEOS(k=1.0e8, n=1)
@@ -196,8 +196,7 @@ if __name__ == "__main__":
     p_space = np.linspace(0.0, p_center_calc, 1000)
     polytropic_eos.plot(p_space)
 
-
-    ## Table EOS test
+    # Table EOS test
 
     # Create the EOS object
     table_eos = TableEOS(fname='data/EOSFull_GM1_BPS.dat')
@@ -216,12 +215,11 @@ if __name__ == "__main__":
     p_space = np.linspace(table_eos.p_surface, table_eos.p_center, 1000)
     table_eos.plot(p_space)
 
-
-    ## Quark EOS test
+    # Quark EOS test
 
     # Create the EOS object (values chosen to build a strange star)
     B = 130 * MeV_fm3_to_SI * PRESSURE_SI_TO_GU
-    a2 = (100 * MeV_fm3_to_SI * ENERGY_DENSITY_SI_TO_GU)**(1/2)
+    a2 = (100 * MeV_fm3_to_SI * ENERGY_DENSITY_SI_TO_GU)**(1 / 2)
     a4 = 0.6
     quark_eos = QuarkEOS(B, a2, a4)
 

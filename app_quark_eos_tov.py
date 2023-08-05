@@ -7,7 +7,7 @@ from eos_library import QuarkEOS
 
 # Create the EOS object (values chosen to build a strange star)
 B = 130 * MeV_fm3_to_SI * PRESSURE_SI_TO_GU
-a2 = (100 * MeV_fm3_to_SI * ENERGY_DENSITY_SI_TO_GU)**(1/2)
+a2 = (100 * MeV_fm3_to_SI * ENERGY_DENSITY_SI_TO_GU)**(1 / 2)
 a4 = 0.6
 eos = QuarkEOS(B, a2, a4)
 
@@ -25,7 +25,7 @@ p_surface = 0.0                 # Surface pressure [m^-2]
 print(f"p_center = {p_center} [m^-2]")
 print(f"p_surface = {p_surface} [m^-2]")
 
-## Single star
+# Single star
 
 # Define the object
 star_object = Star(eos.rho, p_center, p_surface)
@@ -36,7 +36,7 @@ star_object.solve_tov(max_step=1.0)
 # Show the result
 star_object.show_result()
 
-## Star Family
+# Star Family
 
 # Set the p_center space that characterizes the star family
 p_center_space = p_center * np.logspace(-4.0, 1.0, 50)

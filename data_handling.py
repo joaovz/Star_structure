@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants as constants
 
+
 # Defining some constants
 
 # Conversion to SI units

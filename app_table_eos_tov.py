@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from data_handling import *
 from star_structure import Star
 from star_family import StarFamily
-from data_handling import *
 from eos_library import TableEOS
 
 

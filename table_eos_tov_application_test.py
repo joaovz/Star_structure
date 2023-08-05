@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from star_structure import Star
 from star_family import StarFamily
 from data_handling import *
 from eos_library import TableEOS
@@ -20,6 +21,19 @@ p_surface = 1e-22           # Surface pressure [m^-2]
 # Print the values used for p_center and p_surface
 print(f"p_center = {p_center} [m^-2]")
 print(f"p_surface = {p_surface} [m^-2]")
+
+## Single star
+
+# Define the object
+star_object = Star(eos.rho, p_center, p_surface)
+
+# Solve the TOV equation
+star_object.solve_tov(max_step=2.0)
+
+# Show the result
+star_object.show_result()
+
+## Star Family
 
 # Set the p_center space that characterizes the star family
 p_center_space = p_center * np.logspace(-4.7, 0.0, 50)

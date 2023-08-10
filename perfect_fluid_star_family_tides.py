@@ -22,7 +22,7 @@ class DeformedStarFamily(StarFamily):
         # Create a star object with the first p_center value, using instead the DeformedStar class
         self.star_object = DeformedStar(rho_eos, self.p_center_space[0], p_surface)
 
-    def solve_tidal(self, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45', max_step=np.inf):
+    def solve_tidal(self, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
         """Method that solves the tidal system for each star in the family, finding the tidal Love number k2
 
         Args:
@@ -31,6 +31,8 @@ class DeformedStarFamily(StarFamily):
             r_nsamples (int, optional): Number of samples used to create the r_space array. Defaults to 10**6
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
+            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-9
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
         """
 
         # Create the radius, mass, and k2 arrays to store these star family properties
@@ -41,8 +43,8 @@ class DeformedStarFamily(StarFamily):
         # Solve the TOV equation and the tidal equation for each star in the family
         with alive_bar(self.p_center_space.size) as bar:
             for k in range(self.p_center_space.size):
-                self.star_object.solve_tov(self.p_center_space[k], r_begin, r_end, r_nsamples, method, max_step)
-                self.star_object.solve_tidal(r_begin, method, max_step)
+                self.star_object.solve_tov(self.p_center_space[k], r_begin, r_end, r_nsamples, method, max_step, atol, rtol)
+                self.star_object.solve_tidal(r_begin, method, max_step, atol, rtol)
                 self.radius_array[k] = self.star_object.star_radius
                 self.mass_array[k] = self.star_object.star_mass
                 self.k2_array[k] = self.star_object.k2
@@ -89,7 +91,7 @@ if __name__ == "__main__":
     star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
 
     # Solve the tidal equation
-    star_family_object.solve_tidal(max_step=1.0)
+    star_family_object.solve_tidal(max_step=100.0)
 
     # Show the radius-mass curve
     star_family_object.plot_radius_mass_curve()

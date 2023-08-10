@@ -69,13 +69,15 @@ class DeformedStar(Star):
         dh_dr = g
         return [dg_dr, dh_dr]
 
-    def solve_tidal(self, r_begin=np.finfo(float).eps, method='RK45', max_step=np.inf):
+    def solve_tidal(self, r_begin=np.finfo(float).eps, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
         """Method that solves the tidal system for the star, finding the tidal Love number k2
 
         Args:
             r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to np.finfo(float).eps
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
+            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-9
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
 
         Raises:
             Exception: Exception in case the IVP fails to solve the equation
@@ -89,7 +91,13 @@ class DeformedStar(Star):
 
         # Solve the ODE system
         ode_solution = solve_ivp(
-            self._tidal_ode_system, [r_begin, self.star_radius], [self.g_0, self.h_0], method, max_step=max_step)
+            self._tidal_ode_system,
+            [r_begin, self.star_radius],
+            [self.g_0, self.h_0],
+            method,
+            max_step=max_step,
+            atol=atol,
+            rtol=rtol)
         g_ode_solution = ode_solution.y[0]
         h_ode_solution = ode_solution.y[1]
 

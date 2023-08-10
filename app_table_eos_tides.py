@@ -28,7 +28,7 @@ p_center_space = p_center * np.logspace(-4.7, 0.0, 50)
 star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
 
 # Solve the TOV equation, and the tidal equation
-star_family_object.solve_tidal(max_step=2.0)
+star_family_object.solve_tidal(max_step=100.0)
 
 # Plot the calculated radius-mass curve
 star_family_object.plot_radius_mass_curve(show_plot=False)

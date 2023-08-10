@@ -31,7 +31,7 @@ print(f"p_surface = {p_surface} [m^-2]")
 star_object = Star(eos.rho, p_center, p_surface)
 
 # Solve the TOV equation
-star_object.solve_tov(max_step=1.0)
+star_object.solve_tov(max_step=10.0)
 
 # Show the result
 star_object.show_result()
@@ -45,7 +45,7 @@ p_center_space = p_center * np.logspace(-4.0, 1.0, 50)
 star_family_object = StarFamily(eos.rho, p_center_space, p_surface)
 
 # Solve the TOV equation
-star_family_object.solve_tov(max_step=1.0)
+star_family_object.solve_tov(max_step=10.0)
 
 # Show the radius-mass curve
 star_family_object.plot_radius_mass_curve()

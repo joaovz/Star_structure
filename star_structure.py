@@ -94,7 +94,7 @@ class Star:
         return y[0] - self.p_surface            # Condition of the event: trigger when condition == 0 (p == p_surface)
     _ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
 
-    def solve_tov(self, p_center=None, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45', max_step=np.inf):
+    def solve_tov(self, p_center=None, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)
 
         Args:
@@ -104,6 +104,8 @@ class Star:
             r_nsamples (int, optional): Number of samples used to create the r_space array. Defaults to 10**6
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
+            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-9
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
 
         Raises:
             Exception: Exception in case the IVP fails to solve the equation
@@ -116,7 +118,14 @@ class Star:
 
         # Solve the ODE system
         ode_solution = solve_ivp(
-            self._ode_system, [r_begin, r_end], [self.p_0, self.m_0, self.nu_0], method, events=[self._ode_termination_event], max_step=max_step)
+            self._ode_system,
+            [r_begin, r_end],
+            [self.p_0, self.m_0, self.nu_0],
+            method,
+            events=[self._ode_termination_event],
+            max_step=max_step,
+            atol=atol,
+            rtol=rtol)
         r_ode_solution = ode_solution.t
         p_ode_solution = ode_solution.y[0]
         m_ode_solution = ode_solution.y[1]

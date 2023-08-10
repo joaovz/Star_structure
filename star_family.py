@@ -25,7 +25,7 @@ class StarFamily:
         # Create a star object with the first p_center value
         self.star_object = Star(rho_eos, self.p_center_space[0], p_surface)
 
-    def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45', max_step=np.inf):
+    def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
         """Method that solves the TOV system, finding the radius and mass of each star in the family
 
         Args:
@@ -34,6 +34,8 @@ class StarFamily:
             r_nsamples (int, optional): Number of samples used to create the r_space array. Defaults to 10**6
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
+            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-9
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
         """
 
         # Create the radius and mass arrays to store these star family properties
@@ -43,7 +45,7 @@ class StarFamily:
         # Solve the TOV equation for each star in the family
         with alive_bar(self.p_center_space.size) as bar:
             for k in range(self.p_center_space.size):
-                self.star_object.solve_tov(self.p_center_space[k], r_begin, r_end, r_nsamples, method, max_step)
+                self.star_object.solve_tov(self.p_center_space[k], r_begin, r_end, r_nsamples, method, max_step, atol, rtol)
                 self.radius_array[k] = self.star_object.star_radius
                 self.mass_array[k] = self.star_object.star_mass
                 bar()
@@ -89,7 +91,7 @@ if __name__ == "__main__":
     star_family_object = StarFamily(eos.rho, p_center_space, p_surface)
 
     # Solve the TOV equation
-    star_family_object.solve_tov(max_step=1.0)
+    star_family_object.solve_tov(max_step=100.0)
 
     # Show the radius-mass curve
     star_family_object.plot_radius_mass_curve()

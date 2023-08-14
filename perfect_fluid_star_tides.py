@@ -116,9 +116,11 @@ class DeformedStar(Star):
             )
         )
 
-        # Print the calculated Love number and the compactness of the star
+    def print_k2(self):
+        """Method that prints the tidal Love number (k2) and the compactness of the star
+        """
         print(f"Tidal Love number (k2) = {self.k2} [dimensionless]")
-        print(f"Compactness (C = M/R) = {c} [dimensionless]")
+        print(f"Compactness (C = M/R) = {self.star_mass / self.star_radius} [dimensionless]")
 
 
 # This logic is a simple example, only executed when this file is run directly in the command prompt
@@ -142,8 +144,11 @@ if __name__ == "__main__":
     # Solve the TOV equation
     star_object.solve_tov(max_step=100.0)
 
-    # Show the result
-    star_object.show_result()
+    # Plot the star structure curves
+    star_object.plot_star_structure_curves()
 
     # Solve the tidal deformation
     star_object.solve_tidal(max_step=100.0)
+
+    # Print the Love number
+    star_object.print_k2()

@@ -94,14 +94,13 @@ class Star:
         return y[0] - self.p_surface            # Condition of the event: trigger when condition == 0 (p == p_surface)
     _ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
 
-    def solve_tov(self, p_center=None, r_begin=np.finfo(float).eps, r_end=np.inf, r_nsamples=10**6, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
+    def solve_tov(self, p_center=None, r_begin=np.finfo(float).eps, r_end=np.inf, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)
 
         Args:
             p_center (float, optional): Center pressure of the star [m^-2]
             r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to np.finfo(float).eps
             r_end (float, optional): Radial coordinate r at the end of the IVP solve. Defaults to np.inf
-            r_nsamples (int, optional): Number of samples used to create the r_space array. Defaults to 10**6
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
             atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-9
@@ -126,10 +125,10 @@ class Star:
             max_step=max_step,
             atol=atol,
             rtol=rtol)
-        r_ode_solution = ode_solution.t
-        p_ode_solution = ode_solution.y[0]
-        m_ode_solution = ode_solution.y[1]
-        rho_ode_solution = self.rho_eos(ode_solution.y[0])
+        self.r_ode_solution = ode_solution.t
+        self.p_ode_solution = ode_solution.y[0]
+        self.m_ode_solution = ode_solution.y[1]
+        self.rho_ode_solution = self.rho_eos(ode_solution.y[0])
 
         # Check the ODE solution status, and treat each case
         if ode_solution.status == -1:
@@ -141,22 +140,15 @@ class Star:
         self.star_mass = ode_solution.y_events[0][0][1]
 
         # Adjust metric function with the correct boundary condition (nu(R) = ln(1 - 2M/R))
-        nu_ode_solution = ode_solution.y[2] - ode_solution.y_events[0][0][2] + np.log(1 - 2 * self.star_mass / self.star_radius)
+        self.nu_ode_solution = ode_solution.y[2] - ode_solution.y_events[0][0][2] + np.log(1 - 2 * self.star_mass / self.star_radius)
 
         # Create interpolated functions for the solution using CubicSpline
-        self.p_spline_function = CubicSpline(r_ode_solution, p_ode_solution, extrapolate=False)
-        self.m_spline_function = CubicSpline(r_ode_solution, m_ode_solution, extrapolate=False)
-        self.nu_spline_function = CubicSpline(r_ode_solution, nu_ode_solution, extrapolate=False)
-        self.rho_spline_function = CubicSpline(r_ode_solution, rho_ode_solution, extrapolate=False)
+        self.p_spline_function = CubicSpline(self.r_ode_solution, self.p_ode_solution, extrapolate=False)
+        self.m_spline_function = CubicSpline(self.r_ode_solution, self.m_ode_solution, extrapolate=False)
+        self.nu_spline_function = CubicSpline(self.r_ode_solution, self.nu_ode_solution, extrapolate=False)
+        self.rho_spline_function = CubicSpline(self.r_ode_solution, self.rho_ode_solution, extrapolate=False)
 
-        # Calculate the arrays for the solution according to the desired linspace
-        self.r_space = np.linspace(r_begin, self.star_radius, r_nsamples)
-        self.p_num_solution = self.p_spline_function(self.r_space)
-        self.m_num_solution = self.m_spline_function(self.r_space)
-        self.nu_num_solution = self.nu_spline_function(self.r_space)
-        self.rho_num_solution = self.rho_spline_function(self.r_space)
-
-    def show_result(self):
+    def plot_star_structure_curves(self):
         """Method that prints the star radius and mass and plots the solution found
         """
 
@@ -166,10 +158,10 @@ class Star:
 
         # Show a simple plot of the solution
         plt.figure()
-        plt.plot(self.r_space / 10**3, self.p_num_solution * 10**8, linewidth=1, label="pressure [10^-8 m^-2]")
-        plt.plot(self.r_space / 10**3, self.m_num_solution / self.SOLAR_MASS, linewidth=1, label="mass function [solar mass]")
-        plt.plot(self.r_space / 10**3, self.nu_num_solution, linewidth=1, label="metric function [dimensionless]")
-        plt.plot(self.r_space / 10**3, self.rho_num_solution * 10**8, linewidth=1, label="density [10^-8 m^-2]")
+        plt.plot(self.r_ode_solution / 10**3, self.p_ode_solution * 10**8, linewidth=1, label="pressure [10^-8 m^-2]")
+        plt.plot(self.r_ode_solution / 10**3, self.m_ode_solution / self.SOLAR_MASS, linewidth=1, label="mass function [solar mass]")
+        plt.plot(self.r_ode_solution / 10**3, self.nu_ode_solution, linewidth=1, label="metric function [dimensionless]")
+        plt.plot(self.r_ode_solution / 10**3, self.rho_ode_solution * 10**8, linewidth=1, label="density [10^-8 m^-2]")
         plt.title("TOV solution for the star")
         plt.xlabel("r [km]")
         plt.legend()
@@ -197,5 +189,5 @@ if __name__ == "__main__":
     # Solve the TOV equation
     star_object.solve_tov(max_step=100.0)
 
-    # Show the result
-    star_object.show_result()
+    # Plot the star structure curves
+    star_object.plot_star_structure_curves()

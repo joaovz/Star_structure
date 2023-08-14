@@ -30,8 +30,8 @@ star_object = Star(eos.rho, p_center, p_surface)
 # Solve the TOV equation
 star_object.solve_tov(max_step=100.0)
 
-# Show the result
-star_object.show_result()
+# Plot the star structure curves
+star_object.plot_star_structure_curves()
 
 # Star Family
 

@@ -52,6 +52,6 @@ if __name__ == "__main__":
     plt.figure()
     plt.plot(p, rho, linewidth=1, marker='.')
     plt.title("EOS from .dat file")
-    plt.xlabel('$p[m^{-2}]$')
-    plt.ylabel('$\\rho[m^{-2}]$')
+    plt.xlabel('$p ~ [m^{-2}]$')
+    plt.ylabel('$\\rho ~ [m^{-2}]$')
     plt.show()

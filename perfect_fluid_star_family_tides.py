@@ -60,8 +60,8 @@ class DeformedStarFamily(StarFamily):
         plt.figure()
         plt.plot(self.mass_array / self.radius_array, self.k2_array, linewidth=1, label="Calculated curve", marker='.')
         plt.title("Tidal Love number curve for the star family")
-        plt.xlabel("C = M/R [dimensionless]")
-        plt.ylabel("k2 [dimensionless]")
+        plt.xlabel("$C = M/R$ [dimensionless]")
+        plt.ylabel("$k_2$ [dimensionless]")
 
         # Show plot if requested
         if show_plot is True:
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     eos = PolytropicEOS(k=1.0e8, n=1)
 
     # Set the pressure at the center and surface of the star
-    rho_center = 2.376364e-9        # Center density [m^-2]
+    rho_center = 4.3e-9             # Center density [m^-2]
     p_center = eos.p(rho_center)    # Center pressure [m^-2]
     p_surface = 0.0                 # Surface pressure [m^-2]
 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     print(f"p_surface = {p_surface} [m^-2]")
 
     # Set the p_center space that characterizes the star family
-    p_center_space = p_center * np.logspace(-4.0, 1.0, 50)
+    p_center_space = p_center * np.logspace(-5.0, 0.0, 50)
 
     # Define the object
     star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
@@ -94,6 +94,9 @@ if __name__ == "__main__":
 
     # Show the radius-mass curve
     star_family_object.plot_radius_mass_curve()
+
+    # Show the derivative of the mass with respect to rho_center curve
+    star_family_object.plot_dm_drho_center_curve()
 
     # Show the k2 curve
     star_family_object.plot_k2_curve()

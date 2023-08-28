@@ -20,8 +20,8 @@ class EOS:
         plt.plot(p_space, self.rho(p_space), linewidth=1)
         plt.plot(self.p(self.rho(p_space)), self.rho(p_space), linewidth=1)
         plt.title(f"{self.__class__.__name__} curve")
-        plt.xlabel('$p[m^{-2}]$')
-        plt.ylabel('$\\rho[m^{-2}]$')
+        plt.xlabel('$p ~ [m^{-2}]$')
+        plt.ylabel('$\\rho ~ [m^{-2}]$')
         plt.show()
 
 

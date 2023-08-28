@@ -158,12 +158,12 @@ class Star:
 
         # Show a simple plot of the solution
         plt.figure()
-        plt.plot(self.r_ode_solution / 10**3, self.p_ode_solution * 10**8, linewidth=1, label="pressure [10^-8 m^-2]")
-        plt.plot(self.r_ode_solution / 10**3, self.m_ode_solution / self.SOLAR_MASS, linewidth=1, label="mass function [solar mass]")
-        plt.plot(self.r_ode_solution / 10**3, self.nu_ode_solution, linewidth=1, label="metric function [dimensionless]")
-        plt.plot(self.r_ode_solution / 10**3, self.rho_ode_solution * 10**8, linewidth=1, label="density [10^-8 m^-2]")
+        plt.plot(self.r_ode_solution / 10**3, self.p_ode_solution * 10**8, linewidth=1, label="$p ~ [10^{-8} m^{-2}]$")
+        plt.plot(self.r_ode_solution / 10**3, self.m_ode_solution / self.SOLAR_MASS, linewidth=1, label="$m ~ [M_{\\odot}]$")
+        plt.plot(self.r_ode_solution / 10**3, self.nu_ode_solution, linewidth=1, label="$\\nu ~ [dimensionless]$")
+        plt.plot(self.r_ode_solution / 10**3, self.rho_ode_solution * 10**8, linewidth=1, label="$\\rho ~ [10^{-8} m^{-2}]$")
         plt.title("TOV solution for the star")
-        plt.xlabel("r [km]")
+        plt.xlabel("$r ~ [km]$")
         plt.legend()
         plt.show()
 

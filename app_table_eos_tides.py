@@ -5,7 +5,7 @@ from perfect_fluid_star_family_tides import DeformedStarFamily
 from eos_library import TableEOS
 
 
-# Open the .dat file with the expected radius-mass curve (units in solar mass and km)
+# Open the .dat file with the expected mass-radius curve (units in solar mass and km)
 expected_mass, expected_radius = dat_to_array(
     fname='data/MIR-GM1-HT-Local.dat',
     usecols=(0, 2))
@@ -31,10 +31,10 @@ star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
 # Solve the TOV equation, and the tidal equation
 star_family_object.solve_tidal(max_step=100.0)
 
-# Plot the calculated radius-mass curve
-star_family_object.plot_radius_mass_curve(show_plot=False)
+# Plot the calculated mass-radius curve
+star_family_object.plot_mass_radius_curve(show_plot=False)
 
-# Add the expected radius-mass curve to the plot, enable legend, and show the plot
+# Add the expected mass-radius curve to the plot, enable legend, and show the plot
 plt.plot(expected_radius, expected_mass, linewidth=1, label="Expected curve")
 plt.legend()
 plt.show()

@@ -69,17 +69,17 @@ class StarFamily:
         else:
             print("Maximum stable rho_center not reached")
 
-    def plot_radius_mass_curve(self, show_plot=True):
-        """Method that plots the radius-mass curve of the star family
+    def plot_mass_radius_curve(self, show_plot=True):
+        """Method that plots the mass-radius curve of the star family
 
         Args:
             show_plot (bool, optional): Flag to enable the command to show the plot at the end. Defaults to True
         """
 
-        # Create a simple plot of the radius-mass curve
+        # Create a simple plot of the mass-radius curve
         plt.figure()
         plt.plot(self.radius_array / 10**3, self.mass_array / self.star_object.SOLAR_MASS, linewidth=1, label="Calculated curve", marker='.')
-        plt.title("Radius-Mass curve for the star family")
+        plt.title("Mass-Radius curve for the star family")
         plt.xlabel("$R ~ [km]$")
         plt.ylabel("$M ~ [M_{\\odot}]$")
 
@@ -127,8 +127,8 @@ if __name__ == "__main__":
     # Solve the TOV equation
     star_family_object.solve_tov(max_step=100.0)
 
-    # Show the radius-mass curve
-    star_family_object.plot_radius_mass_curve()
+    # Show the mass-radius curve
+    star_family_object.plot_mass_radius_curve()
 
     # Show the derivative of the mass with respect to rho_center curve
     star_family_object.plot_dm_drho_center_curve()

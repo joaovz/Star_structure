@@ -31,8 +31,8 @@ star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
 # Solve the TOV equation, and the tidal equation
 star_family_object.solve_tidal(max_step=100.0)
 
-# Show the radius-mass curve
-star_family_object.plot_radius_mass_curve()
+# Show the mass-radius curve
+star_family_object.plot_mass_radius_curve()
 
 # Show the derivative of the mass with respect to rho_center curve
 star_family_object.plot_dm_drho_center_curve()

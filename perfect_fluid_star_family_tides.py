@@ -60,8 +60,8 @@ class DeformedStarFamily(StarFamily):
         plt.figure()
         plt.plot(self.mass_array / self.radius_array, self.k2_array, linewidth=1, label="Calculated curve", marker='.')
         plt.title("Tidal Love number curve for the star family")
-        plt.xlabel("$C = M/R$ [dimensionless]")
-        plt.ylabel("$k_2$ [dimensionless]")
+        plt.xlabel("$C = M/R ~ [dimensionless]$")
+        plt.ylabel("$k_2 ~ [dimensionless]$")
 
         # Show plot if requested
         if show_plot is True:
@@ -92,8 +92,8 @@ if __name__ == "__main__":
     # Solve the tidal equation
     star_family_object.solve_tidal(max_step=100.0)
 
-    # Show the radius-mass curve
-    star_family_object.plot_radius_mass_curve()
+    # Show the mass-radius curve
+    star_family_object.plot_mass_radius_curve()
 
     # Show the derivative of the mass with respect to rho_center curve
     star_family_object.plot_dm_drho_center_curve()

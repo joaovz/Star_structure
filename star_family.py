@@ -98,7 +98,7 @@ class StarFamily:
         plt.figure()
         plt.plot(self.rho_center_space, self.dm_drho_center, linewidth=1, label="Calculated curve", marker='.')
         plt.title("$\\dfrac{\\partial M}{\partial \\rho_{c}}$ curve for the star family")
-        plt.xlabel("$\\rho ~ [m^{-2}]$")
+        plt.xlabel("$\\rho_{c} ~ [m^{-2}]$")
         plt.ylabel("$\\dfrac{\\partial M}{\partial \\rho_{c}} ~ [m^3]$")
         plt.show()
 

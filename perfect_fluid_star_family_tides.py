@@ -16,7 +16,7 @@ class DeformedStarFamily(StarFamily):
 
     def __init__(self, rho_eos, p_center_space, p_surface):
 
-        # Execute parent class' init function
+        # Execute parent class' __init__ method
         super().__init__(rho_eos, p_center_space, p_surface)
 
         # Create a star object with the first p_center value, using instead the DeformedStar class
@@ -24,6 +24,28 @@ class DeformedStarFamily(StarFamily):
 
         # Create the k2 array to store this star family property
         self.k2_array = np.zeros(self.p_center_space.size)
+
+    def _config_plot(self):
+
+        # Execute parent class' _config_plot method
+        super()._config_plot()
+
+        # Add new functions to the plot dictionary
+        self.plot_dict["k2"] = {
+            "name": "Love number",
+            "label": "$k2 ~ [dimensionless]$",
+            "value": self.k2_array,
+        }
+
+        # Add new curves to be plotted on the list
+        extra_curves_list = [
+            ["p_c", "k2"],
+            ["rho_c", "k2"],
+            ["R", "k2"],
+            ["M", "k2"],
+            ["C", "k2"],
+        ]
+        self.curves_list += extra_curves_list
 
     def solve_tidal(self, r_begin=np.finfo(float).eps, r_end=np.inf, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
         """Method that solves the tidal system for each star in the family, finding the tidal Love number k2
@@ -47,38 +69,9 @@ class DeformedStarFamily(StarFamily):
                 self.k2_array[k] = self.star_object.k2
                 bar()
 
-        # Execute the stability criterion check
+        # Execute the stability criterion check and configure the plot
         self._check_stability()
-
-    def plot_k2_curve(self, show_plot=True):
-        """Method that plots the k2 curve of the star family
-
-        Args:
-            show_plot (bool, optional): Flag to enable the command to show the plot at the end. Defaults to True
-        """
-
-        # Create a simple plot of the k2 curve
-        plt.figure()
-        plt.plot(self.mass_array / self.radius_array, self.k2_array, linewidth=1, label="Calculated curve", marker='.')
-        plt.title("Tidal Love number curve for the star family")
-        plt.xlabel("$C = M/R ~ [dimensionless]$")
-        plt.ylabel("$k_2 ~ [dimensionless]$")
-
-        # Show plot if requested
-        if show_plot is True:
-            plt.show()
-
-    def plot_k2_p_center_curve(self):
-        """Method that plots the k2 vs p_center curve of the star family
-        """
-
-        # Create a simple plot of the k2 vs p_center curve
-        plt.figure()
-        plt.plot(self.p_center_space, self.k2_array, linewidth=1, label="Calculated curve", marker='.')
-        plt.title("Tidal Love number curve for the star family")
-        plt.xlabel("$p_{c} ~ [m^{-2}]$")
-        plt.ylabel("$k_2 ~ [dimensionless]$")
-        plt.show()
+        self._config_plot()
 
 
 # This logic is a simple example, only executed when this file is run directly in the command prompt
@@ -105,17 +98,5 @@ if __name__ == "__main__":
     # Solve the tidal equation
     star_family_object.solve_tidal(max_step=100.0)
 
-    # Show the mass-radius curve
-    star_family_object.plot_mass_radius_curve()
-
-    # Show the derivative of the mass with respect to rho_center curve
-    star_family_object.plot_dm_drho_center_curve()
-
-    # Show the center pressure curve
-    star_family_object.plot_p_center_curve()
-
-    # Show the k2 curve
-    star_family_object.plot_k2_curve()
-
-    # Show the k2 vs p_center curve
-    star_family_object.plot_k2_p_center_curve()
+    # Plot all curves
+    star_family_object.plot_all_curves()

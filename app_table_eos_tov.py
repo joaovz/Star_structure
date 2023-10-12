@@ -45,16 +45,13 @@ star_family_object = StarFamily(eos.rho, p_center_space, p_surface)
 # Solve the TOV equation
 star_family_object.solve_tov(max_step=100.0)
 
-# Plot the calculated mass-radius curve
-star_family_object.plot_mass_radius_curve(show_plot=False)
+# Plot all curves
+star_family_object.plot_all_curves()
 
-# Add the expected mass-radius curve to the plot, enable legend, and show the plot
+# Plot the calculated Mass vs Radius curve
+star_family_object.plot_curve(x_axis="R", y_axis="M", show_plot=False)
+
+# Add the expected Mass vs Radius curve to the plot, enable legend, and show the plot
 plt.plot(expected_radius, expected_mass, linewidth=1, label="Expected curve")
 plt.legend()
 plt.show()
-
-# Show the derivative of the mass with respect to rho_center curve
-star_family_object.plot_dm_drho_center_curve()
-
-# Show the center pressure curve
-star_family_object.plot_p_center_curve()

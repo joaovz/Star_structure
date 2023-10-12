@@ -31,22 +31,13 @@ star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
 # Solve the TOV equation, and the tidal equation
 star_family_object.solve_tidal(max_step=100.0)
 
-# Show the mass-radius curve
-star_family_object.plot_mass_radius_curve()
+# Plot all curves
+star_family_object.plot_all_curves()
 
-# Show the derivative of the mass with respect to rho_center curve
-star_family_object.plot_dm_drho_center_curve()
+# Plot the calculated k2 vs C curve
+star_family_object.plot_curve(x_axis="C", y_axis="k2", show_plot=False)
 
-# Show the center pressure curve
-star_family_object.plot_p_center_curve()
-
-# Show the k2 curve
-star_family_object.plot_k2_curve(show_plot=False)
-
-# Add the expected k2-C curve to the plot, enable legend, and show the plot
+# Add the expected k2 vs C curve to the plot, enable legend, and show the plot
 plt.plot(expected_C, expected_k2, linewidth=1, label="Expected curve", marker='.')
 plt.legend()
 plt.show()
-
-# Show the k2 vs p_center curve
-star_family_object.plot_k2_p_center_curve()

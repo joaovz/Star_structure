@@ -49,6 +49,58 @@ class StarFamily:
         else:
             print("Maximum stable rho_center not reached")
 
+    def _config_plot(self):
+        """Method that configures the plotting
+        """
+
+        # Create a dictionary with all the functions used in plotting, with each name and label description
+        self.plot_dict = {
+            "p_c": {
+                "name": "Central pressure",
+                "label": "$p_{c} ~ [m^{-2}]$",
+                "value": self.p_center_space,
+            },
+            "rho_c": {
+                "name": "Central density",
+                "label": "$\\rho_{c} ~ [m^{-2}]$",
+                "value": self.rho_center_space,
+            },
+            "R": {
+                "name": "Radius",
+                "label": "$R ~ [km]$",
+                "value": self.radius_array / 10**3,
+            },
+            "M": {
+                "name": "Mass",
+                "label": "$M ~ [M_{\\odot}]$",
+                "value": self.mass_array / self.star_object.SOLAR_MASS,
+            },
+            "C": {
+                "name": "Compactness",
+                "label": "$C = M/R ~ [dimensionless]$",
+                "value": self.mass_array / self.radius_array,
+            },
+            "dM_drho_c": {
+                "name": "$\\dfrac{\\partial M}{\partial \\rho_{c}}$",
+                "label": "$\\dfrac{\\partial M}{\partial \\rho_{c}} ~ [m^3]$",
+                "value": self.dm_drho_center,
+            },
+        }
+
+        # Create a list with all the curves to be plotted
+        self.curves_list = [
+            ['p_c', 'R'],
+            ['p_c', 'M'],
+            ['p_c', 'C'],
+            ['rho_c', 'R'],
+            ['rho_c', 'M'],
+            ['rho_c', 'C'],
+            ['rho_c', 'dM_drho_c'],
+            ['R', 'M'],
+            ['C', 'R'],
+            ['C', 'M'],
+        ]
+
     def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
         """Method that solves the TOV system, finding the radius and mass of each star in the family
 
@@ -69,50 +121,36 @@ class StarFamily:
                 self.mass_array[k] = self.star_object.star_mass
                 bar()
 
-        # Execute the stability criterion check
+        # Execute the stability criterion check and configure the plot
         self._check_stability()
+        self._config_plot()
 
-    def plot_mass_radius_curve(self, show_plot=True):
-        """Method that plots the mass-radius curve of the star family
+    def plot_curve(self, x_axis="R", y_axis="M", show_plot=True):
+        """Method that plots some curve of the star family
 
         Args:
+            x_axis (str, optional): Key of self.plot_dict to indicate the x_axis used. Defaults to "R"
+            y_axis (str, optional): Key of self.plot_dict to indicate the y_axis used. Defaults to "M"
             show_plot (bool, optional): Flag to enable the command to show the plot at the end. Defaults to True
         """
 
-        # Create a simple plot of the mass-radius curve
+        # Create a simple plot
         plt.figure()
-        plt.plot(self.radius_array / 10**3, self.mass_array / self.star_object.SOLAR_MASS, linewidth=1, label="Calculated curve", marker='.')
-        plt.title("Mass-Radius curve for the star family")
-        plt.xlabel("$R ~ [km]$")
-        plt.ylabel("$M ~ [M_{\\odot}]$")
+        plt.plot(self.plot_dict[x_axis]['value'], self.plot_dict[y_axis]['value'], linewidth=1, label="Calculated curve", marker='.')
+        plt.title(f"{self.plot_dict[y_axis]['name']} vs {self.plot_dict[x_axis]['name']} curve of the star family")
+        plt.xlabel(self.plot_dict[x_axis]['label'])
+        plt.ylabel(self.plot_dict[y_axis]['label'])
 
         # Show plot if requested
         if show_plot is True:
             plt.show()
 
-    def plot_dm_drho_center_curve(self):
-        """Method that plots the derivative of the mass with respect to rho_center curve for the star family
+    def plot_all_curves(self):
+        """Plot all curves specified by the self.curves_list
         """
 
-        # Create a simple plot of the derivative of the mass with respect to rho_center
-        plt.figure()
-        plt.plot(self.rho_center_space, self.dm_drho_center, linewidth=1, label="Calculated curve", marker='.')
-        plt.title("$\\dfrac{\\partial M}{\partial \\rho_{c}}$ curve for the star family")
-        plt.xlabel("$\\rho_{c} ~ [m^{-2}]$")
-        plt.ylabel("$\\dfrac{\\partial M}{\partial \\rho_{c}} ~ [m^3]$")
-        plt.show()
-
-    def plot_p_center_curve(self):
-        """Method that plots the ceter pressure curve for the star family
-        """
-
-        # Create a simple plot of the center pressure curve
-        plt.figure()
-        plt.plot(self.radius_array / 10**3, self.p_center_space, linewidth=1, label="Calculated curve", marker='.')
-        plt.title("Center pressure curve for the star family")
-        plt.xlabel("$R ~ [km]$")
-        plt.ylabel("$p_{c} ~ [m^{-2}]$")
-        plt.show()
+        for axis in self.curves_list:
+            self.plot_curve(axis[0], axis[1])
 
 
 # This logic is a simple example, only executed when this file is run directly in the command prompt
@@ -139,11 +177,5 @@ if __name__ == "__main__":
     # Solve the TOV equation
     star_family_object.solve_tov(max_step=100.0)
 
-    # Show the mass-radius curve
-    star_family_object.plot_mass_radius_curve()
-
-    # Show the derivative of the mass with respect to rho_center curve
-    star_family_object.plot_dm_drho_center_curve()
-
-    # Show the center pressure curve
-    star_family_object.plot_p_center_curve()
+    # Plot all curves
+    star_family_object.plot_all_curves()

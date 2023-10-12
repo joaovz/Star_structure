@@ -13,7 +13,7 @@ class DeformedStar(Star):
 
     def __init__(self, rho_eos, p_center, p_surface):
 
-        # Execute parent class' init function
+        # Execute parent class' __init__ method
         super().__init__(rho_eos, p_center, p_surface)
 
         # Set the integration constants: g and h at r=0, at the center

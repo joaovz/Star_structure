@@ -102,6 +102,18 @@ class StarFamily:
         plt.ylabel("$\\dfrac{\\partial M}{\partial \\rho_{c}} ~ [m^3]$")
         plt.show()
 
+    def plot_p_center_curve(self):
+        """Method that plots the ceter pressure curve for the star family
+        """
+
+        # Create a simple plot of the center pressure curve
+        plt.figure()
+        plt.plot(self.radius_array / 10**3, self.p_center_space, linewidth=1, label="Calculated curve", marker='.')
+        plt.title("Center pressure curve for the star family")
+        plt.xlabel("$R ~ [km]$")
+        plt.ylabel("$p_{c} ~ [m^{-2}]$")
+        plt.show()
+
 
 # This logic is a simple example, only executed when this file is run directly in the command prompt
 if __name__ == "__main__":
@@ -132,3 +144,6 @@ if __name__ == "__main__":
 
     # Show the derivative of the mass with respect to rho_center curve
     star_family_object.plot_dm_drho_center_curve()
+
+    # Show the center pressure curve
+    star_family_object.plot_p_center_curve()

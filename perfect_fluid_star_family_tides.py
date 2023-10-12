@@ -98,5 +98,8 @@ if __name__ == "__main__":
     # Show the derivative of the mass with respect to rho_center curve
     star_family_object.plot_dm_drho_center_curve()
 
+    # Show the center pressure curve
+    star_family_object.plot_p_center_curve()
+
     # Show the k2 curve
     star_family_object.plot_k2_curve()

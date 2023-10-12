@@ -42,5 +42,8 @@ plt.show()
 # Show the derivative of the mass with respect to rho_center curve
 star_family_object.plot_dm_drho_center_curve()
 
+# Show the center pressure curve
+star_family_object.plot_p_center_curve()
+
 # Plot the calculated k2 curve
 star_family_object.plot_k2_curve()

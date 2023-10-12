@@ -44,3 +44,6 @@ star_family_object.plot_p_center_curve()
 
 # Show the k2 curve
 star_family_object.plot_k2_curve()
+
+# Show the k2 vs p_center curve
+star_family_object.plot_k2_p_center_curve()

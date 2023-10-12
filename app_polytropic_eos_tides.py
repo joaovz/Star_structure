@@ -47,3 +47,6 @@ star_family_object.plot_k2_curve(show_plot=False)
 plt.plot(expected_C, expected_k2, linewidth=1, label="Expected curve", marker='.')
 plt.legend()
 plt.show()
+
+# Show the k2 vs p_center curve
+star_family_object.plot_k2_p_center_curve()

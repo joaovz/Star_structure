@@ -67,6 +67,18 @@ class DeformedStarFamily(StarFamily):
         if show_plot is True:
             plt.show()
 
+    def plot_k2_p_center_curve(self):
+        """Method that plots the k2 vs p_center curve of the star family
+        """
+
+        # Create a simple plot of the k2 vs p_center curve
+        plt.figure()
+        plt.plot(self.p_center_space, self.k2_array, linewidth=1, label="Calculated curve", marker='.')
+        plt.title("Tidal Love number curve for the star family")
+        plt.xlabel("$p_{c} ~ [m^{-2}]$")
+        plt.ylabel("$k_2 ~ [dimensionless]$")
+        plt.show()
+
 
 # This logic is a simple example, only executed when this file is run directly in the command prompt
 if __name__ == "__main__":
@@ -103,3 +115,6 @@ if __name__ == "__main__":
 
     # Show the k2 curve
     star_family_object.plot_k2_curve()
+
+    # Show the k2 vs p_center curve
+    star_family_object.plot_k2_p_center_curve()

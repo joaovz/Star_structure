@@ -29,31 +29,11 @@ class StarFamily:
         # Calculate the rho_center_space
         self.rho_center_space = self.star_object.rho_eos(self.p_center_space)
 
-    def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
-        """Method that solves the TOV system, finding the radius and mass of each star in the family
-
-        Args:
-            r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to np.finfo(float).eps
-            r_end (float, optional): Radial coordinate r at the end of the IVP solve. Defaults to np.inf
-            method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
-            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
-            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-9
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
-        """
-
         # Create the radius and mass arrays to store these star family properties
         self.radius_array = np.zeros(self.p_center_space.size)
         self.mass_array = np.zeros(self.p_center_space.size)
 
-        # Solve the TOV equation for each star in the family
-        with alive_bar(self.p_center_space.size) as bar:
-            for k in range(self.p_center_space.size):
-                self.star_object.solve_tov(self.p_center_space[k], r_begin, r_end, method, max_step, atol, rtol)
-                self.radius_array[k] = self.star_object.star_radius
-                self.mass_array[k] = self.star_object.star_mass
-                bar()
-
-    def check_stability(self):
+    def _check_stability(self):
         """Method that checks the stability criterion for the star family
         """
 
@@ -68,6 +48,29 @@ class StarFamily:
             print(f"Maximum stable rho_center = {dm_drho_center_roots} [m^-2]")
         else:
             print("Maximum stable rho_center not reached")
+
+    def solve_tov(self, r_begin=np.finfo(float).eps, r_end=np.inf, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
+        """Method that solves the TOV system, finding the radius and mass of each star in the family
+
+        Args:
+            r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to np.finfo(float).eps
+            r_end (float, optional): Radial coordinate r at the end of the IVP solve. Defaults to np.inf
+            method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
+            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
+            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-9
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
+        """
+
+        # Solve the TOV equation for each star in the family
+        with alive_bar(self.p_center_space.size) as bar:
+            for k in range(self.p_center_space.size):
+                self.star_object.solve_tov(self.p_center_space[k], r_begin, r_end, method, max_step, atol, rtol)
+                self.radius_array[k] = self.star_object.star_radius
+                self.mass_array[k] = self.star_object.star_mass
+                bar()
+
+        # Execute the stability criterion check
+        self._check_stability()
 
     def plot_mass_radius_curve(self, show_plot=True):
         """Method that plots the mass-radius curve of the star family
@@ -90,9 +93,6 @@ class StarFamily:
     def plot_dm_drho_center_curve(self):
         """Method that plots the derivative of the mass with respect to rho_center curve for the star family
         """
-
-        # Execute the stability criterion check
-        self.check_stability()
 
         # Create a simple plot of the derivative of the mass with respect to rho_center
         plt.figure()

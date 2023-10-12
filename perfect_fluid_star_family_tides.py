@@ -22,6 +22,9 @@ class DeformedStarFamily(StarFamily):
         # Create a star object with the first p_center value, using instead the DeformedStar class
         self.star_object = DeformedStar(rho_eos, self.p_center_space[0], p_surface)
 
+        # Create the k2 array to store this star family property
+        self.k2_array = np.zeros(self.p_center_space.size)
+
     def solve_tidal(self, r_begin=np.finfo(float).eps, r_end=np.inf, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
         """Method that solves the tidal system for each star in the family, finding the tidal Love number k2
 
@@ -34,11 +37,6 @@ class DeformedStarFamily(StarFamily):
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
         """
 
-        # Create the radius, mass, and k2 arrays to store these star family properties
-        self.radius_array = np.zeros(self.p_center_space.size)
-        self.mass_array = np.zeros(self.p_center_space.size)
-        self.k2_array = np.zeros(self.p_center_space.size)
-
         # Solve the TOV equation and the tidal equation for each star in the family
         with alive_bar(self.p_center_space.size) as bar:
             for k in range(self.p_center_space.size):
@@ -48,6 +46,9 @@ class DeformedStarFamily(StarFamily):
                 self.mass_array[k] = self.star_object.star_mass
                 self.k2_array[k] = self.star_object.k2
                 bar()
+
+        # Execute the stability criterion check
+        self._check_stability()
 
     def plot_k2_curve(self, show_plot=True):
         """Method that plots the k2 curve of the star family

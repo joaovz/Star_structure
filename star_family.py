@@ -157,7 +157,7 @@ class StarFamily:
         plt.savefig(f"{figure_path}/{y_axis_name}_vs_{x_axis_name}_curve.png")
 
     def plot_all_curves(self, figures_path="figures/star_family"):
-        """Plot all curves specified by the self.curves_list
+        """Method that plots all curves specified by the self.curves_list
 
         Args:
             figures_path (str, optional): Path used to save the figures. Defaults to "figures/star_family"

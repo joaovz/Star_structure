@@ -5,6 +5,9 @@ from star_family import StarFamily
 from eos_library import QuarkEOS
 
 
+# Set the figures path
+figures_path = "figures/app_quark_eos"
+
 # Create the EOS object (values chosen to build a strange star)
 B = 130 * MeV_fm3_to_SI * PRESSURE_SI_TO_GU
 a2 = (100 * MeV_fm3_to_SI * ENERGY_DENSITY_SI_TO_GU)**(1 / 2)
@@ -34,7 +37,7 @@ star_object = Star(eos.rho, p_center, p_surface)
 star_object.solve_tov(max_step=10.0)
 
 # Plot the star structure curves
-star_object.plot_star_structure_curves()
+star_object.plot_star_structure_curves(figures_path)
 
 # Star Family
 
@@ -48,4 +51,4 @@ star_family_object = StarFamily(eos.rho, p_center_space, p_surface)
 star_family_object.solve_tov(max_step=10.0)
 
 # Plot all curves
-star_family_object.plot_all_curves()
+star_family_object.plot_all_curves(figures_path)

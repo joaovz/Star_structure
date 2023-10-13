@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
@@ -8,11 +9,12 @@ class EOS:
     """Base class for the EOS classes
     """
 
-    def plot(self, p_space):
+    def plot(self, p_space, figure_path="figures/eos_library"):
         """Method that creates a graph of the EOS function given by rho(p)
 
         Args:
             p_space (array of float): Array that defines the plot interval [m^-2]
+            figure_path (str, optional): Path used to save the figure. Defaults to "figures/eos_library"
         """
 
         # Plot the EOS curve given by rho(p) and p(rho)
@@ -22,7 +24,12 @@ class EOS:
         plt.title(f"{self.__class__.__name__} curve")
         plt.xlabel('$p ~ [m^{-2}]$')
         plt.ylabel('$\\rho ~ [m^{-2}]$')
-        plt.show()
+
+        # Create the folder if necessary and save the figure
+        if not os.path.exists(figure_path):
+            os.makedirs(figure_path)
+        class_name = self.__class__.__name__.replace('EOS', '_eos').lower()
+        plt.savefig(f"{figure_path}/{class_name}_curve.png")
 
 
 class PolytropicEOS(EOS):
@@ -236,3 +243,6 @@ if __name__ == "__main__":
     # Create a graph of the EOS function
     p_space = np.linspace(0.0, p_center_calc, 1000)
     quark_eos.plot(p_space)
+
+    # Show all plots in the end
+    plt.show()

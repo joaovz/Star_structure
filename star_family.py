@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
@@ -81,7 +82,7 @@ class StarFamily:
                 "value": self.mass_array / self.radius_array,
             },
             "dM_drho_c": {
-                "name": "$\\dfrac{\\partial M}{\partial \\rho_{c}}$",
+                "name": "Mass derivative",
                 "label": "$\\dfrac{\\partial M}{\partial \\rho_{c}} ~ [m^3]$",
                 "value": self.dm_drho_center,
             },
@@ -125,13 +126,13 @@ class StarFamily:
         self._check_stability()
         self._config_plot()
 
-    def plot_curve(self, x_axis="R", y_axis="M", show_plot=True):
+    def plot_curve(self, x_axis="R", y_axis="M", figure_path="figures/star_family"):
         """Method that plots some curve of the star family
 
         Args:
             x_axis (str, optional): Key of self.plot_dict to indicate the x_axis used. Defaults to "R"
             y_axis (str, optional): Key of self.plot_dict to indicate the y_axis used. Defaults to "M"
-            show_plot (bool, optional): Flag to enable the command to show the plot at the end. Defaults to True
+            figure_path (str, optional): Path used to save the figure. Defaults to "figures/star_family"
         """
 
         # Create a simple plot
@@ -141,16 +142,23 @@ class StarFamily:
         plt.xlabel(self.plot_dict[x_axis]['label'])
         plt.ylabel(self.plot_dict[y_axis]['label'])
 
-        # Show plot if requested
-        if show_plot is True:
-            plt.show()
+        # Create the folder if necessary and save the figure
+        if not os.path.exists(figure_path):
+            os.makedirs(figure_path)
+        x_axis_name = self.plot_dict[x_axis]['name'].lower().replace(' ', '_')
+        y_axis_name = self.plot_dict[y_axis]['name'].lower().replace(' ', '_')
+        plt.savefig(f"{figure_path}/{y_axis_name}_vs_{x_axis_name}_curve.png")
 
-    def plot_all_curves(self):
+    def plot_all_curves(self, figures_path="figures/star_family"):
         """Plot all curves specified by the self.curves_list
+
+        Args:
+            figures_path (str, optional): Path used to save the figures. Defaults to "figures/star_family"
         """
 
         for axis in self.curves_list:
-            self.plot_curve(axis[0], axis[1])
+            self.plot_curve(axis[0], axis[1], figures_path)
+        plt.show()
 
 
 # This logic is a simple example, only executed when this file is run directly in the command prompt

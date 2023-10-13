@@ -5,6 +5,9 @@ from perfect_fluid_star_family_tides import DeformedStarFamily
 from eos_library import PolytropicEOS
 
 
+# Set the figures path
+figures_path = "figures/app_polytropic_eos"
+
 # Open the .dat file with the k2 vs C curve for the polytropic n=1 EOS
 expected_C, expected_k2 = dat_to_array(
     fname='data/k2_vs_c_polytropic_n_1.dat',
@@ -31,13 +34,12 @@ star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
 # Solve the TOV equation, and the tidal equation
 star_family_object.solve_tidal(max_step=100.0)
 
-# Plot all curves
-star_family_object.plot_all_curves()
-
 # Plot the calculated k2 vs C curve
-star_family_object.plot_curve(x_axis="C", y_axis="k2", show_plot=False)
+star_family_object.plot_curve(x_axis="C", y_axis="k2", figure_path=figures_path)
 
 # Add the expected k2 vs C curve to the plot, enable legend, and show the plot
 plt.plot(expected_C, expected_k2, linewidth=1, label="Expected curve", marker='.')
 plt.legend()
-plt.show()
+
+# Plot all curves
+star_family_object.plot_all_curves(figures_path)

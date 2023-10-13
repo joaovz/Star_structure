@@ -4,6 +4,9 @@ from perfect_fluid_star_family_tides import DeformedStarFamily
 from eos_library import TableEOS
 
 
+# Set the figures path
+figures_path = "figures/app_sly4_eos"
+
 # Create the EOS object
 eos = TableEOS(fname='data/SLy4.dat')
 
@@ -26,4 +29,4 @@ star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
 star_family_object.solve_tidal(max_step=100.0)
 
 # Plot all curves
-star_family_object.plot_all_curves()
+star_family_object.plot_all_curves(figures_path)

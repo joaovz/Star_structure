@@ -5,6 +5,9 @@ from star_family import StarFamily
 from eos_library import PolytropicEOS
 
 
+# Set the figures path
+figures_path = "figures/app_polytropic_eos"
+
 # Create the EOS object
 eos = PolytropicEOS(k=1.0e8, n=1)
 
@@ -26,7 +29,7 @@ star_object = Star(eos.rho, p_center, p_surface)
 star_object.solve_tov(max_step=100.0)
 
 # Plot the star structure curves
-star_object.plot_star_structure_curves()
+star_object.plot_star_structure_curves(figures_path)
 
 # Star Family
 
@@ -40,4 +43,4 @@ star_family_object = StarFamily(eos.rho, p_center_space, p_surface)
 star_family_object.solve_tov(max_step=100.0)
 
 # Plot all curves
-star_family_object.plot_all_curves()
+star_family_object.plot_all_curves(figures_path)

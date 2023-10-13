@@ -4,6 +4,9 @@ from perfect_fluid_star_family_tides import DeformedStarFamily
 from eos_library import QuarkEOS
 
 
+# Set the figures path
+figures_path = "figures/app_quark_eos"
+
 # Create the EOS object (values chosen to build a strange star)
 B = 130 * MeV_fm3_to_SI * PRESSURE_SI_TO_GU
 a2 = (100 * MeV_fm3_to_SI * ENERGY_DENSITY_SI_TO_GU)**(1 / 2)
@@ -34,4 +37,4 @@ star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
 star_family_object.solve_tidal(max_step=10.0)
 
 # Plot all curves
-star_family_object.plot_all_curves()
+star_family_object.plot_all_curves(figures_path)

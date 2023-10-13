@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
@@ -148,8 +149,11 @@ class Star:
         self.nu_spline_function = CubicSpline(self.r_ode_solution, self.nu_ode_solution, extrapolate=False)
         self.rho_spline_function = CubicSpline(self.r_ode_solution, self.rho_ode_solution, extrapolate=False)
 
-    def plot_star_structure_curves(self):
+    def plot_star_structure_curves(self, figure_path="figures/star_structure"):
         """Method that prints the star radius and mass and plots the solution found
+
+        Args:
+            figure_path (str, optional): Path used to save the figure. Defaults to "figures/star_structure"
         """
 
         # Print the star radius and mass
@@ -165,6 +169,13 @@ class Star:
         plt.title("TOV solution for the star")
         plt.xlabel("$r ~ [km]$")
         plt.legend()
+
+        # Create the folder if necessary and save the figure
+        if not os.path.exists(figure_path):
+            os.makedirs(figure_path)
+        plt.savefig(f"{figure_path}/star_structure_graph.png")
+
+        # Show graph
         plt.show()
 
 

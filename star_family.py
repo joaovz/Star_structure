@@ -126,13 +126,15 @@ class StarFamily:
         self._check_stability()
         self._config_plot()
 
-    def plot_curve(self, x_axis="R", y_axis="M", figure_path="figures/star_family"):
+    def plot_curve(self, x_axis="R", y_axis="M", figure_path="figures/star_family", expected_x=None, expected_y=None):
         """Method that plots some curve of the star family
 
         Args:
             x_axis (str, optional): Key of self.plot_dict to indicate the x_axis used. Defaults to "R"
             y_axis (str, optional): Key of self.plot_dict to indicate the y_axis used. Defaults to "M"
             figure_path (str, optional): Path used to save the figure. Defaults to "figures/star_family"
+            expected_x (array of float, optional): Array with the x values of the expected curve. Defaults to None
+            expected_y (array of float, optional): Array with the y values of the expected curve. Defaults to None
         """
 
         # Create a simple plot
@@ -141,6 +143,11 @@ class StarFamily:
         plt.title(f"{self.plot_dict[y_axis]['name']} vs {self.plot_dict[x_axis]['name']} curve of the star family")
         plt.xlabel(self.plot_dict[x_axis]['label'])
         plt.ylabel(self.plot_dict[y_axis]['label'])
+
+        # If expected curve is received, add a second comparison curve, and enable legend
+        if (expected_x is not None) and (expected_y is not None):
+            plt.plot(expected_x, expected_y, linewidth=1, label="Expected curve")
+            plt.legend()
 
         # Create the folder if necessary and save the figure
         if not os.path.exists(figure_path):

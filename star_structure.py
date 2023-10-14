@@ -26,7 +26,10 @@ class Star:
         # Set the density function as the given EOS (rho(p))
         self.rho_eos = rho_eos
 
-        # Set the integration constants: pressure, mass, metric function, and density at r=0, at the center
+        # Set the pressure at r=0, at the center
+        self.p_center = p_center
+
+        # Initialize the integration constants: pressure, mass, metric function, and density at r=0, at the center
         self.p_0 = p_center                     # Center pressure [m^-2]
         self.m_0 = 0.0                          # Center mass [m]
         self.nu_0 = 0.0                         # Center metric function (g_tt = -e^nu) [dimensionless]
@@ -114,7 +117,16 @@ class Star:
 
         # Transfer the p_center parameter if it was passed as an argument
         if p_center is not None:
-            self.p_0 = p_center
+            self.p_center = p_center
+
+        # Calculate the initial values, given by the solution near r=0
+        p_c = self.p_center
+        rho_c = self.rho_eos(self.p_center)
+        r = r_begin
+        delta_p = self.p_center * atol
+        drho_dp_c = (self.rho_eos(self.p_center + delta_p) - self.rho_eos(self.p_center - delta_p)) / (2 * delta_p)
+        self.p_0 = p_c - (2 / 3) * np.pi * (rho_c + p_c) * (rho_c + 3 * p_c) * r**2
+        self.m_0 = (4 / 3) * np.pi * rho_c * r**3 - (8 / 15) * np.pi**2 * drho_dp_c * (rho_c + p_c) * (rho_c + 3 * p_c) * r**5
 
         # Solve the ODE system
         ode_solution = solve_ivp(

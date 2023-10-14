@@ -89,7 +89,7 @@ class DeformedStar(Star):
         self.dnu_dr = self.nu_spline_function.derivative()
         self.drho_dr = self.rho_spline_function.derivative()
 
-        # Calculate the initial values, given by the solution near r = 0
+        # Calculate the initial values, given by the solution near r=0
         l = 2
         self.g_0 = l * r_begin**(l - 1)
         self.h_0 = r_begin**l

@@ -5,20 +5,26 @@ import scipy.constants as constants
 
 # Defining some constants
 
-# Conversion to SI units
-g_cm3_to_SI = 10**3
-dyn_cm2_to_SI = 0.1
-MeV_fm3_to_SI = 10**6 * constants.e * (10**(-15))**(-3)
+# Conversion from CGS to SI
+MASS_DENSITY_CGS_TO_SI = 10**3
+PRESSURE_CGS_TO_SI = 0.1
 
-# Conversion to geometric units
+# Conversion from NU (with E = MeV) to SI
+MeV_to_SI = 10**6 * constants.e
+ENERGY_DENSITY_NU_TO_SI = MeV_to_SI**4 * constants.hbar**(-3) * constants.c**(-3)
+
+# Conversion from SI to GU
 ENERGY_SI_TO_GU = constants.c**(-4) * constants.G
 ENERGY_DENSITY_SI_TO_GU = constants.c**(-4) * constants.G
 PRESSURE_SI_TO_GU = constants.c**(-4) * constants.G
 MASS_DENSITY_SI_TO_GU = constants.c**(-2) * constants.G
 
-# Conversion from CGS to SI
-MASS_DENSITY_CGS_TO_GU = g_cm3_to_SI * MASS_DENSITY_SI_TO_GU
-PRESSURE_CGS_TO_GU = dyn_cm2_to_SI * PRESSURE_SI_TO_GU
+# Conversion from CGS to GU
+MASS_DENSITY_CGS_TO_GU = MASS_DENSITY_CGS_TO_SI * MASS_DENSITY_SI_TO_GU
+PRESSURE_CGS_TO_GU = PRESSURE_CGS_TO_SI * PRESSURE_SI_TO_GU
+
+# Conversion from NU to GU
+ENERGY_DENSITY_NU_TO_GU = ENERGY_DENSITY_NU_TO_SI * ENERGY_DENSITY_SI_TO_GU
 
 
 def dat_to_array(fname='file_name.dat', usecols=(0, 1), unit_conversion=(1.0, 1.0)):

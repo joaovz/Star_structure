@@ -9,8 +9,8 @@ from eos_library import QuarkEOS
 figures_path = "figures/app_quark_eos"
 
 # Create the EOS object (values chosen to build a strange star)
-B = 130 * MeV_fm3_to_SI * PRESSURE_SI_TO_GU
-a2 = (100 * MeV_fm3_to_SI * ENERGY_DENSITY_SI_TO_GU)**(1 / 2)
+B = 130**4 * ENERGY_DENSITY_NU_TO_GU
+a2 = (100**4 * ENERGY_DENSITY_NU_TO_GU)**(1 / 2)
 a4 = 0.6
 eos = QuarkEOS(B, a2, a4)
 
@@ -20,7 +20,7 @@ print(f"a2 = {a2} [m^-1]")
 print(f"a4 = {a4} [dimensionless]")
 
 # Set the pressure at the center and surface of the star
-rho_center = 4.3e-9             # Center density [m^-2]
+rho_center = 1.2e-9             # Center density [m^-2]
 p_center = eos.p(rho_center)    # Center pressure [m^-2]
 p_surface = 0.0                 # Surface pressure [m^-2]
 

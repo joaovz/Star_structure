@@ -225,8 +225,8 @@ if __name__ == "__main__":
     # Quark EOS test
 
     # Create the EOS object (values chosen to build a strange star)
-    B = 130 * MeV_fm3_to_SI * PRESSURE_SI_TO_GU
-    a2 = (100 * MeV_fm3_to_SI * ENERGY_DENSITY_SI_TO_GU)**(1 / 2)
+    B = 130**4 * ENERGY_DENSITY_NU_TO_GU
+    a2 = (100**4 * ENERGY_DENSITY_NU_TO_GU)**(1 / 2)
     a4 = 0.6
     quark_eos = QuarkEOS(B, a2, a4)
 

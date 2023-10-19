@@ -46,15 +46,13 @@ class DeformedStar(Star):
 
         # Derivatives of the functions evaluated at current r
         dp_dr = self.dp_dr(r)
-        dm_dr = self.dm_dr(r)
         dnu_dr = self.dnu_dr(r)
         drho_dr = self.drho_dr(r)
         drho_dp = drho_dr / dp_dr
-        dlambda_dr = 2 * exp_lambda * (dm_dr * r - m) / r**2
 
         # Coefficients of the ODE
         l = 2
-        a0 = (
+        c0 = (
             exp_lambda * (
                 - (l * (l + 1) / r**2)
                 + 4 * np.pi * (rho + p) * drho_dp
@@ -62,10 +60,10 @@ class DeformedStar(Star):
             )
             - (dnu_dr)**2
         )
-        a1 = 2 / r + (dnu_dr + dlambda_dr) / 2
+        c1 = (2 / r) + exp_lambda * ((2 * m / r**2) + 4 * np.pi * r * (p - rho))
 
         # ODE System that describes the tidal deformation of the star
-        dg_dr = -(a1 * g + a0 * h)
+        dg_dr = -(c1 * g + c0 * h)
         dh_dr = g
         return [dg_dr, dh_dr]
 
@@ -85,7 +83,6 @@ class DeformedStar(Star):
 
         # Derivatives of the functions that describe the star
         self.dp_dr = self.p_spline_function.derivative()
-        self.dm_dr = self.m_spline_function.derivative()
         self.dnu_dr = self.nu_spline_function.derivative()
         self.drho_dr = self.rho_spline_function.derivative()
 

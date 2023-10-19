@@ -36,11 +36,6 @@ class DeformedStarFamily(StarFamily):
             "label": "$k2 ~ [dimensionless]$",
             "value": self.k2_array,
         }
-        self.plot_dict["lambda"] = {
-            "name": "Dimensional Love number",
-            "label": "$\lambda ~ [m^{5}]$",
-            "value": (2 / 3) * self.k2_array * self.radius_array**5,
-        }
 
         # Add new curves to be plotted on the list
         extra_curves_list = [
@@ -49,11 +44,6 @@ class DeformedStarFamily(StarFamily):
             ["R", "k2"],
             ["M", "k2"],
             ["C", "k2"],
-            ["p_c", "lambda"],
-            ["rho_c", "lambda"],
-            ["R", "lambda"],
-            ["M", "lambda"],
-            ["C", "lambda"],
         ]
         self.curves_list += extra_curves_list
 

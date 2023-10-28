@@ -77,9 +77,9 @@ class Star:
                 raise Exception(f"The EOS function didn't return a number: p = {p}, rho = {rho}")
 
             # ODE System that describes the interior structure of the star
-            dp_dr = -((rho + p) * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))       # TOV equation
-            dm_dr = 4 * np.pi * r**2 * rho                                              # Rate of change of the mass
-            dnu_dr = -(2 / (rho + p)) * dp_dr                                           # Rate of change of the metric function
+            dnu_dr = (2 * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))       # Rate of change of the metric function
+            dp_dr = -((rho + p) / 2) * dnu_dr                                   # TOV equation
+            dm_dr = 4 * np.pi * r**2 * rho                                      # Rate of change of the mass
 
         return [dp_dr, dm_dr, dnu_dr]
 

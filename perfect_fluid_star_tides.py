@@ -45,8 +45,8 @@ class DeformedStar(Star):
         exp_lambda = (1 - 2 * m / r)**(-1)
 
         # Derivatives of the functions evaluated at current r
+        dnu_dr = (2 * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))
         dp_dr = self.dp_dr(r)
-        dnu_dr = self.dnu_dr(r)
         drho_dr = self.drho_dr(r)
         drho_dp = drho_dr / dp_dr
 
@@ -83,7 +83,6 @@ class DeformedStar(Star):
 
         # Derivatives of the functions that describe the star
         self.dp_dr = self.p_spline_function.derivative()
-        self.dnu_dr = self.nu_spline_function.derivative()
         self.drho_dr = self.rho_spline_function.derivative()
 
         # Calculate the initial values, given by the solution near r=0

@@ -9,6 +9,50 @@ class EOS:
     """Base class for the EOS classes
     """
 
+    def rho(self, p):
+        """Function of the density in terms of the pressure
+
+        Args:
+            p (float): Pressure [m^-2]
+
+        Returns:
+            float: Density [m^-2]
+        """
+        return p
+
+    def p(self, rho):
+        """Function of the pressure in terms of the density
+
+        Args:
+            rho (float): Density [m^-2]
+
+        Returns:
+            float: Pressure [m^-2]
+        """
+        return rho
+
+    def drho_dp(self, p):
+        """Derivative of the density with respect to the pressure
+
+        Args:
+            p (float): Pressure [m^-2]
+
+        Returns:
+            float: drho_dp(p) [dimensionless]
+        """
+        return 1.0
+
+    def dp_drho(self, rho):
+        """Derivative of the pressure with respect to the density
+
+        Args:
+            rho (float): Density [m^-2]
+
+        Returns:
+            float: dp_drho(rho) [dimensionless]
+        """
+        return 1.0
+
     def plot(self, p_space, figure_path="figures/eos_library"):
         """Method that creates a graph of the EOS function given by rho(p)
 
@@ -47,26 +91,16 @@ class PolytropicEOS(EOS):
         self.m = 1.0 + 1.0 / float(n)
 
     def rho(self, p):
-        """Function of the density in terms of the pressure
-
-        Args:
-            p (float): Pressure [m^-2]
-
-        Returns:
-            float: Density [m^-2]
-        """
         return np.abs(p / self.k)**(1 / self.m)
 
     def p(self, rho):
-        """Function of the pressure in terms of the density
-
-        Args:
-            rho (float): Density [m^-2]
-
-        Returns:
-            float: Pressure [m^-2]
-        """
         return self.k * rho**self.m
+
+    def drho_dp(self, p):
+        return (1 / (self.k * self.m)) * np.abs(p / self.k)**((1 / self.m) - 1)
+
+    def dp_drho(self, rho):
+        return self.k * self.m * rho**(self.m - 1)
 
 
 class TableEOS(EOS):
@@ -90,6 +124,10 @@ class TableEOS(EOS):
         self.rho_spline_function = CubicSpline(p, rho, extrapolate=False)
         self.p_spline_function = CubicSpline(rho, p, extrapolate=False)
 
+        # Calculate the derivatives
+        self.drho_dp_spline_function = self.rho_spline_function.derivative()
+        self.dp_drho_spline_function = self.p_spline_function.derivative()
+
         # Save the center and surface density and pressure
         self.rho_center = rho[-1]
         self.p_center = p[-1]
@@ -97,26 +135,16 @@ class TableEOS(EOS):
         self.p_surface = p[0]
 
     def rho(self, p):
-        """Function of the density in terms of the pressure
-
-        Args:
-            p (float): Pressure [m^-2]
-
-        Returns:
-            float: Density [m^-2]
-        """
         return self.rho_spline_function(p)
 
     def p(self, rho):
-        """Function of the pressure in terms of the density
-
-        Args:
-            rho (float): Density [m^-2]
-
-        Returns:
-            float: Pressure [m^-2]
-        """
         return self.p_spline_function(rho)
+
+    def drho_dp(self, p):
+        return self.drho_dp_spline_function(p)
+
+    def dp_drho(self, rho):
+        return self.dp_drho_spline_function(rho)
 
 
 class QuarkEOS(EOS):
@@ -137,14 +165,6 @@ class QuarkEOS(EOS):
         self.a4 = a4
 
     def rho(self, p):
-        """Function of the density in terms of the pressure
-
-        Args:
-            p (float): Pressure [m^-2]
-
-        Returns:
-            float: Density [m^-2]
-        """
 
         B = self.B
         a2 = self.a2
@@ -159,14 +179,6 @@ class QuarkEOS(EOS):
         return rho
 
     def p(self, rho):
-        """Function of the pressure in terms of the density
-
-        Args:
-            rho (float): Density [m^-2]
-
-        Returns:
-            float: Pressure [m^-2]
-        """
 
         B = self.B
         a2 = self.a2
@@ -179,6 +191,30 @@ class QuarkEOS(EOS):
         )
 
         return p
+
+    def drho_dp(self, p):
+
+        B = self.B
+        a2 = self.a2
+        a4 = self.a4
+
+        drho_dp = (
+            3 + 2 * (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p + B))**(-1 / 2)
+        )
+
+        return drho_dp
+
+    def dp_drho(self, rho):
+
+        B = self.B
+        a2 = self.a2
+        a4 = self.a4
+
+        dp_drho = (
+            (1 / 3) - (2 / 3) * (1 + ((16 * np.pi**2 * a4) / a2**2) * (rho - B))**(-1 / 2)
+        )
+
+        return dp_drho
 
 
 # This logic is a simple example, only executed when this file is run directly in the command prompt

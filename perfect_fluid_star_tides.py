@@ -41,7 +41,7 @@ class DeformedStar(Star):
         # Functions evaluated at current r
         p = self.p_spline_function(r)
         m = self.m_spline_function(r)
-        rho = self.rho_spline_function(r)
+        rho = self.rho_eos(p)
         exp_lambda = (1 - 2 * m / r)**(-1)
 
         # Derivatives of the functions evaluated at current r

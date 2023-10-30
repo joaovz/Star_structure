@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from alive_progress import alive_bar
 from star_family import StarFamily
 from perfect_fluid_star_tides import DeformedStar

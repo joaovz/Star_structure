@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from data_handling import *
 from perfect_fluid_star_family_tides import DeformedStarFamily
 from eos_library import PolytropicEOS

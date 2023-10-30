@@ -83,7 +83,7 @@ class StarFamily:
             },
             "dM_drho_c": {
                 "name": "Mass derivative",
-                "label": "$\\dfrac{\\partial M}{\partial \\rho_{c}} ~ [m^3]$",
+                "label": "$\\dfrac{\\partial M}{\\partial \\rho_{c}} ~ [m^3]$",
                 "value": self.dm_drho_center,
             },
         }

@@ -14,17 +14,17 @@ class Star:
     SOLAR_MASS = 1.48e3         # Solar mass [m]
     SOLAR_RADIUS = 6.957e8      # Solar radius [m]
 
-    def __init__(self, rho_eos, p_center, p_surface):
+    def __init__(self, eos, p_center, p_surface):
         """Initialization method
 
         Args:
-            rho_eos (function): Python function in the format rho(p) that describes the EOS of the star
+            eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the star
             p_center (float): Center pressure of the star [m^-2]
             p_surface (float): Surface pressure of the star [m^-2]
         """
 
-        # Set the density function as the given EOS (rho(p))
-        self.rho_eos = rho_eos
+        # Set the EOS object
+        self.eos = eos
 
         # Set the pressure at r=0, at the center
         self.p_center = p_center
@@ -33,7 +33,7 @@ class Star:
         self.p_0 = p_center                     # Center pressure [m^-2]
         self.m_0 = 0.0                          # Center mass [m]
         self.nu_0 = 0.0                         # Center metric function (g_tt = -e^nu) [dimensionless]
-        self.rho_0 = self.rho_eos(self.p_0)     # Center energy density [m^-2]
+        self.rho_0 = self.eos.rho(self.p_0)     # Center energy density [m^-2]
 
         # Set the boundary value for the termination of the ODE integration: pressure at r=R, on the surface
         self.p_surface = p_surface              # Surface pressure [m^-2]
@@ -72,7 +72,7 @@ class Star:
             dnu_dr = 0.0
         else:
             # Calculate rho, check if it is some invalid value, and raise an exception in that case
-            rho = self.rho_eos(p)
+            rho = self.eos.rho(p)
             if np.isnan(rho):
                 raise Exception(f"The EOS function didn't return a number: p = {p}, rho = {rho}")
 
@@ -120,11 +120,10 @@ class Star:
             self.p_center = p_center
 
         # Calculate the initial values, given by the solution near r=0
-        p_c = self.p_center
-        rho_c = self.rho_eos(self.p_center)
         r = r_begin
-        delta_p = self.p_center * atol
-        drho_dp_c = (self.rho_eos(self.p_center + delta_p) - self.rho_eos(self.p_center - delta_p)) / (2 * delta_p)
+        p_c = self.p_center
+        rho_c = self.eos.rho(p_c)
+        drho_dp_c = self.eos.drho_dp(p_c)
         self.p_0 = p_c - (2 / 3) * np.pi * (rho_c + p_c) * (rho_c + 3 * p_c) * r**2
         self.m_0 = (4 / 3) * np.pi * rho_c * r**3 - (8 / 15) * np.pi**2 * drho_dp_c * (rho_c + p_c) * (rho_c + 3 * p_c) * r**5
 
@@ -141,7 +140,7 @@ class Star:
         self.r_ode_solution = ode_solution.t
         self.p_ode_solution = ode_solution.y[0]
         self.m_ode_solution = ode_solution.y[1]
-        self.rho_ode_solution = self.rho_eos(ode_solution.y[0])
+        self.rho_ode_solution = self.eos.rho(ode_solution.y[0])
 
         # Check the ODE solution status, and treat each case
         if ode_solution.status == -1:
@@ -207,7 +206,7 @@ if __name__ == "__main__":
     print(f"p_surface = {p_surface} [m^-2]")
 
     # Define the object
-    star_object = Star(eos.rho, p_center, p_surface)
+    star_object = Star(eos, p_center, p_surface)
 
     # Solve the TOV equation
     star_object.solve_tov(max_step=100.0)

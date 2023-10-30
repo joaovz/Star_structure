@@ -12,11 +12,11 @@ class StarFamily:
     in the family is characterized by a specific value of center pressure (p_center)
     """
 
-    def __init__(self, rho_eos, p_center_space, p_surface):
+    def __init__(self, eos, p_center_space, p_surface):
         """Initialization method
 
         Args:
-            rho_eos (function): Python function in the format rho(p) that describes the EOS of the stars
+            eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the stars
             p_center_space (array of float): Array with the center pressure of each star in the family [m^-2]
             p_surface (float): Surface pressure of the stars [m^-2]
         """
@@ -25,10 +25,10 @@ class StarFamily:
         self.p_center_space = p_center_space
 
         # Create a star object with the first p_center value
-        self.star_object = Star(rho_eos, self.p_center_space[0], p_surface)
+        self.star_object = Star(eos, self.p_center_space[0], p_surface)
 
         # Calculate the rho_center_space
-        self.rho_center_space = self.star_object.rho_eos(self.p_center_space)
+        self.rho_center_space = self.star_object.eos.rho(self.p_center_space)
 
         # Create the radius and mass arrays to store these star family properties
         self.radius_array = np.zeros(self.p_center_space.size)
@@ -187,7 +187,7 @@ if __name__ == "__main__":
     p_center_space = p_center * np.logspace(-5.0, 0.0, 50)
 
     # Define the object
-    star_family_object = StarFamily(eos.rho, p_center_space, p_surface)
+    star_family_object = StarFamily(eos, p_center_space, p_surface)
 
     # Solve the TOV equation
     star_family_object.solve_tov(max_step=100.0)

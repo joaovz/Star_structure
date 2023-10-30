@@ -14,13 +14,13 @@ class DeformedStarFamily(StarFamily):
         Each star in the family is characterized by a specific value of center pressure (p_center)
     """
 
-    def __init__(self, rho_eos, p_center_space, p_surface):
+    def __init__(self, eos, p_center_space, p_surface):
 
         # Execute parent class' __init__ method
-        super().__init__(rho_eos, p_center_space, p_surface)
+        super().__init__(eos, p_center_space, p_surface)
 
         # Create a star object with the first p_center value, using instead the DeformedStar class
-        self.star_object = DeformedStar(rho_eos, self.p_center_space[0], p_surface)
+        self.star_object = DeformedStar(eos, self.p_center_space[0], p_surface)
 
         # Create the k2 array to store this star family property
         self.k2_array = np.zeros(self.p_center_space.size)
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     p_center_space = p_center * np.logspace(-5.0, 0.0, 50)
 
     # Define the object
-    star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
+    star_family_object = DeformedStarFamily(eos, p_center_space, p_surface)
 
     # Solve the tidal equation
     star_family_object.solve_tidal(max_step=100.0)

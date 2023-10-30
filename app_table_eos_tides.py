@@ -29,7 +29,7 @@ print(f"p_surface = {p_surface} [m^-2]")
 p_center_space = p_center * np.logspace(-2.85, 0.0, 50)
 
 # Create the star family object
-star_family_object = DeformedStarFamily(eos.rho, p_center_space, p_surface)
+star_family_object = DeformedStarFamily(eos, p_center_space, p_surface)
 
 # Solve the TOV equation, and the tidal equation
 star_family_object.solve_tidal(max_step=100.0)

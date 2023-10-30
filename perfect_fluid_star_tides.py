@@ -11,10 +11,10 @@ class DeformedStar(Star):
         Star (class): Parent class with all the properties and methods necessary to describe a single star
     """
 
-    def __init__(self, rho_eos, p_center, p_surface):
+    def __init__(self, eos, p_center, p_surface):
 
         # Execute parent class' __init__ method
-        super().__init__(rho_eos, p_center, p_surface)
+        super().__init__(eos, p_center, p_surface)
 
         # Set the integration constants: g and h at r=0, at the center
         self.g_0 = 1e-6
@@ -41,14 +41,12 @@ class DeformedStar(Star):
         # Functions evaluated at current r
         p = self.p_spline_function(r)
         m = self.m_spline_function(r)
-        rho = self.rho_eos(p)
+        rho = self.eos.rho(p)
         exp_lambda = (1 - 2 * m / r)**(-1)
 
         # Derivatives of the functions evaluated at current r
         dnu_dr = (2 * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))
-        dp_dr = self.dp_dr(r)
-        drho_dr = self.drho_dr(r)
-        drho_dp = drho_dr / dp_dr
+        drho_dp = self.eos.drho_dp(p)
 
         # Coefficients of the ODE
         l = 2
@@ -80,10 +78,6 @@ class DeformedStar(Star):
         Raises:
             Exception: Exception in case the IVP fails to solve the equation
         """
-
-        # Derivatives of the functions that describe the star
-        self.dp_dr = self.p_spline_function.derivative()
-        self.drho_dr = self.rho_spline_function.derivative()
 
         # Calculate the initial values, given by the solution near r=0
         l = 2
@@ -140,7 +134,7 @@ if __name__ == "__main__":
     print(f"p_surface = {p_surface} [m^-2]")
 
     # Define the object
-    star_object = DeformedStar(eos.rho, p_center, p_surface)
+    star_object = DeformedStar(eos, p_center, p_surface)
 
     # Solve the TOV equation
     star_object.solve_tov(max_step=100.0)

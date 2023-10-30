@@ -42,13 +42,13 @@ star_object.plot_star_structure_curves(figures_path)
 # Star Family
 
 # Set the p_center space that characterizes the star family
-p_center_space = p_center * np.logspace(-5.0, 0.0, 50)
+p_center_space = p_center * np.logspace(-4.5, 0.0, 50)
 
 # Define the object
 star_family_object = StarFamily(eos, p_center_space, p_surface)
 
 # Solve the TOV equation
-star_family_object.solve_tov(max_step=10.0)
+star_family_object.solve_tov(max_step=25.0)
 
 # Plot all curves
 star_family_object.plot_all_curves(figures_path)

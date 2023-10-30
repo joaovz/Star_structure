@@ -61,7 +61,7 @@ class Star:
         p = y[0]
         m = y[1]
 
-        # Check if p is outside the acceptable range, and raise an exception in that case
+        # Check if p is outside the acceptable range and raise an exception in this case
         if p > self.p_0:
             raise Exception(f"The pressure is outside the acceptable range (p = {p}): p > p_0")
 
@@ -71,7 +71,7 @@ class Star:
             dm_dr = 0.0
             dnu_dr = 0.0
         else:
-            # Calculate rho, check if it is some invalid value, and raise an exception in that case
+            # Calculate rho, check if it is some invalid value, and raise an exception in this case
             rho = self.eos.rho(p)
             if np.isnan(rho):
                 raise Exception(f"The EOS function didn't return a number: p = {p}, rho = {rho}")
@@ -142,7 +142,7 @@ class Star:
         self.m_ode_solution = ode_solution.y[1]
         self.rho_ode_solution = self.eos.rho(ode_solution.y[0])
 
-        # Check the ODE solution status, and treat each case
+        # Check the ODE solution status and treat each case
         if ode_solution.status == -1:
             raise Exception(ode_solution.message)
         elif ode_solution.status != 1:

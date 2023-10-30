@@ -11,7 +11,7 @@ class DeformedStarFamily(StarFamily):
 
     Args:
         StarFamily (class): Parent class with all the properties and methods necessary to describe a family of stars.
-        Each star in the family is characterized by a specific value of center pressure (p_center)
+        Each star in the family is characterized by a specific value of central pressure (p_center)
     """
 
     def __init__(self, eos, p_center_space, p_surface):

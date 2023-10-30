@@ -5,7 +5,7 @@ from perfect_fluid_star_family_tides import DeformedStarFamily
 from eos_library import PolytropicEOS
 
 
-# Set the figures path
+# Set the path of the figures
 figures_path = "figures/app_polytropic_eos"
 
 # Open the .dat file with the k2 vs C curve for the polytropic n=1 EOS
@@ -31,7 +31,7 @@ p_center_space = p_center * np.logspace(-5.0, 0.0, 50)
 # Define the object
 star_family_object = DeformedStarFamily(eos, p_center_space, p_surface)
 
-# Solve the TOV equation, and the tidal equation
+# Solve the TOV equation and the tidal equation
 star_family_object.solve_tidal(max_step=100.0)
 
 # Plot the calculated and expected Love number vs Compactness curves

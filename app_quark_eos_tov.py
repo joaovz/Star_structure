@@ -5,7 +5,7 @@ from star_family import StarFamily
 from eos_library import QuarkEOS
 
 
-# Set the figures path
+# Set the path of the figures
 figures_path = "figures/app_quark_eos"
 
 # Create the EOS object (values chosen to build a strange star)

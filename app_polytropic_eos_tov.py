@@ -5,7 +5,7 @@ from star_family import StarFamily
 from eos_library import PolytropicEOS
 
 
-# Set the figures path
+# Set the path of the figures
 figures_path = "figures/app_polytropic_eos"
 
 # Create the EOS object

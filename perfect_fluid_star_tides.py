@@ -96,7 +96,7 @@ class DeformedStar(Star):
         g_ode_solution = ode_solution.y[0]
         h_ode_solution = ode_solution.y[1]
 
-        # Check the ODE solution status, and treat the exception case
+        # Check the ODE solution status and treat the exception case
         if ode_solution.status == -1:
             raise Exception(ode_solution.message)
 

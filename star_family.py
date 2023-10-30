@@ -9,7 +9,7 @@ from eos_library import PolytropicEOS
 
 class StarFamily:
     """Class with all the properties and methods necessary to describe a family of stars. Each star
-    in the family is characterized by a specific value of center pressure (p_center)
+    in the family is characterized by a specific value of central pressure (p_center)
     """
 
     def __init__(self, eos, p_center_space, p_surface):
@@ -17,7 +17,7 @@ class StarFamily:
 
         Args:
             eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the stars
-            p_center_space (array of float): Array with the center pressure of each star in the family [m^-2]
+            p_center_space (array of float): Array with the central pressure of each star in the family [m^-2]
             p_surface (float): Surface pressure of the stars [m^-2]
         """
 

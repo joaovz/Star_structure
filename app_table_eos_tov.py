@@ -6,10 +6,10 @@ from star_family import StarFamily
 from eos_library import TableEOS
 
 
-# Set the figures path
+# Set the path of the figures
 figures_path = "figures/app_table_eos"
 
-# Open the .dat file with the expected mass-radius curve (units in solar mass and km)
+# Open the .dat file with the expected Mass vs Radius curve (units in solar mass and km)
 expected_mass, expected_radius = dat_to_array(
     fname='data/MIR-GM1-HT-Local.dat',
     usecols=(0, 2))
@@ -51,7 +51,7 @@ star_family_object.solve_tov(max_step=100.0)
 # Plot the calculated Mass vs Radius curve
 star_family_object.plot_curve(x_axis="R", y_axis="M", figure_path=figures_path)
 
-# Add the expected Mass vs Radius curve to the plot, enable legend, and show the plot
+# Add the expected Mass vs Radius curve to the plot and enable legend
 plt.plot(expected_radius, expected_mass, linewidth=1, label="Expected curve")
 plt.legend()
 

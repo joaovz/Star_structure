@@ -46,15 +46,15 @@ class DeformedStarFamily(StarFamily):
         ]
         self.curves_list += extra_curves_list
 
-    def solve_tidal(self, r_begin=np.finfo(float).eps, r_end=np.inf, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
+    def solve_tidal(self, r_begin=1e-12, r_end=np.inf, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
         """Method that solves the tidal system for each star in the family, finding the tidal Love number k2
 
         Args:
-            r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to np.finfo(float).eps
+            r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to 1e-12
             r_end (float, optional): Radial coordinate r at the end of the IVP solve. Defaults to np.inf
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
-            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-9
+            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-21
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
         """
 

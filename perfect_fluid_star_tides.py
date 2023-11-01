@@ -1,4 +1,6 @@
+import os
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from star_structure import Star
 from eos_library import PolytropicEOS
@@ -65,14 +67,14 @@ class DeformedStar(Star):
         dh_dr = g
         return [dg_dr, dh_dr]
 
-    def solve_tidal(self, r_begin=np.finfo(float).eps, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
+    def solve_tidal(self, r_begin=1e-12, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
         """Method that solves the tidal system for the star, finding the tidal Love number k2
 
         Args:
-            r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to np.finfo(float).eps
+            r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to 1e-12
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
-            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-9
+            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-21
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
 
         Raises:
@@ -93,8 +95,9 @@ class DeformedStar(Star):
             max_step=max_step,
             atol=atol,
             rtol=rtol)
-        g_ode_solution = ode_solution.y[0]
-        h_ode_solution = ode_solution.y[1]
+        self.r_tidal_ode_solution = ode_solution.t
+        self.g_tidal_ode_solution = ode_solution.y[0]
+        self.h_tidal_ode_solution = ode_solution.y[1]
 
         # Check the ODE solution status and treat the exception case
         if ode_solution.status == -1:
@@ -102,7 +105,7 @@ class DeformedStar(Star):
 
         # Calculate the tidal Love number k2, that represents the star tidal deformation
         c = self.star_mass / self.star_radius
-        y = self.star_radius * g_ode_solution[-1] / h_ode_solution[-1]
+        y = self.star_radius * self.g_tidal_ode_solution[-1] / self.h_tidal_ode_solution[-1]
         self.k2 = (
             (8 / 5) * c**5 * ((1 - 2 * c)**2) * (2 + 2 * c * (y - 1) - y) / (
                 2 * c * (6 - 3 * y + 3 * c * (5 * y - 8))
@@ -116,6 +119,29 @@ class DeformedStar(Star):
         """
         print(f"Tidal Love number (k2) = {self.k2} [dimensionless]")
         print(f"Compactness (C = M/R) = {self.star_mass / self.star_radius} [dimensionless]")
+
+    def plot_perturbation_curves(self, figure_path="figures/perfect_fluid_star_tides"):
+        """Method that plots the perturbation solution found
+
+        Args:
+            figure_path (str, optional): Path used to save the figure. Defaults to "figures/perfect_fluid_star_tides"
+        """
+
+        # Show a simple plot of the solution
+        plt.figure()
+        plt.plot(self.r_tidal_ode_solution / 10**3, self.g_tidal_ode_solution, linewidth=1, label="$g ~ [m^{-1}]$")
+        plt.plot(self.r_tidal_ode_solution / 10**3, self.h_tidal_ode_solution, linewidth=1, label="$h ~ [dimensionless]$")
+        plt.title("Perturbation solution for the star")
+        plt.xlabel("$r ~ [km]$")
+        plt.legend()
+
+        # Create the folder if necessary and save the figure
+        if not os.path.exists(figure_path):
+            os.makedirs(figure_path)
+        plt.savefig(f"{figure_path}/star_perturbation_graph.png")
+
+        # Show graph
+        plt.show()
 
 
 # This logic is a simple example, only executed when this file is run directly in the command prompt
@@ -147,3 +173,6 @@ if __name__ == "__main__":
 
     # Print the Love number
     star_object.print_k2()
+
+    # Plot the perturbation curves
+    star_object.plot_perturbation_curves()

@@ -53,7 +53,7 @@ class Star:
             array of float: Right hand side of the equation ``dy/dr = f(r, y)`` ([dp_dr, dm_dr, dnu_dr])
 
         Raises:
-            Exception: Exception in case the pressure is outside the acceptable range (p > p_0)
+            Exception: Exception in case the pressure is outside the acceptable range (p > p_center)
             Exception: Exception in case the EOS function didn't return a number
         """
 
@@ -62,8 +62,8 @@ class Star:
         m = y[1]
 
         # Check if p is outside the acceptable range and raise an exception in this case
-        if p > self.p_0:
-            raise Exception(f"The pressure is outside the acceptable range (p = {p}): p > p_0")
+        if p > self.p_center:
+            raise Exception(f"The pressure is outside the acceptable range (p = {p}): p > p_center")
 
         # Set derivatives to zero to saturate functions, as this condition indicates the end of integration
         if p <= 0.0:
@@ -98,16 +98,16 @@ class Star:
         return y[0] - self.p_surface            # Condition of the event: trigger when condition == 0 (p == p_surface)
     _ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
 
-    def solve_tov(self, p_center=None, r_begin=np.finfo(float).eps, r_end=np.inf, method='RK45', max_step=np.inf, atol=1e-9, rtol=1e-6):
+    def solve_tov(self, p_center=None, r_begin=1e-12, r_end=np.inf, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)
 
         Args:
             p_center (float, optional): Center pressure of the star [m^-2]
-            r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to np.finfo(float).eps
+            r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to 1e-12
             r_end (float, optional): Radial coordinate r at the end of the IVP solve. Defaults to np.inf
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
-            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-9
+            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-21
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
 
         Raises:

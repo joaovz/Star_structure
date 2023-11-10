@@ -113,19 +113,34 @@ class Star:
         Raises:
             Exception: Exception in case the IVP fails to solve the equation
             Exception: Exception in case the IVP fails to find the ODE termination event
+            Exception: Exception in case the initial radial coordinate is too large
         """
 
         # Transfer the p_center parameter if it was passed as an argument
         if p_center is not None:
             self.p_center = p_center
 
-        # Calculate the initial values, given by the solution near r=0
-        r = r_begin
+        # Calculate the coefficients of the series solution, used to calculate the initial conditions
         p_c = self.p_center
         rho_c = self.eos.rho(p_c)
         drho_dp_c = self.eos.drho_dp(p_c)
-        self.p_0 = p_c - (2 / 3) * np.pi * (rho_c + p_c) * (rho_c + 3 * p_c) * r**2
-        self.m_0 = (4 / 3) * np.pi * rho_c * r**3 - (8 / 15) * np.pi**2 * drho_dp_c * (rho_c + p_c) * (rho_c + 3 * p_c) * r**5
+        p_2 = - (2 / 3) * np.pi * (rho_c + p_c) * (rho_c + 3 * p_c)
+        rho_2 = p_2 * drho_dp_c
+        m_3 = (4 / 3) * np.pi * rho_c
+        m_5 = (4 / 5) * np.pi * rho_2
+
+        # Calculate the r_begin_max, based on the allowed relative error tolerance
+        r_max_p = (np.abs(p_c / p_2) * rtol)**(1 / 2)
+        r_max_m = (np.abs(m_3 / m_5) * rtol)**(1 / 2)
+        r_max_rho = (np.abs(rho_c / rho_2) * rtol)**(1 / 2)
+        r_begin_max = min(r_max_p, r_max_m, r_max_rho)
+        if r_begin > r_begin_max:
+            raise Exception(f"The initial radial coordinate is too large: (r_begin = {r_begin}) > (r_begin_max = {r_begin_max})")
+
+        # Calculate the initial values, given by the solution near r=0
+        r = r_begin
+        self.p_0 = p_c + p_2 * r**2
+        self.m_0 = m_3 * r**3 + m_5 * r**5
 
         # Solve the ODE system
         ode_solution = solve_ivp(

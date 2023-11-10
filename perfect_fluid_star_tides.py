@@ -18,9 +18,9 @@ class DeformedStar(Star):
         # Execute parent class' __init__ method
         super().__init__(eos, p_center, p_surface)
 
-        # Set the integration constants: g and h at r=0, at the center
-        self.g_0 = 1e-6
-        self.h_0 = 0.0
+        # Set the initial values: g and h at r = r_init
+        self.g_init = 1e-6
+        self.h_init = 0.0
 
         # Initialize deformed star properties: tidal Love number
         self.k2 = 0.0       # Tidal Love number [dimensionless]
@@ -67,11 +67,11 @@ class DeformedStar(Star):
         dh_dr = g
         return [dg_dr, dh_dr]
 
-    def solve_tidal(self, r_begin=1e-12, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
+    def solve_tidal(self, r_init=1e-12, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
         """Method that solves the tidal system for the star, finding the tidal Love number k2
 
         Args:
-            r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to 1e-12
+            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to 1e-12
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
             atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-21
@@ -81,16 +81,16 @@ class DeformedStar(Star):
             Exception: Exception in case the IVP fails to solve the equation
         """
 
-        # Calculate the initial values, given by the solution near r=0
+        # Calculate the initial values, given by the series solution near r = 0
         l = 2
-        self.g_0 = l * r_begin**(l - 1)
-        self.h_0 = r_begin**l
+        self.g_init = l * r_init**(l - 1)
+        self.h_init = r_init**l
 
         # Solve the ODE system
         ode_solution = solve_ivp(
             self._tidal_ode_system,
-            [r_begin, self.star_radius],
-            [self.g_0, self.h_0],
+            [r_init, self.star_radius],
+            [self.g_init, self.h_init],
             method,
             max_step=max_step,
             atol=atol,

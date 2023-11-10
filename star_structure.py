@@ -26,21 +26,20 @@ class Star:
         # Set the EOS object
         self.eos = eos
 
-        # Set the pressure at r=0, at the center
+        # Set the pressure at r = 0, at the center
         self.p_center = p_center
 
-        # Initialize the integration constants: pressure, mass, metric function, and density at r=0, at the center
-        self.p_0 = p_center                     # Center pressure [m^-2]
-        self.m_0 = 0.0                          # Center mass [m]
-        self.nu_0 = 0.0                         # Center metric function (g_tt = -e^nu) [dimensionless]
-        self.rho_0 = self.eos.rho(self.p_0)     # Center energy density [m^-2]
+        # Set the initial values: pressure, mass, metric function, and density at r = r_init
+        self.p_init = p_center          # Initial pressure [m^-2]
+        self.m_init = 0.0               # Initial mass [m]
+        self.nu_init = 0.0              # Initial metric function (g_tt = -e^nu) [dimensionless]
 
-        # Set the boundary value for the termination of the ODE integration: pressure at r=R, on the surface
-        self.p_surface = p_surface              # Surface pressure [m^-2]
+        # Set the boundary value for the termination of the ODE integration: pressure at r = R, on the surface
+        self.p_surface = p_surface      # Surface pressure [m^-2]
 
         # Initialize star properties: radius and total mass
-        self.star_radius = 0.0                  # Star radius [m]
-        self.star_mass = 0.0                    # Star mass [m]
+        self.star_radius = 0.0          # Star radius [m]
+        self.star_mass = 0.0            # Star mass [m]
 
     def _ode_system(self, r, y):
         """Method that implements the TOV ODE system in the form ``dy/dr = f(r, y)``, used by the IVP solver
@@ -98,13 +97,13 @@ class Star:
         return y[0] - self.p_surface            # Condition of the event: trigger when condition == 0 (p == p_surface)
     _ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
 
-    def solve_tov(self, p_center=None, r_begin=1e-12, r_end=np.inf, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
+    def solve_tov(self, p_center=None, r_init=1e-12, r_final=np.inf, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)
 
         Args:
             p_center (float, optional): Center pressure of the star [m^-2]
-            r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to 1e-12
-            r_end (float, optional): Radial coordinate r at the end of the IVP solve. Defaults to np.inf
+            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to 1e-12
+            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to np.inf
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
             atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-21
@@ -129,24 +128,24 @@ class Star:
         m_3 = (4 / 3) * np.pi * rho_c
         m_5 = (4 / 5) * np.pi * rho_2
 
-        # Calculate the r_begin_max, based on the allowed relative error tolerance
+        # Calculate the r_init_max, based on the allowed relative error tolerance
         r_max_p = (np.abs(p_c / p_2) * rtol)**(1 / 2)
         r_max_m = (np.abs(m_3 / m_5) * rtol)**(1 / 2)
         r_max_rho = (np.abs(rho_c / rho_2) * rtol)**(1 / 2)
-        r_begin_max = min(r_max_p, r_max_m, r_max_rho)
-        if r_begin > r_begin_max:
-            raise Exception(f"The initial radial coordinate is too large: (r_begin = {r_begin}) > (r_begin_max = {r_begin_max})")
+        r_init_max = min(r_max_p, r_max_m, r_max_rho)
+        if r_init > r_init_max:
+            raise Exception(f"The initial radial coordinate is too large: (r_init = {r_init}) > (r_init_max = {r_init_max})")
 
-        # Calculate the initial values, given by the solution near r=0
-        r = r_begin
-        self.p_0 = p_c + p_2 * r**2
-        self.m_0 = m_3 * r**3 + m_5 * r**5
+        # Calculate the initial values, given by the series solution near r = 0
+        r = r_init
+        self.p_init = p_c + p_2 * r**2
+        self.m_init = m_3 * r**3 + m_5 * r**5
 
         # Solve the ODE system
         ode_solution = solve_ivp(
             self._ode_system,
-            [r_begin, r_end],
-            [self.p_0, self.m_0, self.nu_0],
+            [r_init, r_final],
+            [self.p_init, self.m_init, self.nu_init],
             method,
             events=[self._ode_termination_event],
             max_step=max_step,

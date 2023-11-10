@@ -46,12 +46,12 @@ class DeformedStarFamily(StarFamily):
         ]
         self.curves_list += extra_curves_list
 
-    def solve_tidal(self, r_begin=1e-12, r_end=np.inf, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
+    def solve_tidal(self, r_init=1e-12, r_final=np.inf, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
         """Method that solves the tidal system for each star in the family, finding the tidal Love number k2
 
         Args:
-            r_begin (float, optional): Radial coordinate r at the beginning of the IVP solve. Defaults to 1e-12
-            r_end (float, optional): Radial coordinate r at the end of the IVP solve. Defaults to np.inf
+            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to 1e-12
+            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to np.inf
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
             atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-21
@@ -61,8 +61,8 @@ class DeformedStarFamily(StarFamily):
         # Solve the TOV equation and the tidal equation for each star in the family
         with alive_bar(self.p_center_space.size) as bar:
             for k in range(self.p_center_space.size):
-                self.star_object.solve_tov(self.p_center_space[k], r_begin, r_end, method, max_step, atol, rtol)
-                self.star_object.solve_tidal(r_begin, method, max_step, atol, rtol)
+                self.star_object.solve_tov(self.p_center_space[k], r_init, r_final, method, max_step, atol, rtol)
+                self.star_object.solve_tidal(r_init, method, max_step, atol, rtol)
                 self.radius_array[k] = self.star_object.star_radius
                 self.mass_array[k] = self.star_object.star_mass
                 self.k2_array[k] = self.star_object.k2

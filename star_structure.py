@@ -130,9 +130,8 @@ class Star:
 
         # Calculate the r_init_max, based on the allowed relative error tolerance
         r_max_p = (np.abs(p_c / p_2) * rtol)**(1 / 2)
-        r_max_m = (np.abs(m_3 / m_5) * rtol)**(1 / 2)
         r_max_rho = (np.abs(rho_c / rho_2) * rtol)**(1 / 2)
-        r_init_max = min(r_max_p, r_max_m, r_max_rho)
+        r_init_max = min(r_max_p, r_max_rho)
         if r_init > r_init_max:
             raise Exception(f"The initial radial coordinate is too large: (r_init = {r_init}) > (r_init_max = {r_init_max})")
 

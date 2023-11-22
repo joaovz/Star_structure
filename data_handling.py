@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     # Open an example .dat file
     rho, p = dat_to_array(
-        fname='data/EOSFull_GM1_BPS.dat',
+        fname='data/GM1.dat',
         usecols=(0, 1),
         unit_conversion=(MASS_DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
 

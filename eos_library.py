@@ -404,7 +404,7 @@ if __name__ == "__main__":
     # Table GM1 EOS test
 
     # Create the EOS object
-    table_gm1_eos = TableEOS(fname='data/EOSFull_GM1_BPS.dat', eos_name='GM1EOS')
+    table_gm1_eos = TableEOS(fname='data/GM1.dat', eos_name='GM1EOS')
 
     # Set the p_space
     max_rho = 1.5e-9                        # Maximum density [m^-2]

@@ -5,7 +5,7 @@ from eos_library import TableEOS
 
 
 # Set the path of the figures
-figures_path = "figures/app_sly4_eos"
+figures_path = "figures/app_table_sly4_eos"
 
 # Create the EOS object
 eos = TableEOS(fname='data/SLy4.dat')

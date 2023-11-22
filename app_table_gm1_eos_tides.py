@@ -5,15 +5,15 @@ from eos_library import TableEOS
 
 
 # Set the path of the figures
-figures_path = "figures/app_table_eos"
+figures_path = "figures/app_table_gm1_eos"
 
 # Open the .dat file with the expected Mass vs Radius curve (units in solar mass and km)
 expected_mass, expected_radius = dat_to_array(
-    fname='data/MIR-GM1-HT-Local.dat',
+    fname='data/GM1_M_vs_R.dat',
     usecols=(0, 2))
 
 # Create the EOS object
-eos = TableEOS(fname='data/EOSFull_GM1_BPS.dat')
+eos = TableEOS(fname='data/GM1.dat')
 
 # Set the pressure at the center and surface of the star
 rho_center = 1.5e-9             # Center density [m^-2]

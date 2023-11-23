@@ -9,7 +9,7 @@ from eos_library import TableEOS
 figures_path = "figures/app_table_sly4_eos"
 
 # Create the EOS object
-eos = TableEOS(fname='data/SLy4.dat')
+eos = TableEOS(fname='data/SLy4.csv')
 
 # Set the pressure at the center and surface of the star
 rho_center = 2.2e-9             # Center density [m^-2]

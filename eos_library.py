@@ -255,8 +255,8 @@ class TableEOS(EOS):
         # Set the EOS name
         self.eos_name = eos_name
 
-        # Open the .dat file with the EOS
-        rho, p = dat_to_array(
+        # Open the .csv file with the EOS
+        rho, p = csv_to_arrays(
             fname=fname,
             unit_conversion=(MASS_DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
 
@@ -499,7 +499,7 @@ if __name__ == "__main__":
     # Table GM1 EOS test
 
     # Create the EOS object
-    table_gm1_eos = TableEOS(fname='data/GM1.dat', eos_name='GM1EOS')
+    table_gm1_eos = TableEOS(fname='data/GM1.csv', eos_name='GM1EOS')
 
     # Set the p_space
     max_rho = 1.5e-9                        # Maximum density [m^-2]
@@ -515,7 +515,7 @@ if __name__ == "__main__":
     # Table SLy4 EOS test
 
     # Create the EOS object
-    table_sly4_eos = TableEOS(fname='data/SLy4.dat', eos_name='SLy4EOS')
+    table_sly4_eos = TableEOS(fname='data/SLy4.csv', eos_name='SLy4EOS')
 
     # Set the p_space
     max_rho = 2.2e-9                        # Maximum density [m^-2]

@@ -363,8 +363,104 @@ class QuarkEOS(EOS):
         return dp_drho
 
 
+class BSk20EOS(EOS):
+    """Class with the functions of the BSk20 EOS
+    """
+
+    def __init__(self, rho_space):
+        """Initialization method
+
+        Args:
+            rho_space (array of float): Array that defines the density interval [m^-2]
+        """
+
+        # Execute parent class' __init__ method
+        super().__init__()
+
+        # Calculate the p_space from the analytic expression
+        p_space = self._p_analytic(rho_space)
+
+        # Convert the EOS to spline functions
+        self.rho_spline_function = CubicSpline(p_space, rho_space, extrapolate=False)
+        self.p_spline_function = CubicSpline(rho_space, p_space, extrapolate=False)
+
+        # Calculate the derivatives
+        self.drho_dp_spline_function = self.rho_spline_function.derivative()
+        self.dp_drho_spline_function = self.p_spline_function.derivative()
+
+        # Save the center and surface density and pressure
+        self.rho_center = rho_space[-1]
+        self.p_center = p_space[-1]
+        self.rho_surface = rho_space[0]
+        self.p_surface = p_space[0]
+
+    def _p_analytic(self, rho):
+        """Analytic expression of the pressure
+
+        Args:
+            rho (float): Density [m^-2]
+
+        Returns:
+            float: Pressure [m^-2]
+        """
+
+        # Set the a_i parameters
+        a = (
+            0.0, 4.078, 7.587, 0.00839, 0.21695, 3.614, 11.942, 13.751, 1.3373, 3.606, -22.996, 1.6229,
+            4.88, 14.274, 23.560, -1.5564, 2.095, 15.294, 0.084, 6.36, 11.67, -0.042, 14.8, 14.18
+        )
+
+        # Calculating xi
+        xi = np.log10(rho / MASS_DENSITY_CGS_TO_GU)
+
+        # Calculating zeta
+        zeta = (
+            ((a[1] + a[2] * xi + a[3] * xi**3) / (1 + a[4] * xi)) * (np.exp(a[5] * (xi - a[6])) + 1)**(-1)
+            + (a[7] + a[8] * xi) * (np.exp(a[9] * (a[6] - xi)) + 1)**(-1)
+            + (a[10] + a[11] * xi) * (np.exp(a[12] * (a[13] - xi)) + 1)**(-1)
+            + (a[14] + a[15] * xi) * (np.exp(a[16] * (a[17] - xi)) + 1)**(-1)
+            + a[18] / (1 + (a[19] * (xi - a[20]))**2)
+            + a[21] / (1 + (a[22] * (xi - a[23]))**2)
+        )
+
+        # Calculating p
+        p = 10**(zeta) * PRESSURE_CGS_TO_GU
+
+        return p
+
+    def rho(self, p):
+        return self.rho_spline_function(p)
+
+    def p(self, rho):
+        return self.p_spline_function(rho)
+
+    def drho_dp(self, p):
+        return self.drho_dp_spline_function(p)
+
+    def dp_drho(self, rho):
+        return self.dp_drho_spline_function(rho)
+
+
 # This logic is a simple example, only executed when this file is run directly in the command prompt
 if __name__ == "__main__":
+
+    # BSk20 EOS test
+
+    # Set the rho_space
+    max_rho = 4.3e-9        # Maximum density [m^-2]
+    rho_space = max_rho * np.logspace(-5.0, 0.0, 1000)
+
+    # Create the EOS object
+    bsk20_eos = BSk20EOS(rho_space)
+
+    # Set the p_space
+    p_space = bsk20_eos.p(rho_space)
+
+    # Check the EOS
+    bsk20_eos.check_eos(p_space)
+
+    # Create the EOS graphs
+    bsk20_eos.plot_all_curves(p_space)
 
     # Polytropic EOS test
 

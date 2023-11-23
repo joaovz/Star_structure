@@ -65,7 +65,7 @@ class Star:
             raise Exception(f"The pressure is outside the acceptable range (p = {p}): p > p_center")
 
         # Set derivatives to zero to saturate functions, as this condition indicates the end of integration
-        if p <= 0.0:
+        if p <= self.p_surface:
             dp_dr = 0.0
             dm_dr = 0.0
             dnu_dr = 0.0

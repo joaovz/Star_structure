@@ -147,7 +147,8 @@ class EOS:
         # Calculate rho_space and p_space using the EOS functions
         rho_space = self.rho(p_space)
         p_space_calc = self.p(rho_space)
-        eos_rel_error = np.abs((p_space_calc - p_space) / p_space)
+        rho_space_calc = self.rho(p_space_calc)
+        eos_rel_error = np.abs((rho_space_calc - rho_space) / rho_space)
 
         # Show warning if error in p_space_calc is greater than maximum acceptable error
         if max(eos_rel_error) > rtol:
@@ -446,14 +447,17 @@ if __name__ == "__main__":
     # BSk20 EOS test
 
     # Set the rho_space
-    max_rho = 4.3e-9        # Maximum density [m^-2]
-    rho_space = max_rho * np.logspace(-5.0, 0.0, 1000)
+    max_rho = 2.1e-9        # Maximum density [m^-2]
+    rho_space = max_rho * np.logspace(-9.0, 0.0, 10000)
 
     # Create the EOS object
     bsk20_eos = BSk20EOS(rho_space)
 
     # Set the p_space
     p_space = bsk20_eos.p(rho_space)
+
+    # Print the minimum pressure calculated. Should be at least in the order of 10**(-22) [m^-2]
+    print(f"BSk20EOS minimum pressure calculated = {p_space[0]} [m^-2]")
 
     # Check the EOS
     bsk20_eos.check_eos(p_space)
@@ -469,7 +473,10 @@ if __name__ == "__main__":
     # Set the p_space
     max_rho = 4.3e-9                        # Maximum density [m^-2]
     max_p = polytropic_eos.p(max_rho)       # Maximum pressure [m^-2]
-    p_space = max_p * np.logspace(-5.0, 0.0, 1000)
+    p_space = max_p * np.logspace(-14.0, 0.0, 1000)
+
+    # Print the minimum pressure calculated. Should be at least in the order of 10**(-22) [m^-2]
+    print(f"PolytropicEOS minimum pressure calculated = {p_space[0]} [m^-2]")
 
     # Check the EOS
     polytropic_eos.check_eos(p_space)
@@ -488,7 +495,10 @@ if __name__ == "__main__":
     # Set the p_space
     max_rho = 1.2e-9                    # Maximum density [m^-2]
     max_p = quark_eos.p(max_rho)        # Maximum pressure [m^-2]
-    p_space = max_p * np.logspace(-5.0, 0.0, 1000)
+    p_space = max_p * np.logspace(-13.0, 0.0, 1000)
+
+    # Print the minimum pressure calculated. Should be at least in the order of 10**(-22) [m^-2]
+    print(f"QuarkEOS minimum pressure calculated = {p_space[0]} [m^-2]")
 
     # Check the EOS
     quark_eos.check_eos(p_space)
@@ -504,7 +514,10 @@ if __name__ == "__main__":
     # Set the p_space
     max_rho = 1.5e-9                        # Maximum density [m^-2]
     max_p = table_gm1_eos.p(max_rho)        # Maximum pressure [m^-2]
-    p_space = max_p * np.logspace(-5.0, 0.0, 1000)
+    p_space = max_p * np.logspace(-13.0, 0.0, 1000)
+
+    # Print the minimum pressure calculated. Should be at least in the order of 10**(-22) [m^-2]
+    print(f"GM1EOS minimum pressure calculated = {p_space[0]} [m^-2]")
 
     # Check the EOS
     table_gm1_eos.check_eos(p_space)
@@ -520,7 +533,10 @@ if __name__ == "__main__":
     # Set the p_space
     max_rho = 2.2e-9                        # Maximum density [m^-2]
     max_p = table_sly4_eos.p(max_rho)       # Maximum pressure [m^-2]
-    p_space = max_p * np.logspace(-5.0, 0.0, 1000)
+    p_space = max_p * np.logspace(-14.0, 0.0, 1000)
+
+    # Print the minimum pressure calculated. Should be at least in the order of 10**(-22) [m^-2]
+    print(f"SLy4EOS minimum pressure calculated = {p_space[0]} [m^-2]")
 
     # Check the EOS
     table_sly4_eos.check_eos(p_space)

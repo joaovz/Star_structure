@@ -2,21 +2,25 @@ import numpy as np
 from data_handling import *
 from star_structure import Star
 from star_family import StarFamily
-from eos_library import TableEOS
+from eos_library import BSk20EOS
 
 
 # Set the path of the figures
-figures_path = "figures/app_table_gm1_eos"
+figures_path = "figures/app_bsk20_eos"
 
 # Open the .csv file with the expected Mass vs Radius curve (units in solar mass and km)
 expected_radius, expected_mass = csv_to_arrays(
-    fname='data/GM1_M_vs_R.csv')
+    fname='data/BSk20_M_vs_R.csv')
+
+# Set the rho_space
+max_rho = 1.619e-9      # Maximum density [m^-2]
+rho_space = max_rho * np.logspace(-9.0, 0.0, 10000)
 
 # Create the EOS object
-eos = TableEOS(fname='data/GM1.csv')
+eos = BSk20EOS(rho_space)
 
 # Set the pressure at the center and surface of the star
-rho_center = 1.5e-9             # Center density [m^-2]
+rho_center = max_rho            # Center density [m^-2]
 p_center = eos.p(rho_center)    # Center pressure [m^-2]
 p_surface = 1e-22               # Surface pressure [m^-2]
 
@@ -38,7 +42,7 @@ star_object.plot_star_structure_curves(figures_path)
 # Star Family
 
 # Set the p_center space that characterizes the star family
-p_center_space = p_center * np.logspace(-2.85, 0.0, 50)
+p_center_space = p_center * np.logspace(-2.2, 0.0, 50)
 
 # Create the star family object
 star_family_object = StarFamily(eos, p_center_space, p_surface)

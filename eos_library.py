@@ -258,7 +258,6 @@ class TableEOS(EOS):
         # Open the .dat file with the EOS
         rho, p = dat_to_array(
             fname=fname,
-            usecols=(0, 1),
             unit_conversion=(MASS_DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
 
         # Convert the EOS to spline functions

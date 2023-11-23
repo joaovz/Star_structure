@@ -10,9 +10,8 @@ from eos_library import TableEOS
 figures_path = "figures/app_table_gm1_eos"
 
 # Open the .dat file with the expected Mass vs Radius curve (units in solar mass and km)
-expected_mass, expected_radius = dat_to_array(
-    fname='data/GM1_M_vs_R.dat',
-    usecols=(0, 2))
+expected_radius, expected_mass = dat_to_array(
+    fname='data/GM1_M_vs_R.dat')
 
 # Create the EOS object
 eos = TableEOS(fname='data/GM1.dat')

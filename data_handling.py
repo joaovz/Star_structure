@@ -39,7 +39,7 @@ def dat_to_array(fname='file_name.dat', usecols=(0, 1), unit_conversion=(1.0, 1.
         tuple of arrays: Numpy arrays with the data read from the .dat file
     """
 
-    x, y = np.loadtxt(fname=fname, usecols=usecols, unpack=True)
+    x, y = np.loadtxt(fname=fname, delimiter=";", skiprows=1, usecols=usecols, unpack=True)
     x_converted, y_converted = x * unit_conversion[0], y * unit_conversion[1]
 
     return x_converted, y_converted
@@ -51,7 +51,6 @@ if __name__ == "__main__":
     # Open an example .dat file
     rho, p = dat_to_array(
         fname='data/GM1.dat',
-        usecols=(0, 1),
         unit_conversion=(MASS_DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
 
     # Plot the curve given in the example .dat file

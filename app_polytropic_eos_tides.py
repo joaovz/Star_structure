@@ -9,8 +9,7 @@ figures_path = "figures/app_polytropic_eos"
 
 # Open the .dat file with the k2 vs C curve for the polytropic n=1 EOS
 expected_C, expected_k2 = dat_to_array(
-    fname='data/Polytropic_n_1_k2_vs_C.dat',
-    usecols=(0, 1))
+    fname='data/Polytropic_n_1_k2_vs_C.dat')
 
 # Create the EOS object
 eos = PolytropicEOS(k=1.0e8, n=1)

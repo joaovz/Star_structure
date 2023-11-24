@@ -14,6 +14,26 @@ class EOS:
         """
         self.eos_name = self.__class__.__name__
 
+    def _check_stability(self, p_space):
+        """Method that checks the stability criterion for the EOS (c_s < 1)
+
+        Args:
+            p_space (array of float): Array that defines the pressure interval [m^-2]
+        """
+
+        # Calculate the speed of sound minus 1 to get the root, where the EOS becomes superluminal
+        p_space_end = p_space[(p_space.size // 2):]
+        rho_space = self.rho(p_space_end)
+        cs_minus_1 = self.c_s(rho_space) - 1
+        cs_minus_1_spline = CubicSpline(rho_space, cs_minus_1, extrapolate=False)
+
+        # Find the roots of (c_s - 1)
+        cs_minus_1_roots = cs_minus_1_spline.roots()
+        if cs_minus_1_roots.size > 0:
+            print(f"{self.eos_name} maximum stable rho = {cs_minus_1_roots} [m^-2]")
+        else:
+            print(f"{self.eos_name} maximum stable rho not reached")
+
     def _config_plot(self):
         """Method that configures the plotting
         """
@@ -143,6 +163,9 @@ class EOS:
             p_space (array of float): Array that defines the pressure interval [m^-2]
             rtol (float, optional): Relative tolerance for the error. Defaults to 1e-6
         """
+
+        # Check the EOS stability
+        self._check_stability(p_space)
 
         # Calculate rho_space and p_space using the EOS functions
         rho_space = self.rho(p_space)

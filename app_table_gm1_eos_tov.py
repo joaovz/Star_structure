@@ -13,7 +13,7 @@ expected_radius, expected_mass = csv_to_arrays(
     fname='data/GM1_M_vs_R.csv')
 
 # Create the EOS object
-eos = TableEOS(fname='data/GM1.csv')
+eos = TableEOS(fname='data/GM1.csv', eos_name='GM1EOS')
 
 # Set the pressure at the center and surface of the star
 rho_center = 1.5e-9             # Center density [m^-2]

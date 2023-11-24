@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # Plot the curve given in the example .csv file
     plt.figure()
     plt.plot(p, rho, linewidth=1, marker='.')
-    plt.title("EOS from .csv file")
+    plt.title("GM1 EOS from .csv file", y=1.05)
     plt.xlabel('$p ~ [m^{-2}]$')
     plt.ylabel('$\\rho ~ [m^{-2}]$')
     plt.show()

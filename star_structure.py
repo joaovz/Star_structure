@@ -190,7 +190,7 @@ class Star:
         plt.plot(self.r_ode_solution / 10**3, self.m_ode_solution / self.SOLAR_MASS, linewidth=1, label="$m ~ [M_{\\odot}]$")
         plt.plot(self.r_ode_solution / 10**3, self.nu_ode_solution, linewidth=1, label="$\\nu ~ [dimensionless]$")
         plt.plot(self.r_ode_solution / 10**3, self.rho_ode_solution * 10**8, linewidth=1, label="$\\rho ~ [10^{-8} m^{-2}]$")
-        plt.title("TOV solution for the star")
+        plt.title(f"TOV solution for the {self.eos.eos_name.replace('EOS', ' EOS')} star", y=1.05)
         plt.xlabel("$r ~ [km]$")
         plt.legend()
 

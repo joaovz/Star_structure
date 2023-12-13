@@ -13,20 +13,20 @@ expected_radius, expected_mass = csv_to_arrays(
     fname='data/BSk20_M_vs_R.csv')
 
 # Set the rho_space
-max_rho = 1.619e-9      # Maximum density [m^-2]
+max_rho = 2.181e15 * MASS_DENSITY_CGS_TO_GU     # Maximum density [m^-2]
 rho_space = max_rho * np.logspace(-9.0, 0.0, 10000)
 
 # Create the EOS object
 eos = BSk20EOS(rho_space)
 
 # Set the pressure at the center and surface of the star
-rho_center = max_rho            # Center density [m^-2]
-p_center = eos.p(rho_center)    # Center pressure [m^-2]
-p_surface = 1e-22               # Surface pressure [m^-2]
+rho_center = max_rho                            # Center density [m^-2]
+p_center = eos.p(rho_center)                    # Center pressure [m^-2]
+p_surface = 1e23 * PRESSURE_CGS_TO_GU           # Surface pressure [m^-2]
 
 # Print the values used for p_center and p_surface
-print(f"p_center = {p_center} [m^-2]")
-print(f"p_surface = {p_surface} [m^-2]")
+print(f"p_center = {p_center / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
+print(f"p_surface = {p_surface / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
 
 # Single star
 

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
 from alive_progress import alive_bar
 from star_structure import Star
+from data_handling import *
 from eos_library import PolytropicEOS
 
 
@@ -46,7 +47,7 @@ class StarFamily:
         # Calculate the maximum stable rho_center
         dm_drho_center_roots = self.dm_drho_center_spline.roots()
         if dm_drho_center_roots.size > 0:
-            print(f"Maximum stable rho_center = {dm_drho_center_roots} [m^-2]")
+            print(f"Maximum stable rho_center = {dm_drho_center_roots / MASS_DENSITY_CGS_TO_GU} [g ⋅ cm^-3]")
         else:
             print("Maximum stable rho_center not reached")
 
@@ -58,13 +59,13 @@ class StarFamily:
         self.plot_dict = {
             "p_c": {
                 "name": "Central pressure",
-                "label": "$p_{c} ~ [m^{-2}]$",
-                "value": self.p_center_space,
+                "label": "$p_{c} ~ [dyn \\cdot cm^{-2}]$",
+                "value": self.p_center_space / PRESSURE_CGS_TO_GU,
             },
             "rho_c": {
                 "name": "Central density",
-                "label": "$\\rho_{c} ~ [m^{-2}]$",
-                "value": self.rho_center_space,
+                "label": "$\\rho_{c} ~ [g \\cdot cm^{-3}]$",
+                "value": self.rho_center_space / MASS_DENSITY_CGS_TO_GU,
             },
             "R": {
                 "name": "Radius",
@@ -78,7 +79,7 @@ class StarFamily:
             },
             "C": {
                 "name": "Compactness",
-                "label": "$C = M/R ~ [dimensionless]$",
+                "label": "$C ~ [dimensionless]$",
                 "value": self.mass_array / self.radius_array,
             },
             "dM_drho_c": {
@@ -176,13 +177,13 @@ if __name__ == "__main__":
     eos = PolytropicEOS(k=1.0e8, n=1)
 
     # Set the pressure at the center and surface of the star
-    rho_center = 4.3e-9             # Center density [m^-2]
-    p_center = eos.p(rho_center)    # Center pressure [m^-2]
-    p_surface = 0.0                 # Surface pressure [m^-2]
+    rho_center = 5.691e15 * MASS_DENSITY_CGS_TO_GU      # Center density [m^-2]
+    p_center = eos.p(rho_center)                        # Center pressure [m^-2]
+    p_surface = 0.0                                     # Surface pressure [m^-2]
 
     # Print the values used for p_center and p_surface
-    print(f"p_center = {p_center} [m^-2]")
-    print(f"p_surface = {p_surface} [m^-2]")
+    print(f"p_center = {p_center / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
+    print(f"p_surface = {p_surface / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
 
     # Set the p_center space that characterizes the star family
     p_center_space = p_center * np.logspace(-5.0, 0.0, 50)

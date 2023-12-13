@@ -49,14 +49,12 @@ def csv_to_arrays(fname='file_name.csv', usecols=(0, 1), unit_conversion=(1.0, 1
 if __name__ == "__main__":
 
     # Open an example .csv file
-    rho, p = csv_to_arrays(
-        fname='data/GM1.csv',
-        unit_conversion=(MASS_DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
+    rho, p = csv_to_arrays(fname='data/GM1.csv')
 
     # Plot the curve given in the example .csv file
     plt.figure()
     plt.plot(p, rho, linewidth=1, marker='.')
     plt.title("GM1 EOS from .csv file", y=1.05)
-    plt.xlabel('$p ~ [m^{-2}]$')
-    plt.ylabel('$\\rho ~ [m^{-2}]$')
+    plt.xlabel('$p ~ [dyn \\cdot cm^{-2}]$')
+    plt.ylabel('$\\rho ~ [g \\cdot cm^{-3}]$')
     plt.show()

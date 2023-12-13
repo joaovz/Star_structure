@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.interpolate import CubicSpline
+from data_handling import *
 from eos_library import PolytropicEOS
 
 
@@ -186,10 +187,10 @@ class Star:
 
         # Show a simple plot of the solution
         plt.figure()
-        plt.plot(self.r_ode_solution / 10**3, self.p_ode_solution * 10**8, linewidth=1, label="$p ~ [10^{-8} m^{-2}]$")
+        plt.plot(self.r_ode_solution / 10**3, self.p_ode_solution * 1e-36 / PRESSURE_CGS_TO_GU, linewidth=1, label="$p ~ [10^{36} ~ dyn \\cdot cm^{-2}]$")
         plt.plot(self.r_ode_solution / 10**3, self.m_ode_solution / self.SOLAR_MASS, linewidth=1, label="$m ~ [M_{\\odot}]$")
         plt.plot(self.r_ode_solution / 10**3, self.nu_ode_solution, linewidth=1, label="$\\nu ~ [dimensionless]$")
-        plt.plot(self.r_ode_solution / 10**3, self.rho_ode_solution * 10**8, linewidth=1, label="$\\rho ~ [10^{-8} m^{-2}]$")
+        plt.plot(self.r_ode_solution / 10**3, self.rho_ode_solution * 1e-15 / MASS_DENSITY_CGS_TO_GU, linewidth=1, label="$\\rho ~ [10^{15} ~ g \\cdot cm^{-3}]$")
         plt.title(f"TOV solution for the {self.eos.eos_name.replace('EOS', ' EOS')} star", y=1.05)
         plt.xlabel("$r ~ [km]$")
         plt.legend()
@@ -210,13 +211,13 @@ if __name__ == "__main__":
     eos = PolytropicEOS(k=1.0e8, n=1)
 
     # Set the pressure at the center and surface of the star
-    rho_center = 2.376364e-9        # Center density [m^-2]
-    p_center = eos.p(rho_center)    # Center pressure [m^-2]
-    p_surface = 0.0                 # Surface pressure [m^-2]
+    rho_center = 5.691e15 * MASS_DENSITY_CGS_TO_GU      # Center density [m^-2]
+    p_center = eos.p(rho_center)                        # Center pressure [m^-2]
+    p_surface = 0.0                                     # Surface pressure [m^-2]
 
     # Print the values used for p_center and p_surface
-    print(f"p_center = {p_center} [m^-2]")
-    print(f"p_surface = {p_surface} [m^-2]")
+    print(f"p_center = {p_center / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
+    print(f"p_surface = {p_surface / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
 
     # Define the object
     star_object = Star(eos, p_center, p_surface)

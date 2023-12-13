@@ -20,13 +20,13 @@ print(f"a2 = {a2} [m^-1]")
 print(f"a4 = {a4} [dimensionless]")
 
 # Set the pressure at the center and surface of the star
-rho_center = 1.2e-9             # Center density [m^-2]
-p_center = eos.p(rho_center)    # Center pressure [m^-2]
-p_surface = 0.0                 # Surface pressure [m^-2]
+rho_center = 1.502e15 * MASS_DENSITY_CGS_TO_GU      # Center density [m^-2]
+p_center = eos.p(rho_center)                        # Center pressure [m^-2]
+p_surface = 0.0                                     # Surface pressure [m^-2]
 
 # Print the values used for p_center and p_surface
-print(f"p_center = {p_center} [m^-2]")
-print(f"p_surface = {p_surface} [m^-2]")
+print(f"p_center = {p_center / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
+print(f"p_surface = {p_surface / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
 
 # Single star
 

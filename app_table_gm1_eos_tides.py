@@ -15,13 +15,13 @@ expected_radius, expected_mass = csv_to_arrays(
 eos = TableEOS(fname='data/GM1.csv', eos_name='GM1EOS')
 
 # Set the pressure at the center and surface of the star
-rho_center = 1.5e-9             # Center density [m^-2]
-p_center = eos.p(rho_center)    # Center pressure [m^-2]
-p_surface = 1e-22               # Surface pressure [m^-2]
+rho_center = 1.977e15 * MASS_DENSITY_CGS_TO_GU      # Center density [m^-2]
+p_center = eos.p(rho_center)                        # Center pressure [m^-2]
+p_surface = 1e23 * PRESSURE_CGS_TO_GU               # Surface pressure [m^-2]
 
 # Print the values used for p_center and p_surface
-print(f"p_center = {p_center} [m^-2]")
-print(f"p_surface = {p_surface} [m^-2]")
+print(f"p_center = {p_center / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
+print(f"p_surface = {p_surface / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
 
 # Set the p_center space that characterizes the star family
 p_center_space = p_center * np.logspace(-2.85, 0.0, 50)

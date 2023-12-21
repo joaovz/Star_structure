@@ -24,8 +24,11 @@ B_min = (g0**2 / (54 * np.pi**2)) * ((4 * g0**2 * a4) / ((1 + 2**(1 / 3))**3) - 
 
 # Apply the triangular mask to the meshgrid
 mesh_mask = (a2 > a2_max * a4)
+a4_masked = np.ma.masked_where(mesh_mask, a4)
+a2_masked = np.ma.masked_where(mesh_mask, a2)
 B_max_masked = np.ma.masked_where(mesh_mask, B_max)
 B_min_masked = np.ma.masked_where(mesh_mask, B_min)
+B_max_value = np.max(B_max_masked)
 
 # Create figure and change properties
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.8), constrained_layout=True)
@@ -33,19 +36,24 @@ ax.set_title("Quark EOS parameter space for stable strange stars", y=1.0)
 ax.view_init(elev=15, azim=-155, roll=0)
 ax.set_xlim3d(0, a4_max)
 ax.set_ylim3d(0, a2_max**(1 / 2))
-ax.set_zlim3d(0, np.max(B_max_masked)**(1 / 4))
+ax.set_zlim3d(0, B_max_value**(1 / 4))
 ax.set_xlabel("$a_4 ~ [dimensionless]$", fontsize=10, rotation=0)
 ax.set_ylabel("$a_2^{1/2} ~ [MeV]$", fontsize=10, rotation=0)
 ax.set_zlabel("$B^{1/4} ~ [MeV]$", fontsize=10, rotation=90)
 ax.zaxis.set_rotate_label(False)
 
 # Add each surface plot
-a2_1_2 = a2**(1 / 2)
+a2_1_2_masked = a2_masked**(1 / 2)
 B_1_4_max_masked = B_max_masked**(1 / 4)
 B_1_4_min_masked = B_min_masked**(1 / 4)
-ax.plot_surface(a4, a2_1_2, B_1_4_max_masked, cmap=cm.Reds, alpha=0.8, label="$B_{max}^{1/4}$")
-ax.plot_surface(a4, a2_1_2, B_1_4_min_masked, cmap=cm.Blues, alpha=1.0, label="$B_{min}^{1/4}$")
+ax.plot_surface(a4_masked, a2_1_2_masked, B_1_4_max_masked, cmap=cm.Reds, rstride=10, cstride=10, alpha=0.8, label="$B_{max}^{1/4}$")
+ax.plot_surface(a4_masked, a2_1_2_masked, B_1_4_min_masked, cmap=cm.Blues, rstride=10, cstride=10, alpha=0.8, label="$B_{min}^{1/4}$")
 ax.legend(loc=(0.15, 0.3))
+
+# Add each contour plot
+ax.contourf(a4_masked, a2_1_2_masked, B_1_4_max_masked, levels=0, zdir='x', offset=a4_max, colors="gray", alpha=0.7, antialiased=True)
+ax.contourf(a4_masked, a2_1_2_masked, B_1_4_max_masked, levels=0, zdir='y', offset=a2_max**(1 / 2), colors="gray", alpha=0.7, antialiased=True)
+ax.contourf(a4_masked, a2_1_2_masked, B_1_4_max_masked, levels=0, zdir='z', offset=0, colors="gray", alpha=0.7, antialiased=True)
 
 # Create the folder if necessary and save the figure
 if not os.path.exists(figure_path):

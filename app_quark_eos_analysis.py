@@ -4,101 +4,174 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
-def calc_alpha(g0):
-    """Function that calculates the alpha coefficient of the a2_max vs a4 curve
+# Constants
+g0 = 930.0                                                      # Gibbs free energy per baryon of quark matter at null pressure [MeV]
+alpha = ((1 / 3) - 8 / (3 * (1 + 2**(1 / 3))**3)) * g0**2       # alpha coefficient of the a2_max vs a4 curve [MeV^2]
+a2_min = 0.0                                                    # Minimum a2 parameter value [MeV^2]
+a2_max = alpha                                                  # Maximum a2 parameter value [MeV^2]
+a4_min = 0.0                                                    # Minimum a4 parameter value [dimensionless]
+a4_max = 1.0                                                    # Maximum a4 parameter value [dimensionless]
+B_min = 0.0                                                     # Minimum B parameter value [MeV^4]
+B_max = g0**4 / (108 * np.pi**2)                                # Maximum B parameter value [MeV^4]
+
+
+def calc_B_max(a2, a4):
+    """Function that calculates the maximum B parameter value
 
     Args:
-        g0 (float): Gibbs free energy per baryon of quark matter at null pressure [MeV]
-
-    Returns:
-        float: alpha coefficient of the a2_max vs a4 curve [MeV^2]
-    """
-    alpha = ((1 / 3) - 8 / (3 * (1 + 2**(1 / 3))**3)) * g0**2
-    return alpha
-
-def calc_B_max(g0, a2, a4):
-    """Function that calculates the maximum B value
-
-    Args:
-        g0 (float): Gibbs free energy per baryon of quark matter at null pressure [MeV]
         a2 (array of float): a2 parameter of the EOS [MeV^2]
         a4 (array of float): a4 parameter of the EOS [dimensionless]
 
     Returns:
         array of float: Maximum B value [MeV^4]
     """
-    B_max = (g0**2 / (108 * np.pi**2)) * (g0**2 * a4 - 9 * a2)
-    return B_max
+    return (g0**2 / (108 * np.pi**2)) * (g0**2 * a4 - 9 * a2)
 
-def calc_B_min(g0, a2, a4):
-    """Function that calculates the minimum B value
+def calc_B_min(a2, a4):
+    """Function that calculates the minimum B parameter value
 
     Args:
-        g0 (float): Gibbs free energy per baryon of quark matter at null pressure [MeV]
         a2 (array of float): a2 parameter of the EOS [MeV^2]
         a4 (array of float): a4 parameter of the EOS [dimensionless]
 
     Returns:
         array of float: Minimum B value [MeV^4]
     """
-    B_min = (g0**2 / (54 * np.pi**2)) * ((4 * g0**2 * a4) / ((1 + 2**(1 / 3))**3) - 3 * a2)
-    return B_min
+    return (g0**2 / (54 * np.pi**2)) * ((4 * g0**2 * a4) / ((1 + 2**(1 / 3))**3) - 3 * a2)
 
-def plot_parameter_space(figure_path="figures/app_quark_eos", mesh_size=1000):
+def mask_strange_star(a2, a4, B):
+    """Function that masks the mesh grids a2, a4, and B, leaving only the points in the parameter space that correspond to a strange star
+
+    Args:
+        a2 (3D array of float): Meshgrid with the a2 parameter of the EOS [MeV^2]
+        a4 (3D array of float): Meshgrid with the a4 parameter of the EOS [dimensionless]
+        B (3D array of float): Meshgrid with the B parameter of the EOS [MeV^4]
+
+    Returns:
+        List of 3D arrays of float: List of the masked meshgrids received
+    """
+
+    # Create the mesh masks according to each parameter minimum and maximum allowed values
+    a2_max_mesh_mask = (a2 > alpha * a4)
+    a2_min_mesh_mask = (a2 < a2_min)
+    a4_max_mesh_mask = (a4 > a4_max)
+    a4_min_mesh_mask = (a4 < a4_min)
+    B_max_mesh_mask = (B > calc_B_max(a2, a4))
+    B_min_mesh_mask = (B < calc_B_min(a2, a4))
+
+    # Create the combined mask and apply to each mesh grid
+    mesh_mask = a2_max_mesh_mask | a2_min_mesh_mask | a4_max_mesh_mask | a4_min_mesh_mask | B_max_mesh_mask | B_min_mesh_mask
+    a2_masked = np.ma.masked_where(mesh_mask, a2)
+    a4_masked = np.ma.masked_where(mesh_mask, a4)
+    B_masked = np.ma.masked_where(mesh_mask, B)
+
+    # Return the masked meshgrids
+    return (a2_masked, a4_masked, B_masked)
+
+def generate_strange_stars(mesh_size=21):
+    """Function that generates a list of meshgrids representing the parameters of strange stars
+
+    Args:
+        mesh_size (int, optional): Size of the mesh used to represent the parameters. Defaults to 51
+
+    Returns:
+        List of 3D arrays of float: List of the masked meshgrids representing the parameters
+    """
+
+    # Define the (a2, a4, B) rectangular meshgrid
+    a2_1_2_range = np.linspace(a2_min**(1 / 2), a2_max**(1 / 2), mesh_size)
+    a2_range = a2_1_2_range**2
+    a4_range = np.linspace(a4_min, a4_max, mesh_size)
+    B_1_4_range = np.linspace(B_min**(1 / 4), B_max**(1 / 4), mesh_size)
+    B_range = B_1_4_range**4
+    a2, a4, B = np.meshgrid(a2_range, a4_range, B_range)
+
+    # Filter the meshgrid, leaving only strange stars
+    a2_masked, a4_masked, B_masked = mask_strange_star(a2, a4, B)
+
+    return (a2_masked, a4_masked, B_masked)
+
+def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"):
+    """Function that plots the scatter graph of the parameter points
+
+    Args:
+        a2 (3D array of float): Meshgrid with the a2 parameter of the EOS [MeV^2]
+        a4 (3D array of float): Meshgrid with the a4 parameter of the EOS [dimensionless]
+        B (3D array of float): Meshgrid with the B parameter of the EOS [MeV^4]
+        figure_path (str, optional): Path used to save the figure. Defaults to "figures/app_quark_eos"
+    """
+
+    # Create figure and change properties
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.8), constrained_layout=True)
+    ax.set_title("Quark EOS parameter points", y=1.0)
+    ax.view_init(elev=15, azim=-115, roll=0)
+    ax.set_xlim3d(a2_min**(1 / 2), a2_max**(1 / 2))
+    ax.set_ylim3d(a4_min, a4_max)
+    ax.set_zlim3d(B_min**(1 / 4), B_max**(1 / 4))
+    ax.set_xlabel("$a_2^{1/2} ~ [MeV]$", fontsize=10, rotation=0)
+    ax.set_ylabel("$a_4 ~ [dimensionless]$", fontsize=10, rotation=0)
+    ax.set_zlabel("$B^{1/4} ~ [MeV]$", fontsize=10, rotation=90)
+    ax.zaxis.set_rotate_label(False)
+
+    # Add each scatter point
+    ax.scatter(a2**(1 / 2), a4, B**(1 / 4))
+
+    # Create the folder if necessary and save the figure
+    if not os.path.exists(figure_path):
+        os.makedirs(figure_path)
+    plt.savefig(f"{figure_path}/quark_eos_parameter_points.png")
+
+    # Show graph
+    plt.show()
+
+def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
     """Function that plots the graph of the parameter space
 
     Args:
-        figure_path (str, optional): Path used to save the figure. Defaults to "figures/app_quark_eos"
         mesh_size (int, optional): Size of the mesh used to create the plot. Defaults to 1000
+        figure_path (str, optional): Path used to save the figure. Defaults to "figures/app_quark_eos"
     """
 
-    # Constants
-    g0 = 930.0                      # Gibbs free energy per baryon of quark matter at null pressure [MeV]
-    a4_max = 1.0                    # Maximum a4 value [dimensionless]
-    alpha = calc_alpha(g0)          # Coefficient of the a2_max vs a4 curve [MeV^2]
-    a2_max = alpha * a4_max         # Maximum a2 value [MeV^2]
-
-    # Define the (a4, a2) rectangular meshgrid
-    a4_range = np.linspace(0, a4_max, mesh_size)
-    a2_range = np.linspace(0, a2_max, mesh_size)
-    a4, a2 = np.meshgrid(a4_range, a2_range)
+    # Define the (a2, a4) rectangular meshgrid
+    a2_range = np.linspace(a2_min, a2_max, mesh_size)
+    a4_range = np.linspace(a4_min, a4_max, mesh_size)
+    a2, a4 = np.meshgrid(a2_range, a4_range)
 
     # Create the B_max and B_min surfaces
-    B_max = calc_B_max(g0, a2, a4)
-    B_min = calc_B_min(g0, a2, a4)
+    B_max_surface = calc_B_max(a2, a4)
+    B_min_surface = calc_B_min(a2, a4)
 
     # Apply the triangular mask to the meshgrid
     mesh_mask = (a2 > alpha * a4)
-    a4_masked = np.ma.masked_where(mesh_mask, a4)
     a2_masked = np.ma.masked_where(mesh_mask, a2)
-    B_max_masked = np.ma.masked_where(mesh_mask, B_max)
-    B_min_masked = np.ma.masked_where(mesh_mask, B_min)
-    B_max_value = np.max(B_max_masked)
+    a4_masked = np.ma.masked_where(mesh_mask, a4)
+    B_max_surface_masked = np.ma.masked_where(mesh_mask, B_max_surface)
+    B_min_surface_masked = np.ma.masked_where(mesh_mask, B_min_surface)
 
     # Create figure and change properties
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.8), constrained_layout=True)
     ax.set_title("Quark EOS parameter space for stable strange stars", y=1.0)
-    ax.view_init(elev=15, azim=-155, roll=0)
-    ax.set_xlim3d(0, a4_max)
-    ax.set_ylim3d(0, a2_max**(1 / 2))
-    ax.set_zlim3d(0, B_max_value**(1 / 4))
-    ax.set_xlabel("$a_4 ~ [dimensionless]$", fontsize=10, rotation=0)
-    ax.set_ylabel("$a_2^{1/2} ~ [MeV]$", fontsize=10, rotation=0)
+    ax.view_init(elev=15, azim=-115, roll=0)
+    ax.set_xlim3d(a2_min**(1 / 2), a2_max**(1 / 2))
+    ax.set_ylim3d(a4_min, a4_max)
+    ax.set_zlim3d(B_min**(1 / 4), B_max**(1 / 4))
+    ax.set_xlabel("$a_2^{1/2} ~ [MeV]$", fontsize=10, rotation=0)
+    ax.set_ylabel("$a_4 ~ [dimensionless]$", fontsize=10, rotation=0)
     ax.set_zlabel("$B^{1/4} ~ [MeV]$", fontsize=10, rotation=90)
     ax.zaxis.set_rotate_label(False)
 
     # Add each surface plot
     a2_1_2_masked = a2_masked**(1 / 2)
-    B_1_4_max_masked = B_max_masked**(1 / 4)
-    B_1_4_min_masked = B_min_masked**(1 / 4)
-    ax.plot_surface(a4_masked, a2_1_2_masked, B_1_4_max_masked, cmap=cm.Reds, rstride=10, cstride=10, alpha=0.8, label="$B_{max}^{1/4}$")
-    ax.plot_surface(a4_masked, a2_1_2_masked, B_1_4_min_masked, cmap=cm.Blues, rstride=10, cstride=10, alpha=0.8, label="$B_{min}^{1/4}$")
-    ax.legend(loc=(0.15, 0.3))
+    B_1_4_max_surface_masked = B_max_surface_masked**(1 / 4)
+    B_1_4_min_surface_masked = B_min_surface_masked**(1 / 4)
+    ax.plot_surface(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, cmap=cm.Reds, rstride=10, cstride=10, alpha=0.8, label="$B_{max}^{1/4}$")
+    ax.plot_surface(a2_1_2_masked, a4_masked, B_1_4_min_surface_masked, cmap=cm.Blues, rstride=10, cstride=10, alpha=0.8, label="$B_{min}^{1/4}$")
+    ax.legend(loc=(0.7, 0.25))
 
     # Add each contour plot (grey projections on each plane)
-    ax.contourf(a4_masked, a2_1_2_masked, B_1_4_max_masked, levels=0, zdir='x', offset=a4_max, colors="gray", alpha=0.7, antialiased=True)
-    ax.contourf(a4_masked, a2_1_2_masked, B_1_4_max_masked, levels=0, zdir='y', offset=a2_max**(1 / 2), colors="gray", alpha=0.7, antialiased=True)
-    ax.contourf(a4_masked, a2_1_2_masked, B_1_4_max_masked, levels=0, zdir='z', offset=0, colors="gray", alpha=0.7, antialiased=True)
+    ax.contourf(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, levels=0, zdir='x', offset=a2_max**(1 / 2), colors="gray", alpha=0.7, antialiased=True)
+    ax.contourf(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, levels=0, zdir='y', offset=a4_max, colors="gray", alpha=0.7, antialiased=True)
+    ax.contourf(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, levels=0, zdir='z', offset=0, colors="gray", alpha=0.7, antialiased=True)
 
     # Create the folder if necessary and save the figure
     if not os.path.exists(figure_path):
@@ -114,10 +187,17 @@ def main():
 
     # Constants
     figure_path = "figures/app_quark_eos"
-    mesh_size = 1000     # Number of points used in the meshgrid
+    parameter_space_mesh_size = 1001        # Number of points used in the meshgrid for the parameter space plot
+    scatter_plot_mesh_size = 21             # Number of points used in the meshgrid for the scatter plot
 
     # Create the parameter space plot
-    plot_parameter_space(figure_path, mesh_size)
+    plot_parameter_space(parameter_space_mesh_size, figure_path)
+
+    # Generate parameters for strange stars
+    (a2_masked, a4_masked, B_masked) = generate_strange_stars(scatter_plot_mesh_size)
+
+    # Plot the parameter points generated for strange stars
+    plot_parameter_points_scatter(a2_masked, a4_masked, B_masked, figure_path)
 
 
 # This logic is a simple example, only executed when this file is run directly in the command prompt

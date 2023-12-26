@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
@@ -39,17 +40,25 @@ def calc_B_min(a2, a4):
     """
     return (g0**2 / (54 * np.pi**2)) * ((4 * g0**2 * a4) / ((1 + 2**(1 / 3))**3) - 3 * a2)
 
-def mask_strange_star(a2, a4, B):
-    """Function that masks the mesh grids a2, a4, and B, leaving only the points in the parameter space that correspond to a strange star
+def generate_strange_stars(mesh_size=21):
+    """Function that generates a list of meshgrids representing the parameters of strange stars.
+    This function also creates a dataframe with the parameters of strange stars
 
     Args:
-        a2 (3D array of float): Meshgrid with the a2 parameter of the EOS [MeV^2]
-        a4 (3D array of float): Meshgrid with the a4 parameter of the EOS [dimensionless]
-        B (3D array of float): Meshgrid with the B parameter of the EOS [MeV^4]
+        mesh_size (int, optional): Size of the mesh used to represent the parameters. Defaults to 21
 
     Returns:
-        List of 3D arrays of float: List of the masked meshgrids received
+        Arrays of float: Masked meshgrids representing the parameters
+        Pandas dataframe of float: Dataframe with the parameters of strange stars
     """
+
+    # Define the (a2, a4, B) rectangular meshgrid
+    a2_1_2_range = np.linspace(a2_min**(1 / 2), a2_max**(1 / 2), mesh_size)
+    a2_range = a2_1_2_range**2
+    a4_range = np.linspace(a4_min, a4_max, mesh_size)
+    B_1_4_range = np.linspace(B_min**(1 / 4), B_max**(1 / 4), mesh_size)
+    B_range = B_1_4_range**4
+    a2, a4, B = np.meshgrid(a2_range, a4_range, B_range)
 
     # Create the mesh masks according to each parameter minimum and maximum allowed values
     a2_max_mesh_mask = (a2 > alpha * a4)
@@ -65,31 +74,17 @@ def mask_strange_star(a2, a4, B):
     a4_masked = np.ma.masked_where(mesh_mask, a4)
     B_masked = np.ma.masked_where(mesh_mask, B)
 
-    # Return the masked meshgrids
-    return (a2_masked, a4_masked, B_masked)
+    # Loop over the mask and store the parameter points of the strange stars in a dataframe
+    iterator = np.nditer(mesh_mask, flags=['multi_index'])
+    parameter_points = []
+    for x in iterator:
+        if bool(x) is False:
+            index = iterator.multi_index
+            star_parameters = (a2[index], a4[index], B[index])
+            parameter_points.append(star_parameters)
+    parameter_dataframe = pd.DataFrame(parameter_points, columns=["a2", "a4", "B"])
 
-def generate_strange_stars(mesh_size=21):
-    """Function that generates a list of meshgrids representing the parameters of strange stars
-
-    Args:
-        mesh_size (int, optional): Size of the mesh used to represent the parameters. Defaults to 51
-
-    Returns:
-        List of 3D arrays of float: List of the masked meshgrids representing the parameters
-    """
-
-    # Define the (a2, a4, B) rectangular meshgrid
-    a2_1_2_range = np.linspace(a2_min**(1 / 2), a2_max**(1 / 2), mesh_size)
-    a2_range = a2_1_2_range**2
-    a4_range = np.linspace(a4_min, a4_max, mesh_size)
-    B_1_4_range = np.linspace(B_min**(1 / 4), B_max**(1 / 4), mesh_size)
-    B_range = B_1_4_range**4
-    a2, a4, B = np.meshgrid(a2_range, a4_range, B_range)
-
-    # Filter the meshgrid, leaving only strange stars
-    a2_masked, a4_masked, B_masked = mask_strange_star(a2, a4, B)
-
-    return (a2_masked, a4_masked, B_masked)
+    return (a2_masked, a4_masked, B_masked, parameter_dataframe)
 
 def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"):
     """Function that plots the scatter graph of the parameter points
@@ -194,7 +189,7 @@ def main():
     plot_parameter_space(parameter_space_mesh_size, figure_path)
 
     # Generate parameters for strange stars
-    (a2_masked, a4_masked, B_masked) = generate_strange_stars(scatter_plot_mesh_size)
+    (a2_masked, a4_masked, B_masked, parameter_dataframe) = generate_strange_stars(scatter_plot_mesh_size)
 
     # Plot the parameter points generated for strange stars
     plot_parameter_points_scatter(a2_masked, a4_masked, B_masked, figure_path)

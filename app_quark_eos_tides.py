@@ -1,6 +1,6 @@
 import numpy as np
 from data_handling import *
-from perfect_fluid_star_family_tides import DeformedStarFamily
+from star_family_tides import DeformedStarFamily
 from eos_library import QuarkEOS
 
 

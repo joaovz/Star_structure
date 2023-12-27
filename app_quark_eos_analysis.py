@@ -31,6 +31,7 @@ def calc_B_max(a2, a4):
     """
     return (g0**2 / (108 * np.pi**2)) * (g0**2 * a4 - 9 * a2)
 
+
 def calc_B_min(a2, a4):
     """Function that calculates the minimum B parameter value
 
@@ -42,6 +43,7 @@ def calc_B_min(a2, a4):
         array of float: Minimum B value [MeV^4]
     """
     return (g0**2 / (54 * np.pi**2)) * ((4 * g0**2 * a4) / ((1 + 2**(1 / 3))**3) - 3 * a2)
+
 
 def generate_strange_stars(mesh_size=21):
     """Function that generates a list of meshgrids representing the parameters of strange stars.
@@ -89,6 +91,7 @@ def generate_strange_stars(mesh_size=21):
 
     return (a2_masked, a4_masked, B_masked, parameter_dataframe)
 
+
 def analyze_strange_stars(parameter_dataframe):
 
     # Iterate over each strange star
@@ -126,6 +129,7 @@ def analyze_strange_stars(parameter_dataframe):
         while star_family_object.maximum_mass is None:
             star_family_object.solve_tov(max_step=30.0)
 
+
 def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"):
     """Function that plots the scatter graph of the parameter points
 
@@ -158,6 +162,7 @@ def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"
 
     # Show graph
     plt.show()
+
 
 def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
     """Function that plots the graph of the parameter space
@@ -215,6 +220,7 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
 
     # Show graph
     plt.show()
+
 
 def main():
     """Main logic

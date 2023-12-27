@@ -87,18 +87,28 @@ def generate_strange_stars(mesh_size=21):
             index = iterator.multi_index
             star_parameters = (a2[index], a4[index], B[index])
             parameter_points.append(star_parameters)
-    parameter_dataframe = pd.DataFrame(parameter_points, columns=["a2", "a4", "B"])
+    parameter_dataframe = pd.DataFrame(parameter_points, columns=["a2 [MeV^2]", "a4 [dimensionless]", "B [MeV^4]"])
 
     return (a2_masked, a4_masked, B_masked, parameter_dataframe)
 
 
 def analyze_strange_stars(parameter_dataframe):
 
+    # Pre-allocate the new dataframe columns with NaN
+    parameter_dataframe['rho_center_max [g ⋅ cm^-3]'] = np.nan
+    parameter_dataframe['M_max [solar mass]'] = np.nan
+
     # Iterate over each strange star
+    n_rows = parameter_dataframe.shape[0]
     for row in parameter_dataframe.itertuples():
 
-        # Create the EOS object (values chosen to build a strange star)
-        (_, a2, a4, B) = row
+        # Unpack the row values
+        (index, a2, a4, B, *_) = row
+
+        # Print a message at the beginning to separate each star
+        print(f"({index + 1} / {n_rows}) {'#' * 100}")
+
+        # Create the EOS object
         quark_eos = QuarkEOS(a2, a4, B)
 
         # EOS analysis
@@ -124,10 +134,13 @@ def analyze_strange_stars(parameter_dataframe):
         # Define the object
         star_family_object = StarFamily(quark_eos, p_center_space, p_surface)
 
-        # Solve the TOV equation twice to get a better estimate of the maximum mass
-        star_family_object.maximum_mass = None
-        while star_family_object.maximum_mass is None:
-            star_family_object.solve_tov(max_step=30.0)
+        # Find the maximum mass star and add the central density and mass to the dataframe
+        star_family_object.find_maximum_mass(max_step=30.0)
+        parameter_dataframe.at[index, 'rho_center_max [g ⋅ cm^-3]'] = star_family_object.maximum_stable_rho_center / MASS_DENSITY_CGS_TO_GU
+        parameter_dataframe.at[index, 'M_max [solar mass]'] = star_family_object.maximum_mass / star_family_object.star_object.SOLAR_MASS
+
+    # Print the parameter dataframe at the end
+    print(parameter_dataframe)
 
 
 def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"):

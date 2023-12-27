@@ -108,6 +108,41 @@ class StarFamily:
             ['C', 'M'],
         ]
 
+    def find_maximum_mass(self, r_init=1e-12, r_final=np.inf, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
+        """Method that finds the maximum mass star
+
+         Args:
+            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to 1e-12
+            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to np.inf
+            method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
+            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
+            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-21
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
+        """
+
+        # Set the p_center space and rho_center space used to find the maximum mass star
+        rho_center = 1.0e16 * MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
+        p_center = self.star_object.eos.p(rho_center)       # Central pressure [m^-2]
+        self.p_center_space = p_center * np.logspace(-3.0, 0.0, 10)
+        self.rho_center_space = self.star_object.eos.rho(self.p_center_space)
+
+        # Solve the TOV system and find the maximum mass star through _check_stability method
+        self.solve_tov(r_init, r_final, method, max_step, atol, rtol)
+
+        # Redefine the p_center space to a stricter interval
+        rho_center = self.maximum_stable_rho_center         # Central density [m^-2]
+        p_center = self.star_object.eos.p(rho_center)       # Central pressure [m^-2]
+        self.p_center_space = p_center * np.logspace(-0.1, 0.1, 10)
+        self.rho_center_space = self.star_object.eos.rho(self.p_center_space)
+
+        # Solve the TOV system and find the maximum mass star through _check_stability method
+        self.maximum_stable_rho_center = None
+        self.solve_tov(r_init, r_final, method, max_step, atol, rtol)
+
+        # If the maximum stable rho_center is not found in the second TOV solve, raise an exception
+        if self.maximum_stable_rho_center is None:
+            raise Exception(f"Maximum mass star not found!")
+
     def solve_tov(self, r_init=1e-12, r_final=np.inf, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
         """Method that solves the TOV system, finding the radius and mass of each star in the family
 
@@ -119,6 +154,10 @@ class StarFamily:
             atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-21
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
         """
+
+        # Initialize the radius and mass arrays with the right size
+        self.radius_array = np.zeros(self.p_center_space.size)
+        self.mass_array = np.zeros(self.p_center_space.size)
 
         # Solve the TOV equation for each star in the family
         with alive_bar(self.p_center_space.size) as bar:

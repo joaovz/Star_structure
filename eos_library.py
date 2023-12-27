@@ -286,7 +286,7 @@ class TableEOS(EOS):
         self.eos_name = eos_name
 
         # Open the .csv file with the EOS
-        rho, p = csv_to_arrays(
+        (rho, p) = csv_to_arrays(
             fname=fname,
             unit_conversion=(MASS_DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
 

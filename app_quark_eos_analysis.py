@@ -63,7 +63,7 @@ def generate_strange_stars(mesh_size=21):
     a4_range = np.linspace(a4_min, a4_max, mesh_size)
     B_1_4_range = np.linspace(B_min**(1 / 4), B_max**(1 / 4), mesh_size)
     B_range = B_1_4_range**4
-    a2, a4, B = np.meshgrid(a2_range, a4_range, B_range)
+    (a2, a4, B) = np.meshgrid(a2_range, a4_range, B_range)
 
     # Create the mesh masks according to each parameter minimum and maximum allowed values
     a2_max_mesh_mask = (a2 >= alpha * a4)
@@ -98,7 +98,7 @@ def analyze_strange_stars(parameter_dataframe):
     for row in parameter_dataframe.itertuples():
 
         # Create the EOS object (values chosen to build a strange star)
-        _, a2, a4, B = row
+        (_, a2, a4, B) = row
         quark_eos = QuarkEOS(a2, a4, B)
 
         # EOS analysis
@@ -141,7 +141,7 @@ def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"
     """
 
     # Create figure and change properties
-    fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.8), constrained_layout=True)
+    (fig, ax) = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.8), constrained_layout=True)
     ax.set_title("Quark EOS parameter points", y=1.0)
     ax.view_init(elev=15, azim=-115, roll=0)
     ax.set_xlim3d(a2_min**(1 / 2), a2_max**(1 / 2))
@@ -175,7 +175,7 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
     # Define the (a2, a4) rectangular meshgrid
     a2_range = np.linspace(a2_min, a2_max, mesh_size)
     a4_range = np.linspace(a4_min, a4_max, mesh_size)
-    a2, a4 = np.meshgrid(a2_range, a4_range)
+    (a2, a4) = np.meshgrid(a2_range, a4_range)
 
     # Create the B_max and B_min surfaces
     B_max_surface = calc_B_max(a2, a4)
@@ -189,7 +189,7 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
     B_min_surface_masked = np.ma.masked_where(mesh_mask, B_min_surface)
 
     # Create figure and change properties
-    fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.8), constrained_layout=True)
+    (fig, ax) = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.8), constrained_layout=True)
     ax.set_title("Quark EOS parameter space for stable strange stars", y=1.0)
     ax.view_init(elev=15, azim=-115, roll=0)
     ax.set_xlim3d(a2_min**(1 / 2), a2_max**(1 / 2))

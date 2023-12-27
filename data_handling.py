@@ -39,17 +39,17 @@ def csv_to_arrays(fname='file_name.csv', usecols=(0, 1), unit_conversion=(1.0, 1
         tuple of arrays: Numpy arrays with the data read from the .csv file
     """
 
-    x, y = np.loadtxt(fname=fname, delimiter=";", skiprows=1, usecols=usecols, unpack=True)
-    x_converted, y_converted = x * unit_conversion[0], y * unit_conversion[1]
+    (x, y) = np.loadtxt(fname=fname, delimiter=";", skiprows=1, usecols=usecols, unpack=True)
+    (x_converted, y_converted) = (x * unit_conversion[0], y * unit_conversion[1])
 
-    return x_converted, y_converted
+    return (x_converted, y_converted)
 
 
 # This logic is a simple example, only executed when this file is run directly in the command prompt
 if __name__ == "__main__":
 
     # Open an example .csv file
-    rho, p = csv_to_arrays(fname='data/GM1.csv')
+    (rho, p) = csv_to_arrays(fname='data/GM1.csv')
 
     # Plot the curve given in the example .csv file
     plt.figure()

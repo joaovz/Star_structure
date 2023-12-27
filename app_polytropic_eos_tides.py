@@ -8,7 +8,7 @@ from eos_library import PolytropicEOS
 figures_path = "figures/app_polytropic_eos"
 
 # Open the .csv file with the expected Love number vs Compactness curve
-expected_C, expected_k2 = csv_to_arrays(
+(expected_C, expected_k2) = csv_to_arrays(
     fname='data/Polytropic_n_1_k2_vs_C.csv')
 
 # Create the EOS object

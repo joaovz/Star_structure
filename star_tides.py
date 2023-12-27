@@ -34,12 +34,11 @@ class DeformedStar(Star):
             y (array of float): Array with the dependent variables of the ODE system (g and h)
 
         Returns:
-            array of float: Right hand side of the equation ``dy/dr = f(r, y)`` ([dg_dr, dh_dr])
+            array of float: Right hand side of the equation ``dy/dr = f(r, y)`` (dg_dr, dh_dr)
         """
 
         # Variables of the system
-        g = y[0]
-        h = y[1]
+        (g, h) = y
 
         # Functions evaluated at current r
         p = self.p_spline_function(r)
@@ -66,7 +65,7 @@ class DeformedStar(Star):
         # ODE System that describes the tidal deformation of the star
         dg_dr = -(c1 * g + c0 * h)
         dh_dr = g
-        return [dg_dr, dh_dr]
+        return (dg_dr, dh_dr)
 
     def solve_tidal(self, r_init=1e-12, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
         """Method that solves the tidal system for the star, finding the tidal Love number k2
@@ -90,15 +89,14 @@ class DeformedStar(Star):
         # Solve the ODE system
         ode_solution = solve_ivp(
             self._tidal_ode_system,
-            [r_init, self.star_radius],
-            [self.g_init, self.h_init],
+            (r_init, self.star_radius),
+            (self.g_init, self.h_init),
             method,
             max_step=max_step,
             atol=atol,
             rtol=rtol)
         self.r_tidal_ode_solution = ode_solution.t
-        self.g_tidal_ode_solution = ode_solution.y[0]
-        self.h_tidal_ode_solution = ode_solution.y[1]
+        (self.g_tidal_ode_solution, self.h_tidal_ode_solution) = ode_solution.y
 
         # Check the ODE solution status and treat the exception case
         if ode_solution.status == -1:

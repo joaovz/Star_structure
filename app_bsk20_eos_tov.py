@@ -9,7 +9,7 @@ from eos_library import BSk20EOS
 figures_path = "figures/app_bsk20_eos"
 
 # Open the .csv file with the expected Mass vs Radius curve (units in solar mass and km)
-expected_radius, expected_mass = csv_to_arrays(
+(expected_radius, expected_mass) = csv_to_arrays(
     fname='data/BSk20_M_vs_R.csv')
 
 # Set the rho_space

@@ -52,7 +52,7 @@ class Star:
             y (array of float): Array with the dependent variables of the ODE system (p, m, and nu)
 
         Returns:
-            array of float: Right hand side of the equation ``dy/dr = f(r, y)`` ([dp_dr, dm_dr, dnu_dr])
+            array of float: Right hand side of the equation ``dy/dr = f(r, y)`` (dp_dr, dm_dr, dnu_dr)
 
         Raises:
             Exception: Exception in case the pressure is outside the acceptable range (p > p_center)
@@ -60,8 +60,7 @@ class Star:
         """
 
         # Variables of the system
-        p = y[0]
-        m = y[1]
+        (p, m, nu) = y
 
         # Check if p is outside the acceptable range and raise an exception in this case
         if p > self.p_center:
@@ -83,7 +82,7 @@ class Star:
             dp_dr = -((rho + p) / 2) * dnu_dr                                   # TOV equation
             dm_dr = 4 * np.pi * r**2 * rho                                      # Rate of change of the mass
 
-        return [dp_dr, dm_dr, dnu_dr]
+        return (dp_dr, dm_dr, dnu_dr)
 
     def _ode_termination_event(self, r, y):
         """Event method used by the IVP solver. The solver will find an accurate value of r at which
@@ -146,29 +145,29 @@ class Star:
         # Solve the ODE system
         ode_solution = solve_ivp(
             self._ode_system,
-            [r_init, r_final],
-            [self.p_init, self.m_init, self.nu_init],
+            (r_init, r_final),
+            (self.p_init, self.m_init, self.nu_init),
             method,
-            events=[self._ode_termination_event],
+            events=(self._ode_termination_event),
             max_step=max_step,
             atol=atol,
             rtol=rtol)
         self.r_ode_solution = ode_solution.t
-        self.p_ode_solution = ode_solution.y[0]
-        self.m_ode_solution = ode_solution.y[1]
-        self.rho_ode_solution = self.eos.rho(ode_solution.y[0])
+        (self.p_ode_solution, self.m_ode_solution, self.nu_ode_solution) = ode_solution.y
+        self.rho_ode_solution = self.eos.rho(self.p_ode_solution)
 
         # Check the ODE solution status and treat each case
         if ode_solution.status == -1:
             raise Exception(ode_solution.message)
         elif ode_solution.status != 1:
             raise Exception("The solver did not find the ODE termination event")
-        # Get the star radius and mass from the ODE termination event
+        # Get the star radius, star mass, and surface nu from the ODE termination event
         self.star_radius = ode_solution.t_events[0][0]
         self.star_mass = ode_solution.y_events[0][0][1]
+        nu_surface = ode_solution.y_events[0][0][2]
 
         # Adjust metric function with the correct boundary condition (nu(R) = ln(1 - 2M/R))
-        self.nu_ode_solution = ode_solution.y[2] - ode_solution.y_events[0][0][2] + np.log(1 - 2 * self.star_mass / self.star_radius)
+        self.nu_ode_solution += - nu_surface + np.log(1 - 2 * self.star_mass / self.star_radius)
 
         # Create interpolated functions for the solution using CubicSpline
         self.p_spline_function = CubicSpline(self.r_ode_solution, self.p_ode_solution, extrapolate=False)

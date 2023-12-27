@@ -7,10 +7,10 @@ from eos_library import PolytropicEOS
 
 
 class DeformedStarFamily(StarFamily):
-    """Class with all the properties and methods necessary to describe a family of perfect fluid deformed stars
+    """Class with all the properties and methods necessary to describe a family of deformed stars
 
     Args:
-        StarFamily (class): Parent class with all the properties and methods necessary to describe a family of stars.
+        StarFamily (class): Parent class with all the properties and methods necessary to describe a family of stars
         Each star in the family is characterized by a specific value of central pressure (p_center)
     """
 

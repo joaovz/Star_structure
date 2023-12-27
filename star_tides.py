@@ -8,7 +8,7 @@ from eos_library import PolytropicEOS
 
 
 class DeformedStar(Star):
-    """Class with all the properties and methods necessary to describe a single perfect fluid deformed star
+    """Class with all the properties and methods necessary to describe a single deformed star
 
     Args:
         Star (class): Parent class with all the properties and methods necessary to describe a single star
@@ -121,11 +121,11 @@ class DeformedStar(Star):
         print(f"Tidal Love number (k2) = {(self.k2):e} [dimensionless]")
         print(f"Compactness (C = M/R) = {(self.star_mass / self.star_radius):e} [dimensionless]")
 
-    def plot_perturbation_curves(self, figure_path="figures/perfect_fluid_star_tides"):
+    def plot_perturbation_curves(self, figure_path="figures/star_tides"):
         """Method that plots the perturbation solution found
 
         Args:
-            figure_path (str, optional): Path used to save the figure. Defaults to "figures/perfect_fluid_star_tides"
+            figure_path (str, optional): Path used to save the figure. Defaults to "figures/star_tides"
         """
 
         # Show a simple plot of the solution

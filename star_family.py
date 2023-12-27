@@ -31,9 +31,11 @@ class StarFamily:
         # Calculate the rho_center_space
         self.rho_center_space = self.star_object.eos.rho(self.p_center_space)
 
-        # Create the radius and mass arrays to store these star family properties
+        # Initialize star family properties
         self.radius_array = np.zeros(self.p_center_space.size)
         self.mass_array = np.zeros(self.p_center_space.size)
+        self.maximum_mass = None
+        self.maximum_stable_rho_center = None
 
     def _check_stability(self):
         """Method that checks the stability criterion for the star family
@@ -44,10 +46,13 @@ class StarFamily:
         self.dm_drho_center_spline = self.mass_rho_center_spline.derivative()
         self.dm_drho_center = self.dm_drho_center_spline(self.rho_center_space)
 
-        # Calculate the maximum stable rho_center
+        # Calculate the maximum stable rho_center and maximum mass
         dm_drho_center_roots = self.dm_drho_center_spline.roots()
         if dm_drho_center_roots.size > 0:
-            print(f"Maximum stable rho_center = {dm_drho_center_roots / MASS_DENSITY_CGS_TO_GU} [g ⋅ cm^-3]")
+            self.maximum_stable_rho_center = dm_drho_center_roots[0]
+            self.maximum_mass = self.mass_rho_center_spline(self.maximum_stable_rho_center)
+            print(f"Maximum stable rho_center = {(self.maximum_stable_rho_center / MASS_DENSITY_CGS_TO_GU):e} [g ⋅ cm^-3]")
+            print(f"Maximum mass = {(self.maximum_mass / self.star_object.SOLAR_MASS):e} [solar mass]")
         else:
             print("Maximum stable rho_center not reached")
 
@@ -177,13 +182,9 @@ if __name__ == "__main__":
     eos = PolytropicEOS(k=1.0e8, n=1)
 
     # Set the pressure at the center and surface of the star
-    rho_center = 5.691e15 * MASS_DENSITY_CGS_TO_GU      # Center density [m^-2]
-    p_center = eos.p(rho_center)                        # Center pressure [m^-2]
+    rho_center = 5.691e15 * MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
+    p_center = eos.p(rho_center)                        # Central pressure [m^-2]
     p_surface = 0.0                                     # Surface pressure [m^-2]
-
-    # Print the values used for p_center and p_surface
-    print(f"p_center = {p_center / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
-    print(f"p_surface = {p_surface / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
 
     # Set the p_center space that characterizes the star family
     p_center_space = p_center * np.logspace(-5.0, 0.0, 50)

@@ -118,8 +118,8 @@ class DeformedStar(Star):
     def print_k2(self):
         """Method that prints the tidal Love number (k2) and the compactness of the star
         """
-        print(f"Tidal Love number (k2) = {self.k2} [dimensionless]")
-        print(f"Compactness (C = M/R) = {self.star_mass / self.star_radius} [dimensionless]")
+        print(f"Tidal Love number (k2) = {(self.k2):e} [dimensionless]")
+        print(f"Compactness (C = M/R) = {(self.star_mass / self.star_radius):e} [dimensionless]")
 
     def plot_perturbation_curves(self, figure_path="figures/perfect_fluid_star_tides"):
         """Method that plots the perturbation solution found
@@ -152,13 +152,9 @@ if __name__ == "__main__":
     eos = PolytropicEOS(k=1.0e8, n=1)
 
     # Set the pressure at the center and surface of the star
-    rho_center = 5.691e15 * MASS_DENSITY_CGS_TO_GU      # Center density [m^-2]
-    p_center = eos.p(rho_center)                        # Center pressure [m^-2]
+    rho_center = 5.691e15 * MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
+    p_center = eos.p(rho_center)                        # Central pressure [m^-2]
     p_surface = 0.0                                     # Surface pressure [m^-2]
-
-    # Print the values used for p_center and p_surface
-    print(f"p_center = {p_center / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
-    print(f"p_surface = {p_surface / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
 
     # Define the object
     star_object = DeformedStar(eos, p_center, p_surface)

@@ -20,13 +20,9 @@ rho_space = max_rho * np.logspace(-9.0, 0.0, 10000)
 eos = BSk20EOS(rho_space)
 
 # Set the pressure at the center and surface of the star
-rho_center = max_rho                            # Center density [m^-2]
-p_center = eos.p(rho_center)                    # Center pressure [m^-2]
+rho_center = max_rho                            # Central density [m^-2]
+p_center = eos.p(rho_center)                    # Central pressure [m^-2]
 p_surface = 1e23 * PRESSURE_CGS_TO_GU           # Surface pressure [m^-2]
-
-# Print the values used for p_center and p_surface
-print(f"p_center = {p_center / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
-print(f"p_surface = {p_surface / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
 
 # Single star
 

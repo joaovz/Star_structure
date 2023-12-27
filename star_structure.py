@@ -20,27 +20,29 @@ class Star:
 
         Args:
             eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the star
-            p_center (float): Center pressure of the star [m^-2]
+            p_center (float): Central pressure of the star [m^-2]
             p_surface (float): Surface pressure of the star [m^-2]
         """
+
+        # Print the input parameters
+        print(f"p_center = {(p_center / PRESSURE_CGS_TO_GU):e} [dyn ⋅ cm^-2]")
+        print(f"p_surface = {(p_surface / PRESSURE_CGS_TO_GU):e} [dyn ⋅ cm^-2]")
+
+        # Store the input parameters
+        self.p_center = p_center        # Central pressure (p(r = 0)) [m^-2]
+        self.p_surface = p_surface      # Surface pressure (p(r = R)) [m^-2]. Boundary value for the termination of the ODE integration
 
         # Set the EOS object
         self.eos = eos
 
-        # Set the pressure at r = 0, at the center
-        self.p_center = p_center
-
-        # Set the initial values: pressure, mass, metric function, and density at r = r_init
+        # Set the initial values: pressure, mass, and metric function at r = r_init
         self.p_init = p_center          # Initial pressure [m^-2]
         self.m_init = 0.0               # Initial mass [m]
         self.nu_init = 0.0              # Initial metric function (g_tt = -e^nu) [dimensionless]
 
-        # Set the boundary value for the termination of the ODE integration: pressure at r = R, on the surface
-        self.p_surface = p_surface      # Surface pressure [m^-2]
-
-        # Initialize star properties: radius and total mass
-        self.star_radius = 0.0          # Star radius [m]
-        self.star_mass = 0.0            # Star mass [m]
+        # Initialize star properties
+        self.star_radius = 0.0          # Star radius (R) [m]
+        self.star_mass = 0.0            # Star mass (M) [m]
 
     def _ode_system(self, r, y):
         """Method that implements the TOV ODE system in the form ``dy/dr = f(r, y)``, used by the IVP solver
@@ -102,7 +104,7 @@ class Star:
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)
 
         Args:
-            p_center (float, optional): Center pressure of the star [m^-2]
+            p_center (float, optional): Central pressure of the star [m^-2]
             r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to 1e-12
             r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to np.inf
             method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
@@ -182,8 +184,8 @@ class Star:
         """
 
         # Print the star radius and mass
-        print(f"Star radius = {self.star_radius / 10**3} [km]")
-        print(f"Star mass = {self.star_mass / self.SOLAR_MASS} [solar mass]")
+        print(f"Star radius = {(self.star_radius / 10**3):e} [km]")
+        print(f"Star mass = {(self.star_mass / self.SOLAR_MASS):e} [solar mass]")
 
         # Show a simple plot of the solution
         plt.figure()
@@ -211,13 +213,9 @@ if __name__ == "__main__":
     eos = PolytropicEOS(k=1.0e8, n=1)
 
     # Set the pressure at the center and surface of the star
-    rho_center = 5.691e15 * MASS_DENSITY_CGS_TO_GU      # Center density [m^-2]
-    p_center = eos.p(rho_center)                        # Center pressure [m^-2]
+    rho_center = 5.691e15 * MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
+    p_center = eos.p(rho_center)                        # Central pressure [m^-2]
     p_surface = 0.0                                     # Surface pressure [m^-2]
-
-    # Print the values used for p_center and p_surface
-    print(f"p_center = {p_center / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
-    print(f"p_surface = {p_surface / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
 
     # Define the object
     star_object = Star(eos, p_center, p_surface)

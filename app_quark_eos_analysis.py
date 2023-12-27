@@ -3,6 +3,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from eos_library import QuarkEOS
+from star_family import StarFamily
+from data_handling import *
 
 
 # Constants
@@ -61,12 +64,12 @@ def generate_strange_stars(mesh_size=21):
     a2, a4, B = np.meshgrid(a2_range, a4_range, B_range)
 
     # Create the mesh masks according to each parameter minimum and maximum allowed values
-    a2_max_mesh_mask = (a2 > alpha * a4)
-    a2_min_mesh_mask = (a2 < a2_min)
+    a2_max_mesh_mask = (a2 >= alpha * a4)
+    a2_min_mesh_mask = (a2 <= a2_min)
     a4_max_mesh_mask = (a4 > a4_max)
-    a4_min_mesh_mask = (a4 < a4_min)
-    B_max_mesh_mask = (B > calc_B_max(a2, a4))
-    B_min_mesh_mask = (B < calc_B_min(a2, a4))
+    a4_min_mesh_mask = (a4 <= a4_min)
+    B_max_mesh_mask = (B >= calc_B_max(a2, a4))
+    B_min_mesh_mask = (B <= calc_B_min(a2, a4))
 
     # Create the combined mask and apply to each mesh grid
     mesh_mask = a2_max_mesh_mask | a2_min_mesh_mask | a4_max_mesh_mask | a4_min_mesh_mask | B_max_mesh_mask | B_min_mesh_mask
@@ -85,6 +88,43 @@ def generate_strange_stars(mesh_size=21):
     parameter_dataframe = pd.DataFrame(parameter_points, columns=["a2", "a4", "B"])
 
     return (a2_masked, a4_masked, B_masked, parameter_dataframe)
+
+def analyze_strange_stars(parameter_dataframe):
+
+    # Iterate over each strange star
+    for row in parameter_dataframe.itertuples():
+
+        # Create the EOS object (values chosen to build a strange star)
+        _, a2, a4, B = row
+        quark_eos = QuarkEOS(a2, a4, B)
+
+        # EOS analysis
+
+        # Set the p_space
+        max_rho = 1.0e16 * MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+        max_p = quark_eos.p(max_rho)                    # Maximum pressure [m^-2]
+        p_space = max_p * np.logspace(-15.0, 0.0, 1000)
+
+        # Check the EOS
+        quark_eos.check_eos(p_space)
+
+        # TOV analysis
+
+        # Set the pressure at the center and surface of the star
+        rho_center = 1.0e16 * MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
+        p_center = quark_eos.p(rho_center)                  # Central pressure [m^-2]
+        p_surface = 0.0                                     # Surface pressure [m^-2]
+
+        # Set the p_center space that characterizes the star family
+        p_center_space = p_center * np.logspace(-3.0, 0.0, 20)
+
+        # Define the object
+        star_family_object = StarFamily(quark_eos, p_center_space, p_surface)
+
+        # Solve the TOV equation twice to get a better estimate of the maximum mass
+        star_family_object.maximum_mass = None
+        while star_family_object.maximum_mass is None:
+            star_family_object.solve_tov(max_step=30.0)
 
 def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"):
     """Function that plots the scatter graph of the parameter points
@@ -183,7 +223,7 @@ def main():
     # Constants
     figure_path = "figures/app_quark_eos"
     parameter_space_mesh_size = 1001        # Number of points used in the meshgrid for the parameter space plot
-    scatter_plot_mesh_size = 21             # Number of points used in the meshgrid for the scatter plot
+    scatter_plot_mesh_size = 11             # Number of points used in the meshgrid for the scatter plot
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figure_path)
@@ -193,6 +233,9 @@ def main():
 
     # Plot the parameter points generated for strange stars
     plot_parameter_points_scatter(a2_masked, a4_masked, B_masked, figure_path)
+
+    # Analize the strange stars generated
+    analyze_strange_stars(parameter_dataframe)
 
 
 # This logic is a simple example, only executed when this file is run directly in the command prompt

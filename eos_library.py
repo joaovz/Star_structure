@@ -13,6 +13,7 @@ class EOS:
         """Initialization method
         """
         self.eos_name = self.__class__.__name__
+        self.maximum_stable_rho = None
 
     def _check_stability(self, p_space):
         """Method that checks the stability criterion for the EOS (c_s < 1)
@@ -30,7 +31,8 @@ class EOS:
         # Find the roots of (c_s - 1)
         cs_minus_1_roots = cs_minus_1_spline.roots()
         if cs_minus_1_roots.size > 0:
-            print(f"{self.eos_name} maximum stable rho = {cs_minus_1_roots / MASS_DENSITY_CGS_TO_GU} [g ⋅ cm^-3]")
+            self.maximum_stable_rho = cs_minus_1_roots[0]
+            print(f"{self.eos_name} maximum stable rho = {(self.maximum_stable_rho / MASS_DENSITY_CGS_TO_GU):e} [g ⋅ cm^-3]")
         else:
             print(f"{self.eos_name} maximum stable rho not reached")
 
@@ -175,7 +177,7 @@ class EOS:
 
         # Show warning if error in p_space_calc is greater than maximum acceptable error
         if max(eos_rel_error) > rtol:
-            print(f"Warning: Error in {self.eos_name} calculation is larger than the acceptable error: {max(eos_rel_error)} > {rtol}")
+            print(f"Warning: Error in {self.eos_name} calculation is larger than the acceptable error: {(max(eos_rel_error)):e} > {rtol:e}")
 
         # Calculate drho_dp, dp_drho, and the error
         drho_dp = self.drho_dp(p_space)
@@ -184,7 +186,7 @@ class EOS:
 
         # Show warning if derivative error is greater than maximum acceptable error
         if max(derivative_rel_error) > rtol:
-            print(f"Warning: Error in {self.eos_name} derivatives calculation is larger than the acceptable error: {max(derivative_rel_error)} > {rtol}")
+            print(f"Warning: Error in {self.eos_name} derivatives calculation is larger than the acceptable error: {(max(derivative_rel_error)):e} > {rtol:e}")
 
     def plot_curve(self, x_axis="p", y_axis="rho", figure_path="figures/eos_library"):
         """Method that plots some curve of the EOS
@@ -244,6 +246,10 @@ class PolytropicEOS(EOS):
         # Execute parent class' __init__ method
         super().__init__()
 
+        # Print the parameters
+        print(f"k = {k:e} [m^2]")
+        print(f"n = {n:e} [dimensionless]")
+
         # Set the parameters
         self.k = float(k)
         self.m = 1.0 + 1.0 / float(n)
@@ -292,11 +298,11 @@ class TableEOS(EOS):
         self.drho_dp_spline_function = self.rho_spline_function.derivative()
         self.dp_drho_spline_function = self.p_spline_function.derivative()
 
-        # Save the center and surface density and pressure
-        self.rho_center = rho[-1]
-        self.p_center = p[-1]
-        self.rho_surface = rho[0]
-        self.p_surface = p[0]
+        # Save the maximum and minimum density and pressure
+        self.rho_max = rho[-1]
+        self.p_max = p[-1]
+        self.rho_min = rho[0]
+        self.p_min = p[0]
 
     def rho(self, p):
         return self.rho_spline_function(p)
@@ -316,28 +322,33 @@ class QuarkEOS(EOS):
     Omega = (3 / (4 * pi**2)) * (-a4 * mu**4 + a2 * mu**2) + B
     """
 
-    def __init__(self, B, a2, a4):
+    def __init__(self, a2, a4, B):
         """Initialization method
 
         Args:
-            B (float): Model free parameter [m^-2]
-            a2 (float): Model free parameter [m^-1]
+            a2 (float): Model free parameter [MeV^2]
             a4 (float): Model free parameter [dimensionless]
+            B (float): Model free parameter [MeV^4]
         """
 
         # Execute parent class' __init__ method
         super().__init__()
 
-        # Set the parameters
-        self.B = B
-        self.a2 = a2
+        # Print the parameters, as usually shown in papers
+        print(f"a2^(1/2) = {(a2**(1 / 2)):e} [MeV]")
+        print(f"a4 = {(a4):e} [dimensionless]")
+        print(f"B^(1/4) = {(B**(1 / 4)):e} [MeV]")
+
+        # Set the parameters, converting from NU to GU
+        self.a2 = a2 * (ENERGY_DENSITY_NU_TO_GU)**(1 / 2)
         self.a4 = a4
+        self.B = B * ENERGY_DENSITY_NU_TO_GU
 
     def rho(self, p):
 
-        B = self.B
         a2 = self.a2
         a4 = self.a4
+        B = self.B
 
         rho = (
             3 * p + 4 * B + ((3 * a2**2) / (4 * np.pi**2 * a4)) * (
@@ -349,9 +360,9 @@ class QuarkEOS(EOS):
 
     def p(self, rho):
 
-        B = self.B
         a2 = self.a2
         a4 = self.a4
+        B = self.B
 
         p = (
             (1 / 3) * (rho - 4 * B) - (a2**2 / (12 * np.pi**2 * a4)) * (
@@ -363,9 +374,9 @@ class QuarkEOS(EOS):
 
     def drho_dp(self, p):
 
-        B = self.B
         a2 = self.a2
         a4 = self.a4
+        B = self.B
 
         drho_dp = (
             3 + 2 * (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p + B))**(-1 / 2)
@@ -375,9 +386,9 @@ class QuarkEOS(EOS):
 
     def dp_drho(self, rho):
 
-        B = self.B
         a2 = self.a2
         a4 = self.a4
+        B = self.B
 
         dp_drho = (
             (1 / 3) - (2 / 3) * (1 + ((16 * np.pi**2 * a4) / a2**2) * (rho - B))**(-1 / 2)
@@ -411,11 +422,11 @@ class BSk20EOS(EOS):
         self.drho_dp_spline_function = self.rho_spline_function.derivative()
         self.dp_drho_spline_function = self.p_spline_function.derivative()
 
-        # Save the center and surface density and pressure
-        self.rho_center = rho_space[-1]
-        self.p_center = p_space[-1]
-        self.rho_surface = rho_space[0]
-        self.p_surface = p_space[0]
+        # Save the maximum and minimum density and pressure
+        self.rho_max = rho_space[-1]
+        self.p_max = p_space[-1]
+        self.rho_min = rho_space[0]
+        self.p_min = p_space[0]
 
     def _p_analytic(self, rho):
         """Analytic expression of the pressure
@@ -480,7 +491,7 @@ if __name__ == "__main__":
     p_space = bsk20_eos.p(rho_space)
 
     # Print the minimum pressure calculated. Should be less than 10**23 [dyn ⋅ cm^-2]
-    print(f"BSk20EOS minimum pressure calculated = {p_space[0] / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
+    print(f"BSk20EOS minimum pressure calculated = {(p_space[0] / PRESSURE_CGS_TO_GU):e} [dyn ⋅ cm^-2]")
 
     # Check the EOS
     bsk20_eos.check_eos(p_space)
@@ -499,7 +510,7 @@ if __name__ == "__main__":
     p_space = max_p * np.logspace(-14.0, 0.0, 1000)
 
     # Print the minimum pressure calculated. Should be less than 10**23 [dyn ⋅ cm^-2]
-    print(f"PolytropicEOS minimum pressure calculated = {p_space[0] / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
+    print(f"PolytropicEOS minimum pressure calculated = {(p_space[0] / PRESSURE_CGS_TO_GU):e} [dyn ⋅ cm^-2]")
 
     # Check the EOS
     polytropic_eos.check_eos(p_space)
@@ -510,10 +521,10 @@ if __name__ == "__main__":
     # Quark EOS test
 
     # Create the EOS object (values chosen to build a strange star)
-    B = 130**4 * ENERGY_DENSITY_NU_TO_GU
-    a2 = (100**4 * ENERGY_DENSITY_NU_TO_GU)**(1 / 2)
-    a4 = 0.6
-    quark_eos = QuarkEOS(B, a2, a4)
+    a2 = 100**2     # [MeV^2]
+    a4 = 0.6        # [dimensionless]
+    B = 130**4      # [MeV^4]
+    quark_eos = QuarkEOS(a2, a4, B)
 
     # Set the p_space
     max_rho = 1.502e15 * MASS_DENSITY_CGS_TO_GU     # Maximum density [m^-2]
@@ -521,7 +532,7 @@ if __name__ == "__main__":
     p_space = max_p * np.logspace(-13.0, 0.0, 1000)
 
     # Print the minimum pressure calculated. Should be less than 10**23 [dyn ⋅ cm^-2]
-    print(f"QuarkEOS minimum pressure calculated = {p_space[0] / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
+    print(f"QuarkEOS minimum pressure calculated = {(p_space[0] / PRESSURE_CGS_TO_GU):e} [dyn ⋅ cm^-2]")
 
     # Check the EOS
     quark_eos.check_eos(p_space)
@@ -540,7 +551,7 @@ if __name__ == "__main__":
     p_space = max_p * np.logspace(-13.0, 0.0, 1000)
 
     # Print the minimum pressure calculated. Should be less than 10**23 [dyn ⋅ cm^-2]
-    print(f"GM1EOS minimum pressure calculated = {p_space[0] / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
+    print(f"GM1EOS minimum pressure calculated = {(p_space[0] / PRESSURE_CGS_TO_GU):e} [dyn ⋅ cm^-2]")
 
     # Check the EOS
     table_gm1_eos.check_eos(p_space)
@@ -559,7 +570,7 @@ if __name__ == "__main__":
     p_space = max_p * np.logspace(-14.0, 0.0, 1000)
 
     # Print the minimum pressure calculated. Should be less than 10**23 [dyn ⋅ cm^-2]
-    print(f"SLy4EOS minimum pressure calculated = {p_space[0] / PRESSURE_CGS_TO_GU} [dyn ⋅ cm^-2]")
+    print(f"SLy4EOS minimum pressure calculated = {(p_space[0] / PRESSURE_CGS_TO_GU):e} [dyn ⋅ cm^-2]")
 
     # Check the EOS
     table_sly4_eos.check_eos(p_space)

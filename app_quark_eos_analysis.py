@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from eos_library import QuarkEOS
-from star_family import StarFamily
+from star_family_structure import StarFamily
 from data_handling import *
 
 

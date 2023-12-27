@@ -1,7 +1,7 @@
 import numpy as np
 from data_handling import *
 from star_structure import Star
-from star_family import StarFamily
+from star_family_structure import StarFamily
 from eos_library import TableEOS
 
 

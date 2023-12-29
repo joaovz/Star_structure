@@ -206,11 +206,13 @@ class EOS:
         plt.ylabel(self.plot_dict[y_axis]['label'])
 
         # Create the folder if necessary and save the figure
-        complete_figure_path = f"{figure_path}/{self.eos_name.lower().replace('eos', '_eos')}"
+        complete_figure_path = os.path.join(figure_path, self.eos_name.lower().replace('eos', '_eos'))
         os.makedirs(complete_figure_path, exist_ok=True)
         x_axis_name = self.plot_dict[x_axis]['name'].lower().replace(' ', '_')
         y_axis_name = self.plot_dict[y_axis]['name'].lower().replace(' ', '_')
-        plt.savefig(f"{complete_figure_path}/{y_axis_name}_vs_{x_axis_name}_curve.png")
+        figure_name = f"{y_axis_name}_vs_{x_axis_name}_curve.png"
+        complete_path = os.path.join(complete_figure_path, figure_name)
+        plt.savefig(complete_path)
 
     def plot_all_curves(self, p_space, figures_path="figures/eos_library"):
         """Method that plots all curves specified by the self.curves_list

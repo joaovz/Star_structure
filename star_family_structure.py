@@ -199,7 +199,9 @@ class StarFamily:
         os.makedirs(figure_path, exist_ok=True)
         x_axis_name = self.plot_dict[x_axis]['name'].lower().replace(' ', '_')
         y_axis_name = self.plot_dict[y_axis]['name'].lower().replace(' ', '_')
-        plt.savefig(f"{figure_path}/{y_axis_name}_vs_{x_axis_name}_curve.png")
+        figure_name = f"{y_axis_name}_vs_{x_axis_name}_curve.png"
+        complete_path = os.path.join(figure_path, figure_name)
+        plt.savefig(complete_path)
 
     def plot_all_curves(self, figures_path="figures/star_family"):
         """Method that plots all curves specified by the self.curves_list

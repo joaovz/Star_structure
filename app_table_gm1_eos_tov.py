@@ -1,9 +1,9 @@
 import numpy as np
 from constants import *
 from data_handling import csv_to_arrays
-from star_structure import Star
-from star_family_structure import StarFamily
 from eos_library import TableEOS
+from star_family_structure import StarFamily
+from star_structure import Star
 
 
 # Set the path of the figures

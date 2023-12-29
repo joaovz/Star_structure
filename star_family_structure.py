@@ -1,11 +1,11 @@
 import os
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.interpolate import CubicSpline
 from alive_progress import alive_bar
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.interpolate import CubicSpline
 from constants import *
-from star_structure import Star
 from eos_library import PolytropicEOS
+from star_structure import Star
 
 
 class StarFamily:

@@ -1,10 +1,10 @@
 import os
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.integrate import solve_ivp
 from constants import *
-from star_structure import Star
 from eos_library import PolytropicEOS
+from star_structure import Star
 
 
 class DeformedStar(Star):

@@ -1,8 +1,8 @@
 import numpy as np
 from constants import *
-from star_structure import Star
-from star_family_structure import StarFamily
 from eos_library import PolytropicEOS
+from star_family_structure import StarFamily
+from star_structure import Star
 
 
 # Set the path of the figures

@@ -1,6 +1,6 @@
 import os
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy.interpolate import CubicSpline
 from constants import *
 from data_handling import csv_to_arrays

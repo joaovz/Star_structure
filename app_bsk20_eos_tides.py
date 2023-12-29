@@ -1,8 +1,8 @@
 import numpy as np
 from constants import *
 from data_handling import csv_to_arrays
-from star_family_tides import DeformedStarFamily
 from eos_library import BSk20EOS
+from star_family_tides import DeformedStarFamily
 
 
 # Set the path of the figures

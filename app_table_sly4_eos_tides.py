@@ -1,7 +1,7 @@
 import numpy as np
 from constants import *
-from star_family_tides import DeformedStarFamily
 from eos_library import TableEOS
+from star_family_tides import DeformedStarFamily
 
 
 # Set the path of the figures

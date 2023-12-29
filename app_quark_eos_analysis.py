@@ -1,8 +1,8 @@
 import os
-import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import numpy as np
+import pandas as pd
 from constants import *
 from eos_library import QuarkEOS
 from star_family_structure import StarFamily

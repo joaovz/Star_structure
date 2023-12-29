@@ -1,5 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def csv_to_arrays(fname='file_name.csv', usecols=(0, 1), unit_conversion=(1.0, 1.0)):

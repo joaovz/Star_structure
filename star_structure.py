@@ -3,17 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.interpolate import CubicSpline
-from data_handling import *
+from constants import *
 from eos_library import PolytropicEOS
 
 
 class Star:
     """Class with all the properties and methods necessary to describe a single star
     """
-
-    # Defining some constants
-    SOLAR_MASS = 1.48e3         # Solar mass [m]
-    SOLAR_RADIUS = 6.957e8      # Solar radius [m]
 
     def __init__(self, eos, p_center, p_surface):
         """Initialization method
@@ -25,8 +21,8 @@ class Star:
         """
 
         # Print the input parameters
-        print(f"p_center = {(p_center / PRESSURE_CGS_TO_GU):e} [dyn ⋅ cm^-2]")
-        print(f"p_surface = {(p_surface / PRESSURE_CGS_TO_GU):e} [dyn ⋅ cm^-2]")
+        print(f"p_center = {(p_center * PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
+        print(f"p_surface = {(p_surface * PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
 
         # Store the input parameters
         self.p_center = p_center        # Central pressure (p(r = 0)) [m^-2]
@@ -184,14 +180,14 @@ class Star:
 
         # Print the star radius and mass
         print(f"Star radius = {(self.star_radius / 10**3):e} [km]")
-        print(f"Star mass = {(self.star_mass / self.SOLAR_MASS):e} [solar mass]")
+        print(f"Star mass = {(self.star_mass * MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
 
         # Show a simple plot of the solution
         plt.figure()
-        plt.plot(self.r_ode_solution / 10**3, self.p_ode_solution * 1e-36 / PRESSURE_CGS_TO_GU, linewidth=1, label="$p ~ [10^{36} ~ dyn \\cdot cm^{-2}]$")
-        plt.plot(self.r_ode_solution / 10**3, self.m_ode_solution / self.SOLAR_MASS, linewidth=1, label="$m ~ [M_{\\odot}]$")
+        plt.plot(self.r_ode_solution / 10**3, self.p_ode_solution * 1e-36 * PRESSURE_GU_TO_CGS, linewidth=1, label="$p ~ [10^{36} ~ dyn \\cdot cm^{-2}]$")
+        plt.plot(self.r_ode_solution / 10**3, self.m_ode_solution * MASS_GU_TO_SOLAR_MASS, linewidth=1, label="$m ~ [M_{\\odot}]$")
         plt.plot(self.r_ode_solution / 10**3, self.nu_ode_solution, linewidth=1, label="$\\nu ~ [dimensionless]$")
-        plt.plot(self.r_ode_solution / 10**3, self.rho_ode_solution * 1e-15 / MASS_DENSITY_CGS_TO_GU, linewidth=1, label="$\\rho ~ [10^{15} ~ g \\cdot cm^{-3}]$")
+        plt.plot(self.r_ode_solution / 10**3, self.rho_ode_solution * 1e-15 * MASS_DENSITY_GU_TO_CGS, linewidth=1, label="$\\rho ~ [10^{15} ~ g \\cdot cm^{-3}]$")
         plt.title(f"TOV solution for the {self.eos.eos_name.replace('EOS', ' EOS')} star", y=1.05)
         plt.xlabel("$r ~ [km]$")
         plt.legend()

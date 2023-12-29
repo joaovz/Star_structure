@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
 from alive_progress import alive_bar
+from constants import *
 from star_structure import Star
-from data_handling import *
 from eos_library import PolytropicEOS
 
 
@@ -51,8 +51,8 @@ class StarFamily:
         if dm_drho_center_roots.size > 0:
             self.maximum_stable_rho_center = dm_drho_center_roots[0]
             self.maximum_mass = self.mass_rho_center_spline(self.maximum_stable_rho_center)
-            print(f"Maximum stable rho_center = {(self.maximum_stable_rho_center / MASS_DENSITY_CGS_TO_GU):e} [g ⋅ cm^-3]")
-            print(f"Maximum mass = {(self.maximum_mass / self.star_object.SOLAR_MASS):e} [solar mass]")
+            print(f"Maximum stable rho_center = {(self.maximum_stable_rho_center * MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
+            print(f"Maximum mass = {(self.maximum_mass * MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
         else:
             print("Maximum stable rho_center not reached")
 
@@ -65,12 +65,12 @@ class StarFamily:
             "p_c": {
                 "name": "Central pressure",
                 "label": "$p_{c} ~ [dyn \\cdot cm^{-2}]$",
-                "value": self.p_center_space / PRESSURE_CGS_TO_GU,
+                "value": self.p_center_space * PRESSURE_GU_TO_CGS,
             },
             "rho_c": {
                 "name": "Central density",
                 "label": "$\\rho_{c} ~ [g \\cdot cm^{-3}]$",
-                "value": self.rho_center_space / MASS_DENSITY_CGS_TO_GU,
+                "value": self.rho_center_space * MASS_DENSITY_GU_TO_CGS,
             },
             "R": {
                 "name": "Radius",
@@ -80,7 +80,7 @@ class StarFamily:
             "M": {
                 "name": "Mass",
                 "label": "$M ~ [M_{\\odot}]$",
-                "value": self.mass_array / self.star_object.SOLAR_MASS,
+                "value": self.mass_array * MASS_GU_TO_SOLAR_MASS,
             },
             "C": {
                 "name": "Compactness",

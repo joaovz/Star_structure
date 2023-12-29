@@ -1,8 +1,8 @@
 import numpy as np
 from alive_progress import alive_bar
+from constants import *
 from star_family_structure import StarFamily
 from star_tides import DeformedStar
-from data_handling import *
 from eos_library import PolytropicEOS
 
 

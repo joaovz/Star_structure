@@ -3,9 +3,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from constants import *
 from eos_library import QuarkEOS
 from star_family_structure import StarFamily
-from data_handling import *
 
 
 # Constants
@@ -136,8 +136,8 @@ def analyze_strange_stars(parameter_dataframe):
 
         # Find the maximum mass star and add the central density and mass to the dataframe
         star_family_object.find_maximum_mass(max_step=30.0)
-        parameter_dataframe.at[index, 'rho_center_max [g ⋅ cm^-3]'] = star_family_object.maximum_stable_rho_center / MASS_DENSITY_CGS_TO_GU
-        parameter_dataframe.at[index, 'M_max [solar mass]'] = star_family_object.maximum_mass / star_family_object.star_object.SOLAR_MASS
+        parameter_dataframe.at[index, 'rho_center_max [g ⋅ cm^-3]'] = star_family_object.maximum_stable_rho_center * MASS_DENSITY_GU_TO_CGS
+        parameter_dataframe.at[index, 'M_max [solar mass]'] = star_family_object.maximum_mass * MASS_GU_TO_SOLAR_MASS
 
     # Print the parameter dataframe at the end
     print(parameter_dataframe)

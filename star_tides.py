@@ -2,8 +2,8 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
+from constants import *
 from star_structure import Star
-from data_handling import *
 from eos_library import PolytropicEOS
 
 

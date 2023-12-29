@@ -1,5 +1,6 @@
 import numpy as np
-from data_handling import *
+from constants import *
+from data_handling import csv_to_arrays
 from star_family_tides import DeformedStarFamily
 from eos_library import PolytropicEOS
 

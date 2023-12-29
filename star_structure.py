@@ -20,10 +20,6 @@ class Star:
             p_surface (float): Surface pressure of the star [m^-2]
         """
 
-        # Print the input parameters
-        print(f"p_center = {(p_center * PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
-        print(f"p_surface = {(p_surface * PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
-
         # Store the input parameters
         self.p_center = p_center        # Central pressure (p(r = 0)) [m^-2]
         self.p_surface = p_surface      # Surface pressure (p(r = R)) [m^-2]. Boundary value for the termination of the ODE integration

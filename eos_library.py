@@ -247,10 +247,6 @@ class PolytropicEOS(EOS):
         # Execute parent class' __init__ method
         super().__init__()
 
-        # Print the parameters
-        print(f"k = {k:e} [m^2]")
-        print(f"n = {n:e} [dimensionless]")
-
         # Set the parameters
         self.k = float(k)
         self.m = 1.0 + 1.0 / float(n)
@@ -334,11 +330,6 @@ class QuarkEOS(EOS):
 
         # Execute parent class' __init__ method
         super().__init__()
-
-        # Print the parameters, as usually shown in papers
-        print(f"a2^(1/2) = {(a2**(1 / 2)):e} [MeV]")
-        print(f"a4 = {(a4):e} [dimensionless]")
-        print(f"B^(1/4) = {(B**(1 / 4)):e} [MeV]")
 
         # Set the parameters, converting from NU to GU
         self.a2 = a2 * (ENERGY_DENSITY_NU_TO_GU)**(1 / 2)

@@ -113,18 +113,16 @@ class DeformedStar(Star):
             )
         )
 
-    def print_k2(self):
-        """Method that prints the tidal Love number (k2) and the compactness of the star
-        """
-        print(f"Tidal Love number (k2) = {(self.k2):e} [dimensionless]")
-        print(f"Compactness (C = M/R) = {(self.star_mass / self.star_radius):e} [dimensionless]")
-
     def plot_perturbation_curves(self, figure_path="figures/star_tides"):
-        """Method that plots the perturbation solution found
+        """Method that prints the tidal Love number (k2) and the compactness of the star, and plots the perturbation solution found
 
         Args:
             figure_path (str, optional): Path used to save the figure. Defaults to "figures/star_tides"
         """
+
+        # Print the tidal Love number (k2) and the compactness of the star
+        print(f"Tidal Love number (k2) = {(self.k2):e} [dimensionless]")
+        print(f"Compactness (C = M/R) = {(self.star_mass / self.star_radius):e} [dimensionless]")
 
         # Show a simple plot of the solution
         plt.figure()
@@ -165,9 +163,6 @@ if __name__ == "__main__":
 
     # Solve the tidal deformation
     star_object.solve_tidal(max_step=100.0)
-
-    # Print the Love number
-    star_object.print_k2()
 
     # Plot the perturbation curves
     star_object.plot_perturbation_curves()

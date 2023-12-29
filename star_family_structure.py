@@ -196,8 +196,7 @@ class StarFamily:
             plt.legend()
 
         # Create the folder if necessary and save the figure
-        if not os.path.exists(figure_path):
-            os.makedirs(figure_path)
+        os.makedirs(figure_path, exist_ok=True)
         x_axis_name = self.plot_dict[x_axis]['name'].lower().replace(' ', '_')
         y_axis_name = self.plot_dict[y_axis]['name'].lower().replace(' ', '_')
         plt.savefig(f"{figure_path}/{y_axis_name}_vs_{x_axis_name}_curve.png")

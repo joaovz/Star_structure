@@ -133,8 +133,7 @@ class DeformedStar(Star):
         plt.legend()
 
         # Create the folder if necessary and save the figure
-        if not os.path.exists(figure_path):
-            os.makedirs(figure_path)
+        os.makedirs(figure_path, exist_ok=True)
         plt.savefig(f"{figure_path}/star_perturbation_graph.png")
 
         # Show graph

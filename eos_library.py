@@ -207,8 +207,7 @@ class EOS:
 
         # Create the folder if necessary and save the figure
         complete_figure_path = f"{figure_path}/{self.eos_name.lower().replace('eos', '_eos')}"
-        if not os.path.exists(complete_figure_path):
-            os.makedirs(complete_figure_path)
+        os.makedirs(complete_figure_path, exist_ok=True)
         x_axis_name = self.plot_dict[x_axis]['name'].lower().replace(' ', '_')
         y_axis_name = self.plot_dict[y_axis]['name'].lower().replace(' ', '_')
         plt.savefig(f"{complete_figure_path}/{y_axis_name}_vs_{x_axis_name}_curve.png")

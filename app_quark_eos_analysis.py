@@ -169,8 +169,7 @@ def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"
     ax.scatter(a2**(1 / 2), a4, B**(1 / 4))
 
     # Create the folder if necessary and save the figure
-    if not os.path.exists(figure_path):
-        os.makedirs(figure_path)
+    os.makedirs(figure_path, exist_ok=True)
     plt.savefig(f"{figure_path}/quark_eos_parameter_points.png")
 
     # Show graph
@@ -227,8 +226,7 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
     ax.contourf(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, levels=0, zdir='z', offset=0, colors="gray", alpha=0.7, antialiased=True)
 
     # Create the folder if necessary and save the figure
-    if not os.path.exists(figure_path):
-        os.makedirs(figure_path)
+    os.makedirs(figure_path, exist_ok=True)
     plt.savefig(f"{figure_path}/quark_eos_parameter_space.png")
 
     # Show graph

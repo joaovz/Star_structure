@@ -11,6 +11,9 @@ class EOS:
     """Base class for the EOS classes
     """
 
+    # Class constants
+    FIGURES_PATH = "figures/eos_library"
+
     def __init__(self):
         """Initialization method
         """
@@ -190,13 +193,13 @@ class EOS:
         if max(derivative_rel_error) > rtol:
             print(f"Warning: Error in {self.eos_name} derivatives calculation is larger than the acceptable error: {(max(derivative_rel_error)):e} > {rtol:e}")
 
-    def plot_curve(self, x_axis="p", y_axis="rho", figure_path="figures/eos_library"):
+    def plot_curve(self, x_axis="p", y_axis="rho", figure_path=FIGURES_PATH):
         """Method that plots some curve of the EOS
 
         Args:
             x_axis (str, optional): Key of self.plot_dict to indicate the x_axis used. Defaults to "p"
             y_axis (str, optional): Key of self.plot_dict to indicate the y_axis used. Defaults to "rho"
-            figure_path (str, optional): Path used to save the figure. Defaults to "figures/eos_library"
+            figure_path (str, optional): Path used to save the figure. Defaults to FIGURES_PATH
         """
 
         # Create a simple plot
@@ -215,12 +218,12 @@ class EOS:
         complete_path = os.path.join(complete_figure_path, figure_name)
         plt.savefig(complete_path)
 
-    def plot_all_curves(self, p_space, figures_path="figures/eos_library"):
+    def plot_all_curves(self, p_space, figures_path=FIGURES_PATH):
         """Method that plots all curves specified by the self.curves_list
 
         Args:
             p_space (array of float): Array that defines the pressure interval [m^-2]
-            figures_path (str, optional): Path used to save the figures. Defaults to "figures/eos_library"
+            figures_path (str, optional): Path used to save the figures. Defaults to FIGURES_PATH
         """
 
         # Set p_space and rho_space, and configure plot

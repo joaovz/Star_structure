@@ -12,6 +12,9 @@ class Star:
     """Class with all the properties and methods necessary to describe a single star
     """
 
+    # Class constants
+    FIGURES_PATH = "figures/star_structure"
+
     def __init__(self, eos, p_center, p_surface):
         """Initialization method
 
@@ -168,11 +171,11 @@ class Star:
         self.nu_spline_function = CubicSpline(self.r_ode_solution, self.nu_ode_solution, extrapolate=False)
         self.rho_spline_function = CubicSpline(self.r_ode_solution, self.rho_ode_solution, extrapolate=False)
 
-    def plot_star_structure_curves(self, figure_path="figures/star_structure"):
+    def plot_star_structure_curves(self, figure_path=FIGURES_PATH):
         """Method that prints the star radius and mass and plots the solution found
 
         Args:
-            figure_path (str, optional): Path used to save the figure. Defaults to "figures/star_structure"
+            figure_path (str, optional): Path used to save the figure. Defaults to FIGURES_PATH
         """
 
         # Print the star radius and mass

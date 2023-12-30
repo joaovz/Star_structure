@@ -14,6 +14,9 @@ class StarFamily:
     in the family is characterized by a specific value of central pressure (p_center)
     """
 
+    # Class constants
+    FIGURES_PATH = "figures/star_family"
+
     def __init__(self, eos, p_center_space, p_surface):
         """Initialization method
 
@@ -172,13 +175,13 @@ class StarFamily:
         self._check_stability()
         self._config_plot()
 
-    def plot_curve(self, x_axis="R", y_axis="M", figure_path="figures/star_family", expected_x=None, expected_y=None):
+    def plot_curve(self, x_axis="R", y_axis="M", figure_path=FIGURES_PATH, expected_x=None, expected_y=None):
         """Method that plots some curve of the star family
 
         Args:
             x_axis (str, optional): Key of self.plot_dict to indicate the x_axis used. Defaults to "R"
             y_axis (str, optional): Key of self.plot_dict to indicate the y_axis used. Defaults to "M"
-            figure_path (str, optional): Path used to save the figure. Defaults to "figures/star_family"
+            figure_path (str, optional): Path used to save the figure. Defaults to FIGURES_PATH
             expected_x (array of float, optional): Array with the x values of the expected curve. Defaults to None
             expected_y (array of float, optional): Array with the y values of the expected curve. Defaults to None
         """
@@ -204,11 +207,11 @@ class StarFamily:
         complete_path = os.path.join(figure_path, figure_name)
         plt.savefig(complete_path)
 
-    def plot_all_curves(self, figures_path="figures/star_family"):
+    def plot_all_curves(self, figures_path=FIGURES_PATH):
         """Method that plots all curves specified by the self.curves_list
 
         Args:
-            figures_path (str, optional): Path used to save the figures. Defaults to "figures/star_family"
+            figures_path (str, optional): Path used to save the figures. Defaults to FIGURES_PATH
         """
 
         for axis in self.curves_list:

@@ -15,6 +15,9 @@ class DeformedStar(Star):
         Star (class): Parent class with all the properties and methods necessary to describe a single star
     """
 
+    # Class constants
+    FIGURES_PATH = "figures/star_tides"
+
     def __init__(self, eos, p_center, p_surface):
 
         # Execute parent class' __init__ method
@@ -114,11 +117,11 @@ class DeformedStar(Star):
             )
         )
 
-    def plot_perturbation_curves(self, figure_path="figures/star_tides"):
+    def plot_perturbation_curves(self, figure_path=FIGURES_PATH):
         """Method that prints the tidal Love number (k2) and the compactness of the star, and plots the perturbation solution found
 
         Args:
-            figure_path (str, optional): Path used to save the figure. Defaults to "figures/star_tides"
+            figure_path (str, optional): Path used to save the figure. Defaults to FIGURES_PATH
         """
 
         # Print the tidal Love number (k2) and the compactness of the star

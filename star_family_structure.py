@@ -3,6 +3,7 @@ from alive_progress import alive_bar
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import CubicSpline
+from constants import DefaultValues as dval
 from constants import UnitConversion as uconv
 from eos_library import PolytropicEOS
 from star_structure import Star
@@ -108,16 +109,16 @@ class StarFamily:
             ['C', 'M'],
         ]
 
-    def find_maximum_mass(self, r_init=1e-12, r_final=np.inf, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
+    def find_maximum_mass(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL, rtol=dval.RTOL):
         """Method that finds the maximum mass star
 
          Args:
-            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to 1e-12
-            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to np.inf
-            method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
-            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
-            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-21
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
+            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
+            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
+            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
+            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
+            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
         """
 
         # Set the p_center space and rho_center space used to find the maximum mass star
@@ -143,16 +144,16 @@ class StarFamily:
         if self.maximum_stable_rho_center is None:
             raise Exception(f"Maximum mass star not found!")
 
-    def solve_tov(self, r_init=1e-12, r_final=np.inf, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
+    def solve_tov(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL, rtol=dval.RTOL):
         """Method that solves the TOV system, finding the radius and mass of each star in the family
 
         Args:
-            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to 1e-12
-            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to np.inf
-            method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
-            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
-            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-21
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
+            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
+            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
+            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
+            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
+            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
         """
 
         # Initialize the radius and mass arrays with the right size

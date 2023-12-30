@@ -6,12 +6,12 @@ class DefaultValues:
     """Class with default parameter values
     """
 
-    R_INIT = 1e-12              # Initial radial coordinate r of the IVP solve [m]
-    R_FINAL = np.inf            # Final radial coordinate r of the IVP solve [m]
-    SOLVER_METHOD = 'RK45'      # Method used by the IVP solver
-    MAX_STEP = np.inf           # Maximum allowed step size for the IVP solver [m]
-    ABS_TOL = 1e-21             # Absolute tolerance of numerical values
-    REL_TOL = 1e-6              # Relative tolerance of numerical values
+    R_INIT = 1e-12          # Initial radial coordinate r of the IVP solve [m]
+    R_FINAL = np.inf        # Final radial coordinate r of the IVP solve [m]
+    IVP_METHOD = 'RK45'     # Method used by the IVP solver
+    MAX_STEP = np.inf       # Maximum allowed step size for the IVP solver [m]
+    ATOL = 1e-21            # Absolute tolerance of numerical values
+    RTOL = 1e-6             # Relative tolerance of numerical values
 
 
 class UnitConversion:

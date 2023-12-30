@@ -1,5 +1,6 @@
 from alive_progress import alive_bar
 import numpy as np
+from constants import DefaultValues as dval
 from constants import UnitConversion as uconv
 from eos_library import PolytropicEOS
 from star_family_structure import StarFamily
@@ -47,16 +48,16 @@ class DeformedStarFamily(StarFamily):
         ]
         self.curves_list += extra_curves_list
 
-    def solve_tidal(self, r_init=1e-12, r_final=np.inf, method='RK45', max_step=np.inf, atol=1e-21, rtol=1e-6):
+    def solve_tidal(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL, rtol=dval.RTOL):
         """Method that solves the tidal system for each star in the family, finding the tidal Love number k2
 
         Args:
-            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to 1e-12
-            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to np.inf
-            method (str, optional): Method used by the IVP solver. Defaults to 'RK45'
-            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to np.inf
-            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to 1e-21
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to 1e-6
+            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
+            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
+            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
+            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
+            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
         """
 
         # Solve the TOV equation and the tidal equation for each star in the family

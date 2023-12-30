@@ -2,6 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import CubicSpline
+from constants import DefaultValues as dval
 from constants import UnitConversion as uconv
 from data_handling import csv_to_arrays
 
@@ -159,12 +160,12 @@ class EOS:
         """
         return np.sqrt(self.dp_drho(rho))
 
-    def check_eos(self, p_space, rtol=1e-6):
+    def check_eos(self, p_space, rtol=dval.RTOL):
         """Check if EOS implementation is correct
 
         Args:
             p_space (array of float): Array that defines the pressure interval [m^-2]
-            rtol (float, optional): Relative tolerance for the error. Defaults to 1e-6
+            rtol (float, optional): Relative tolerance for the error. Defaults to RTOL
         """
 
         # Check the EOS stability

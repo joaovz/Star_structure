@@ -82,7 +82,7 @@ class DeformedStar(Star):
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:
-            Exception: Exception in case the IVP fails to solve the equation
+            RuntimeError: Exception in case the IVP fails to solve the equation
         """
 
         # Calculate the initial values, given by the series solution near r = 0
@@ -104,7 +104,7 @@ class DeformedStar(Star):
 
         # Check the ODE solution status and treat the exception case
         if ode_solution.status == -1:
-            raise Exception(ode_solution.message)
+            raise RuntimeError(ode_solution.message)
 
         # Calculate the tidal Love number k2, that represents the star tidal deformation
         c = self.star_mass / self.star_radius

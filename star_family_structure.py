@@ -122,6 +122,9 @@ class StarFamily:
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
             atol (float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
+
+        Raises:
+            RuntimeError: Exception in case maximum mass star is not found
         """
 
         # Set the p_center space and rho_center space used to find the maximum mass star
@@ -145,7 +148,7 @@ class StarFamily:
 
         # If the maximum stable rho_center is not found in the second TOV solve, raise an exception
         if self.maximum_stable_rho_center is None:
-            raise Exception(f"Maximum mass star not found!")
+            raise RuntimeError(f"Maximum mass star not found!")
 
     def solve_tov(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL, rtol=dval.RTOL):
         """Method that solves the TOV system, finding the radius and mass of each star in the family

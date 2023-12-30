@@ -51,8 +51,8 @@ class Star:
             array of float: Right hand side of the equation ``dy/dr = f(r, y)`` (dp_dr, dm_dr, dnu_dr)
 
         Raises:
-            Exception: Exception in case the pressure is outside the acceptable range (p > p_center)
-            Exception: Exception in case the EOS function didn't return a number
+            ValueError: Exception in case the pressure is outside the acceptable range (p > p_center)
+            ValueError: Exception in case the EOS function didn't return a number
         """
 
         # Variables of the system
@@ -60,7 +60,7 @@ class Star:
 
         # Check if p is outside the acceptable range and raise an exception in this case
         if p > self.p_center:
-            raise Exception(f"The pressure is outside the acceptable range (p = {p}): p > p_center")
+            raise ValueError(f"The pressure is outside the acceptable range (p = {p}): p > p_center")
 
         # Set derivatives to zero to saturate functions, as this condition indicates the end of integration
         if p <= self.p_surface:
@@ -71,7 +71,7 @@ class Star:
             # Calculate rho, check if it is some invalid value, and raise an exception in this case
             rho = self.eos.rho(p)
             if np.isnan(rho):
-                raise Exception(f"The EOS function didn't return a number: p = {p}, rho = {rho}")
+                raise ValueError(f"The EOS function didn't return a number: p = {p}, rho = {rho}")
 
             # ODE System that describes the interior structure of the star
             dnu_dr = (2 * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))       # Rate of change of the metric function
@@ -108,9 +108,9 @@ class Star:
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:
-            Exception: Exception in case the IVP fails to solve the equation
-            Exception: Exception in case the IVP fails to find the ODE termination event
-            Exception: Exception in case the initial radial coordinate is too large
+            ValueError: Exception in case the initial radial coordinate is too large
+            RuntimeError: Exception in case the IVP fails to solve the equation
+            RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
 
         # Transfer the p_center parameter if it was passed as an argument
@@ -131,7 +131,7 @@ class Star:
         r_max_rho = (np.abs(rho_c / rho_2) * rtol)**(1 / 2)
         r_init_max = min(r_max_p, r_max_rho)
         if r_init > r_init_max:
-            raise Exception(f"The initial radial coordinate is too large: (r_init = {r_init}) > (r_init_max = {r_init_max})")
+            raise ValueError(f"The initial radial coordinate is too large: (r_init = {r_init}) > (r_init_max = {r_init_max})")
 
         # Calculate the initial values, given by the series solution near r = 0
         r = r_init
@@ -154,9 +154,9 @@ class Star:
 
         # Check the ODE solution status and treat each case
         if ode_solution.status == -1:
-            raise Exception(ode_solution.message)
+            raise RuntimeError(ode_solution.message)
         elif ode_solution.status != 1:
-            raise Exception("The solver did not find the ODE termination event")
+            raise RuntimeError("The solver did not find the ODE termination event")
         # Get the star radius, star mass, and surface nu from the ODE termination event
         self.star_radius = ode_solution.t_events[0][0]
         self.star_mass = ode_solution.y_events[0][0][1]

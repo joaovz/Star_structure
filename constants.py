@@ -19,7 +19,7 @@ class UnitConversion:
 
     Details of each unit system:
     * Geometrical Units (GU) (with the meter as the base unit): used throughout the code for all numerical calculations;
-    * Centimetre–gram–second units (CGS): employed for prints, plots, and user inputs for pressure and density;
+    * Centimetre-gram-second units (CGS): employed for prints, plots, and user inputs for pressure and density;
     * Natural Units (NU) (with the MeV as the base unit): utilized in parts of the code related to particle and nuclear physics,
       but always converted to GU before any numerical calculation;
     * International System of Units (SI): used for converting between other unit systems;

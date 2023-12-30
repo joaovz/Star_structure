@@ -24,7 +24,7 @@ class DeformedStar(Star):
         super().__init__(eos, p_center, p_surface)
 
         # Set the initial values: g and h at r = r_init
-        self.g_init = 1e-6
+        self.g_init = 0.0
         self.h_init = 0.0
 
         # Initialize deformed star properties: tidal Love number
@@ -130,8 +130,9 @@ class DeformedStar(Star):
 
         # Show a simple plot of the solution
         plt.figure()
-        plt.plot(self.r_tidal_ode_solution / 10**3, self.g_tidal_ode_solution, linewidth=1, label="$g ~ [m^{-1}]$")
-        plt.plot(self.r_tidal_ode_solution / 10**3, self.h_tidal_ode_solution, linewidth=1, label="$h ~ [dimensionless]$")
+        r_tidal_ode_solution_km = self.r_tidal_ode_solution / 10**3
+        plt.plot(r_tidal_ode_solution_km, self.g_tidal_ode_solution, linewidth=1, label="$g ~ [m^{-1}]$")
+        plt.plot(r_tidal_ode_solution_km, self.h_tidal_ode_solution, linewidth=1, label="$h ~ [dimensionless]$")
         plt.title(f"Perturbation solution for the {self.eos.eos_name.replace('EOS', ' EOS')} star", y=1.05)
         plt.xlabel("$r ~ [km]$")
         plt.legend()

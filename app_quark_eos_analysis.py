@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
 import pandas as pd
-from constants import *
+from constants import UnitConversion as uconv
 from eos_library import QuarkEOS
 from star_family_structure import StarFamily
 
@@ -114,8 +114,8 @@ def analyze_strange_stars(parameter_dataframe):
         # EOS analysis
 
         # Set the p_space
-        max_rho = 1.0e16 * MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
-        max_p = quark_eos.p(max_rho)                    # Maximum pressure [m^-2]
+        max_rho = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU     # Maximum density [m^-2]
+        max_p = quark_eos.p(max_rho)                        # Maximum pressure [m^-2]
         p_space = max_p * np.logspace(-15.0, 0.0, 1000)
 
         # Check the EOS
@@ -124,9 +124,9 @@ def analyze_strange_stars(parameter_dataframe):
         # TOV analysis
 
         # Set the pressure at the center and surface of the star
-        rho_center = 1.0e16 * MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
-        p_center = quark_eos.p(rho_center)                  # Central pressure [m^-2]
-        p_surface = 0.0                                     # Surface pressure [m^-2]
+        rho_center = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
+        p_center = quark_eos.p(rho_center)                      # Central pressure [m^-2]
+        p_surface = 0.0                                         # Surface pressure [m^-2]
 
         # Set the p_center space that characterizes the star family
         p_center_space = p_center * np.logspace(-3.0, 0.0, 20)
@@ -136,8 +136,8 @@ def analyze_strange_stars(parameter_dataframe):
 
         # Find the maximum mass star and add the central density and mass to the dataframe
         star_family_object.find_maximum_mass(max_step=30.0)
-        parameter_dataframe.at[index, 'rho_center_max [g ⋅ cm^-3]'] = star_family_object.maximum_stable_rho_center * MASS_DENSITY_GU_TO_CGS
-        parameter_dataframe.at[index, 'M_max [solar mass]'] = star_family_object.maximum_mass * MASS_GU_TO_SOLAR_MASS
+        parameter_dataframe.at[index, 'rho_center_max [g ⋅ cm^-3]'] = star_family_object.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS
+        parameter_dataframe.at[index, 'M_max [solar mass]'] = star_family_object.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS
 
     # Print the parameter dataframe at the end
     print(parameter_dataframe)

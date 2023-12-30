@@ -1,5 +1,5 @@
 import numpy as np
-from constants import *
+from constants import UnitConversion as uconv
 from data_handling import csv_to_arrays
 from eos_library import TableEOS
 from star_family_structure import StarFamily
@@ -17,9 +17,9 @@ figures_path = "figures/app_table_gm1_eos"
 eos = TableEOS(fname='data/GM1.csv', eos_name='GM1EOS')
 
 # Set the pressure at the center and surface of the star
-rho_center = 1.977e15 * MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
-p_center = eos.p(rho_center)                        # Central pressure [m^-2]
-p_surface = 1e23 * PRESSURE_CGS_TO_GU               # Surface pressure [m^-2]
+rho_center = 1.977e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
+p_center = eos.p(rho_center)                                # Central pressure [m^-2]
+p_surface = 1e23 * uconv.PRESSURE_CGS_TO_GU                 # Surface pressure [m^-2]
 
 # Single star
 

@@ -1,5 +1,5 @@
 import numpy as np
-from constants import *
+from constants import UnitConversion as uconv
 from eos_library import QuarkEOS
 from star_family_structure import StarFamily
 from star_structure import Star
@@ -15,9 +15,9 @@ B = 130**4      # [MeV^4]
 eos = QuarkEOS(a2, a4, B)
 
 # Set the pressure at the center and surface of the star
-rho_center = 1.502e15 * MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
-p_center = eos.p(rho_center)                        # Central pressure [m^-2]
-p_surface = 0.0                                     # Surface pressure [m^-2]
+rho_center = 1.502e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
+p_center = eos.p(rho_center)                                # Central pressure [m^-2]
+p_surface = 0.0                                             # Surface pressure [m^-2]
 
 # Single star
 

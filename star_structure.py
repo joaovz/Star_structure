@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.interpolate import CubicSpline
-from constants import *
+from constants import UnitConversion as uconv
 from eos_library import PolytropicEOS
 
 
@@ -176,15 +176,15 @@ class Star:
 
         # Print the star radius and mass
         print(f"Star radius = {(self.star_radius / 10**3):e} [km]")
-        print(f"Star mass = {(self.star_mass * MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
+        print(f"Star mass = {(self.star_mass * uconv.MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
 
         # Show a simple plot of the solution
         plt.figure()
         r_ode_solution_km = self.r_ode_solution / 10**3
-        plt.plot(r_ode_solution_km, self.p_ode_solution * 1e-36 * PRESSURE_GU_TO_CGS, linewidth=1, label="$p ~ [10^{36} ~ dyn \\cdot cm^{-2}]$")
-        plt.plot(r_ode_solution_km, self.m_ode_solution * MASS_GU_TO_SOLAR_MASS, linewidth=1, label="$m ~ [M_{\\odot}]$")
+        plt.plot(r_ode_solution_km, self.p_ode_solution * 1e-36 * uconv.PRESSURE_GU_TO_CGS, linewidth=1, label="$p ~ [10^{36} ~ dyn \\cdot cm^{-2}]$")
+        plt.plot(r_ode_solution_km, self.m_ode_solution * uconv.MASS_GU_TO_SOLAR_MASS, linewidth=1, label="$m ~ [M_{\\odot}]$")
         plt.plot(r_ode_solution_km, self.nu_ode_solution, linewidth=1, label="$\\nu ~ [dimensionless]$")
-        plt.plot(r_ode_solution_km, self.rho_ode_solution * 1e-15 * MASS_DENSITY_GU_TO_CGS, linewidth=1, label="$\\rho ~ [10^{15} ~ g \\cdot cm^{-3}]$")
+        plt.plot(r_ode_solution_km, self.rho_ode_solution * 1e-15 * uconv.MASS_DENSITY_GU_TO_CGS, linewidth=1, label="$\\rho ~ [10^{15} ~ g \\cdot cm^{-3}]$")
         plt.title(f"TOV solution for the {self.eos.eos_name.replace('EOS', ' EOS')} star", y=1.05)
         plt.xlabel("$r ~ [km]$")
         plt.legend()
@@ -206,9 +206,9 @@ if __name__ == "__main__":
     eos = PolytropicEOS(k=1.0e8, n=1)
 
     # Set the pressure at the center and surface of the star
-    rho_center = 5.691e15 * MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
-    p_center = eos.p(rho_center)                        # Central pressure [m^-2]
-    p_surface = 0.0                                     # Surface pressure [m^-2]
+    rho_center = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
+    p_center = eos.p(rho_center)                                # Central pressure [m^-2]
+    p_surface = 0.0                                             # Surface pressure [m^-2]
 
     # Define the object
     star_object = Star(eos, p_center, p_surface)

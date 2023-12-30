@@ -1,5 +1,5 @@
 import numpy as np
-from constants import *
+from constants import UnitConversion as uconv
 from data_handling import csv_to_arrays
 from eos_library import PolytropicEOS
 from star_family_tides import DeformedStarFamily
@@ -16,9 +16,9 @@ figures_path = "figures/app_polytropic_eos"
 eos = PolytropicEOS(k=1.0e8, n=1)
 
 # Set the pressure at the center and surface of the star
-rho_center = 5.691e15 * MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
-p_center = eos.p(rho_center)                        # Central pressure [m^-2]
-p_surface = 0.0                                     # Surface pressure [m^-2]
+rho_center = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
+p_center = eos.p(rho_center)                                # Central pressure [m^-2]
+p_surface = 0.0                                             # Surface pressure [m^-2]
 
 # Set the p_center space that characterizes the star family
 p_center_space = p_center * np.logspace(-5.0, 0.0, 50)

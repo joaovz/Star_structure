@@ -2,7 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import CubicSpline
-from constants import *
+from constants import UnitConversion as uconv
 from data_handling import csv_to_arrays
 
 
@@ -33,7 +33,7 @@ class EOS:
         cs_minus_1_roots = cs_minus_1_spline.roots()
         if cs_minus_1_roots.size > 0:
             self.maximum_stable_rho = cs_minus_1_roots[0]
-            print(f"{self.eos_name} maximum stable rho = {(self.maximum_stable_rho * MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
+            print(f"{self.eos_name} maximum stable rho = {(self.maximum_stable_rho * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
         else:
             print(f"{self.eos_name} maximum stable rho not reached")
 
@@ -46,12 +46,12 @@ class EOS:
             "rho": {
                 "name": "Density",
                 "label": "$\\rho ~ [g \\cdot cm^{-3}]$",
-                "value": self.rho_space * MASS_DENSITY_GU_TO_CGS,
+                "value": self.rho_space * uconv.MASS_DENSITY_GU_TO_CGS,
             },
             "p": {
                 "name": "Pressure",
                 "label": "$p ~ [dyn \\cdot cm^{-2}]$",
-                "value": self.p_space * PRESSURE_GU_TO_CGS,
+                "value": self.p_space * uconv.PRESSURE_GU_TO_CGS,
             },
             "drho_dp": {
                 "name": "Density derivative",
@@ -286,7 +286,7 @@ class TableEOS(EOS):
         # Open the .csv file with the EOS
         (rho, p) = csv_to_arrays(
             fname=fname,
-            unit_conversion=(MASS_DENSITY_CGS_TO_GU, PRESSURE_CGS_TO_GU))
+            unit_conversion=(uconv.MASS_DENSITY_CGS_TO_GU, uconv.PRESSURE_CGS_TO_GU))
 
         # Convert the EOS to spline functions
         self.rho_spline_function = CubicSpline(p, rho, extrapolate=False)
@@ -333,9 +333,9 @@ class QuarkEOS(EOS):
         super().__init__()
 
         # Set the parameters, converting from NU to GU
-        self.a2 = a2 * (ENERGY_DENSITY_NU_TO_GU)**(1 / 2)
+        self.a2 = a2 * (uconv.ENERGY_DENSITY_NU_TO_GU)**(1 / 2)
         self.a4 = a4
-        self.B = B * ENERGY_DENSITY_NU_TO_GU
+        self.B = B * uconv.ENERGY_DENSITY_NU_TO_GU
 
     def rho(self, p):
 
@@ -438,7 +438,7 @@ class BSk20EOS(EOS):
         )
 
         # Calculating xi
-        xi = np.log10(rho * MASS_DENSITY_GU_TO_CGS)
+        xi = np.log10(rho * uconv.MASS_DENSITY_GU_TO_CGS)
 
         # Calculating zeta
         zeta = (
@@ -451,7 +451,7 @@ class BSk20EOS(EOS):
         )
 
         # Calculating p
-        p = 10**(zeta) * PRESSURE_CGS_TO_GU
+        p = 10**(zeta) * uconv.PRESSURE_CGS_TO_GU
 
         return p
 
@@ -474,7 +474,7 @@ if __name__ == "__main__":
     # BSk20 EOS test
 
     # Set the rho_space
-    max_rho = 2.181e15 * MASS_DENSITY_CGS_TO_GU     # Maximum density [m^-2]
+    max_rho = 2.181e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
     rho_space = max_rho * np.logspace(-9.0, 0.0, 10000)
 
     # Create the EOS object
@@ -484,7 +484,7 @@ if __name__ == "__main__":
     p_space = bsk20_eos.p(rho_space)
 
     # Print the minimum pressure calculated. Should be less than 10**23 [dyn ⋅ cm^-2]
-    print(f"BSk20EOS minimum pressure calculated = {(p_space[0] * PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
+    print(f"BSk20EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
 
     # Check the EOS
     bsk20_eos.check_eos(p_space)
@@ -498,12 +498,12 @@ if __name__ == "__main__":
     polytropic_eos = PolytropicEOS(k=1.0e8, n=1)
 
     # Set the p_space
-    max_rho = 5.691e15 * MASS_DENSITY_CGS_TO_GU     # Maximum density [m^-2]
-    max_p = polytropic_eos.p(max_rho)               # Maximum pressure [m^-2]
+    max_rho = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    max_p = polytropic_eos.p(max_rho)                       # Maximum pressure [m^-2]
     p_space = max_p * np.logspace(-14.0, 0.0, 1000)
 
     # Print the minimum pressure calculated. Should be less than 10**23 [dyn ⋅ cm^-2]
-    print(f"PolytropicEOS minimum pressure calculated = {(p_space[0] * PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
+    print(f"PolytropicEOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
 
     # Check the EOS
     polytropic_eos.check_eos(p_space)
@@ -520,12 +520,12 @@ if __name__ == "__main__":
     quark_eos = QuarkEOS(a2, a4, B)
 
     # Set the p_space
-    max_rho = 1.502e15 * MASS_DENSITY_CGS_TO_GU     # Maximum density [m^-2]
-    max_p = quark_eos.p(max_rho)                    # Maximum pressure [m^-2]
+    max_rho = 1.502e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    max_p = quark_eos.p(max_rho)                            # Maximum pressure [m^-2]
     p_space = max_p * np.logspace(-13.0, 0.0, 1000)
 
     # Print the minimum pressure calculated. Should be less than 10**23 [dyn ⋅ cm^-2]
-    print(f"QuarkEOS minimum pressure calculated = {(p_space[0] * PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
+    print(f"QuarkEOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
 
     # Check the EOS
     quark_eos.check_eos(p_space)
@@ -539,12 +539,12 @@ if __name__ == "__main__":
     table_gm1_eos = TableEOS(fname='data/GM1.csv', eos_name='GM1EOS')
 
     # Set the p_space
-    max_rho = 1.977e15 * MASS_DENSITY_CGS_TO_GU     # Maximum density [m^-2]
-    max_p = table_gm1_eos.p(max_rho)                # Maximum pressure [m^-2]
+    max_rho = 1.977e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    max_p = table_gm1_eos.p(max_rho)                        # Maximum pressure [m^-2]
     p_space = max_p * np.logspace(-13.0, 0.0, 1000)
 
     # Print the minimum pressure calculated. Should be less than 10**23 [dyn ⋅ cm^-2]
-    print(f"GM1EOS minimum pressure calculated = {(p_space[0] * PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
+    print(f"GM1EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
 
     # Check the EOS
     table_gm1_eos.check_eos(p_space)
@@ -558,12 +558,12 @@ if __name__ == "__main__":
     table_sly4_eos = TableEOS(fname='data/SLy4.csv', eos_name='SLy4EOS')
 
     # Set the p_space
-    max_rho = 2.864e15 * MASS_DENSITY_CGS_TO_GU     # Maximum density [m^-2]
-    max_p = table_sly4_eos.p(max_rho)               # Maximum pressure [m^-2]
+    max_rho = 2.864e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    max_p = table_sly4_eos.p(max_rho)                       # Maximum pressure [m^-2]
     p_space = max_p * np.logspace(-14.0, 0.0, 1000)
 
     # Print the minimum pressure calculated. Should be less than 10**23 [dyn ⋅ cm^-2]
-    print(f"SLy4EOS minimum pressure calculated = {(p_space[0] * PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
+    print(f"SLy4EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
 
     # Check the EOS
     table_sly4_eos.check_eos(p_space)

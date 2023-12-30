@@ -3,7 +3,7 @@ from alive_progress import alive_bar
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import CubicSpline
-from constants import *
+from constants import UnitConversion as uconv
 from eos_library import PolytropicEOS
 from star_structure import Star
 
@@ -51,8 +51,8 @@ class StarFamily:
         if dm_drho_center_roots.size > 0:
             self.maximum_stable_rho_center = dm_drho_center_roots[0]
             self.maximum_mass = self.mass_rho_center_spline(self.maximum_stable_rho_center)
-            print(f"Maximum stable rho_center = {(self.maximum_stable_rho_center * MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
-            print(f"Maximum mass = {(self.maximum_mass * MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
+            print(f"Maximum stable rho_center = {(self.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
+            print(f"Maximum mass = {(self.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
         else:
             print("Maximum stable rho_center not reached")
 
@@ -65,12 +65,12 @@ class StarFamily:
             "p_c": {
                 "name": "Central pressure",
                 "label": "$p_{c} ~ [dyn \\cdot cm^{-2}]$",
-                "value": self.p_center_space * PRESSURE_GU_TO_CGS,
+                "value": self.p_center_space * uconv.PRESSURE_GU_TO_CGS,
             },
             "rho_c": {
                 "name": "Central density",
                 "label": "$\\rho_{c} ~ [g \\cdot cm^{-3}]$",
-                "value": self.rho_center_space * MASS_DENSITY_GU_TO_CGS,
+                "value": self.rho_center_space * uconv.MASS_DENSITY_GU_TO_CGS,
             },
             "R": {
                 "name": "Radius",
@@ -80,7 +80,7 @@ class StarFamily:
             "M": {
                 "name": "Mass",
                 "label": "$M ~ [M_{\\odot}]$",
-                "value": self.mass_array * MASS_GU_TO_SOLAR_MASS,
+                "value": self.mass_array * uconv.MASS_GU_TO_SOLAR_MASS,
             },
             "C": {
                 "name": "Compactness",
@@ -121,8 +121,8 @@ class StarFamily:
         """
 
         # Set the p_center space and rho_center space used to find the maximum mass star
-        rho_center = 1.0e16 * MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
-        p_center = self.star_object.eos.p(rho_center)       # Central pressure [m^-2]
+        rho_center = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
+        p_center = self.star_object.eos.p(rho_center)           # Central pressure [m^-2]
         self.p_center_space = p_center * np.logspace(-3.0, 0.0, 10)
         self.rho_center_space = self.star_object.eos.rho(self.p_center_space)
 
@@ -222,9 +222,9 @@ if __name__ == "__main__":
     eos = PolytropicEOS(k=1.0e8, n=1)
 
     # Set the pressure at the center and surface of the star
-    rho_center = 5.691e15 * MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
-    p_center = eos.p(rho_center)                        # Central pressure [m^-2]
-    p_surface = 0.0                                     # Surface pressure [m^-2]
+    rho_center = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
+    p_center = eos.p(rho_center)                                # Central pressure [m^-2]
+    p_surface = 0.0                                             # Surface pressure [m^-2]
 
     # Set the p_center space that characterizes the star family
     p_center_space = p_center * np.logspace(-5.0, 0.0, 50)

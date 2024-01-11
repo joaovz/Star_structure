@@ -6,7 +6,7 @@ class DefaultValues:
     """Class with default parameter values
     """
 
-    R_INIT = 1e-12          # Initial radial coordinate r of the IVP solve [m]
+    R_INIT = 0.1            # Initial radial coordinate r of the IVP solve [m]
     R_FINAL = np.inf        # Final radial coordinate r of the IVP solve [m]
     IVP_METHOD = 'RK45'     # Method used by the IVP solver
     MAX_STEP = np.inf       # Maximum allowed step size for the IVP solver [m]

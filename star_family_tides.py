@@ -48,7 +48,8 @@ class DeformedStarFamily(StarFamily):
         ]
         self.curves_list += extra_curves_list
 
-    def solve_tidal(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL, rtol=dval.RTOL):
+    def solve_tidal(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP,
+                    atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
         """Method that solves the tidal system for each star in the family, finding the tidal Love number k2
 
         Args:
@@ -56,15 +57,16 @@ class DeformedStarFamily(StarFamily):
             r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
             method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL
+            atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV equation. Defaults to ATOL_TOV
+            atol_tidal (float or array of float, optional): Absolute tolerance of the IVP solver for the tidal equation. Defaults to ATOL_TIDAL
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
         """
 
         # Solve the TOV equation and the tidal equation for each star in the family
         with alive_bar(self.p_center_space.size) as bar:
             for k in range(self.p_center_space.size):
-                self.star_object.solve_tov(self.p_center_space[k], r_init, r_final, method, max_step, atol, rtol)
-                self.star_object.solve_tidal(r_init, method, max_step, atol, rtol)
+                self.star_object.solve_tov(self.p_center_space[k], r_init, r_final, method, max_step, atol_tov, rtol)
+                self.star_object.solve_tidal(r_init, method, max_step, atol_tidal, rtol)
                 self.radius_array[k] = self.star_object.star_radius
                 self.mass_array[k] = self.star_object.star_mass
                 self.k2_array[k] = self.star_object.k2

@@ -94,14 +94,14 @@ class DeformedStar(Star):
         y = x * spherical_jn(l, x, derivative=True) / spherical_jn(l, x)
         return y
 
-    def solve_tidal(self, r_init=dval.R_INIT, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL, rtol=dval.RTOL):
+    def solve_tidal(self, r_init=dval.R_INIT, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TIDAL, rtol=dval.RTOL):
         """Method that solves the tidal system for the star, finding the tidal Love number k2
 
         Args:
             r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
             method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL
+            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TIDAL
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:

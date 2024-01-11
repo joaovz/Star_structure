@@ -112,7 +112,7 @@ class StarFamily:
             ['C', 'M'],
         ]
 
-    def find_maximum_mass(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL, rtol=dval.RTOL):
+    def find_maximum_mass(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
         """Method that finds the maximum mass star
 
          Args:
@@ -120,7 +120,7 @@ class StarFamily:
             r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
             method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL
+            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TOV
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:
@@ -150,7 +150,7 @@ class StarFamily:
         if self.maximum_stable_rho_center is None:
             raise RuntimeError(f"Maximum mass star not found!")
 
-    def solve_tov(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL, rtol=dval.RTOL):
+    def solve_tov(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
         """Method that solves the TOV system, finding the radius and mass of each star in the family
 
         Args:
@@ -158,7 +158,7 @@ class StarFamily:
             r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
             method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL
+            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TOV
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
         """
 

@@ -95,7 +95,7 @@ class Star:
         return y[0] - self.p_surface            # Condition of the event: trigger when condition == 0 (p == p_surface)
     _ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
 
-    def solve_tov(self, p_center=None, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL, rtol=dval.RTOL):
+    def solve_tov(self, p_center=None, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)
 
         Args:
@@ -104,7 +104,7 @@ class Star:
             r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
             method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol (float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL
+            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TOV
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:

@@ -15,20 +15,19 @@ figures_path = "figures/app_bsk20_eos"
 
 # Set the rho_space
 max_rho = 2.181e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
-rho_space = max_rho * np.logspace(-9.0, 0.0, 10000)
+rho_space = max_rho * np.logspace(-11.0, 0.0, 10000)
 
 # Create the EOS object
 eos = BSk20EOS(rho_space)
 
-# Set the pressure at the center and surface of the star
+# Set the pressure at the center of the star
 rho_center = max_rho                            # Central density [m^-2]
 p_center = eos.p(rho_center)                    # Central pressure [m^-2]
-p_surface = 1e23 * uconv.PRESSURE_CGS_TO_GU     # Surface pressure [m^-2]
 
 # Single star
 
 # Define the object
-star_object = Star(eos, p_center, p_surface)
+star_object = Star(eos, p_center)
 
 # Solve the TOV equation
 star_object.solve_tov(max_step=100.0)
@@ -42,7 +41,7 @@ star_object.plot_star_structure_curves(figures_path)
 p_center_space = p_center * np.logspace(-2.2, 0.0, 50)
 
 # Create the star family object
-star_family_object = StarFamily(eos, p_center_space, p_surface)
+star_family_object = StarFamily(eos, p_center_space)
 
 # Solve the TOV equation
 star_family_object.solve_tov(max_step=100.0)

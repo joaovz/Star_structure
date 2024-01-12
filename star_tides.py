@@ -19,7 +19,7 @@ class DeformedStar(Star):
     # Class constants
     FIGURES_PATH = "figures/star_tides"
 
-    def __init__(self, eos, p_center, p_surface):
+    def __init__(self, eos, p_center, p_surface=dval.P_SURFACE):
 
         # Execute parent class' __init__ method
         super().__init__(eos, p_center, p_surface)
@@ -178,10 +178,9 @@ if __name__ == "__main__":
     # Set the pressure at the center and surface of the star
     rho_center = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
     p_center = eos.p(rho_center)                                # Central pressure [m^-2]
-    p_surface = 0.0                                             # Surface pressure [m^-2]
 
     # Define the object
-    star_object = DeformedStar(eos, p_center, p_surface)
+    star_object = DeformedStar(eos, p_center)
 
     # Solve the TOV equation
     star_object.solve_tov(max_step=100.0)

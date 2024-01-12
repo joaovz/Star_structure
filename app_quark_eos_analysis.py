@@ -123,16 +123,15 @@ def analyze_strange_stars(parameter_dataframe):
 
         # TOV analysis
 
-        # Set the pressure at the center and surface of the star
+        # Set the pressure at the center of the star
         rho_center = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
         p_center = quark_eos.p(rho_center)                      # Central pressure [m^-2]
-        p_surface = 0.0                                         # Surface pressure [m^-2]
 
         # Set the p_center space that characterizes the star family
         p_center_space = p_center * np.logspace(-3.0, 0.0, 20)
 
         # Define the object
-        star_family_object = StarFamily(quark_eos, p_center_space, p_surface)
+        star_family_object = StarFamily(quark_eos, p_center_space)
 
         # Find the maximum mass star and add the central density and mass to the dataframe
         star_family_object.find_maximum_mass(max_step=30.0)

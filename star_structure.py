@@ -15,13 +15,13 @@ class Star:
     # Class constants
     FIGURES_PATH = "figures/star_structure"
 
-    def __init__(self, eos, p_center, p_surface):
+    def __init__(self, eos, p_center, p_surface=dval.P_SURFACE):
         """Initialization method
 
         Args:
             eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the star
             p_center (float): Central pressure of the star [m^-2]
-            p_surface (float): Surface pressure of the star [m^-2]
+            p_surface (float, optional): Surface pressure of the star [m^-2]. Defaults to P_SURFACE
         """
 
         # Store the input parameters
@@ -60,7 +60,7 @@ class Star:
 
         # Check if p is outside the acceptable range and raise an exception in this case
         if p > self.p_center:
-            raise ValueError(f"The pressure is outside the acceptable range (p = {p}): p > p_center")
+            raise ValueError(f"The pressure is outside the acceptable range (p = {p} [m^-2]): p > p_center")
 
         # Set derivatives to zero to saturate functions, as this condition indicates the end of integration
         if p <= self.p_surface:
@@ -71,7 +71,7 @@ class Star:
             # Calculate rho, check if it is some invalid value, and raise an exception in this case
             rho = self.eos.rho(p)
             if np.isnan(rho):
-                raise ValueError(f"The EOS function didn't return a number: p = {p}, rho = {rho}")
+                raise ValueError(f"The EOS function didn't return a number: p = {p} [m^-2], rho = {rho} [m^-2]")
 
             # ODE System that describes the interior structure of the star
             dnu_dr = (2 * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))       # Rate of change of the metric function
@@ -131,7 +131,7 @@ class Star:
         r_max_rho = (np.abs(rho_c / rho_2) * rtol)**(1 / 2)
         r_init_max = min(r_max_p, r_max_rho)
         if r_init > r_init_max:
-            raise ValueError(f"The initial radial coordinate is too large: (r_init = {r_init}) > (r_init_max = {r_init_max})")
+            raise ValueError(f"The initial radial coordinate is too large: (r_init = {r_init} [m]) > (r_init_max = {r_init_max} [m])")
 
         # Calculate the initial values, given by the series solution near r = 0
         r = r_init
@@ -212,10 +212,9 @@ if __name__ == "__main__":
     # Set the pressure at the center and surface of the star
     rho_center = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
     p_center = eos.p(rho_center)                                # Central pressure [m^-2]
-    p_surface = 0.0                                             # Surface pressure [m^-2]
 
     # Define the object
-    star_object = Star(eos, p_center, p_surface)
+    star_object = Star(eos, p_center)
 
     # Solve the TOV equation
     star_object.solve_tov(max_step=100.0)

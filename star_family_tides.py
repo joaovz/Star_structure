@@ -15,7 +15,7 @@ class DeformedStarFamily(StarFamily):
         Each star in the family is characterized by a specific value of central pressure (p_center)
     """
 
-    def __init__(self, eos, p_center_space, p_surface):
+    def __init__(self, eos, p_center_space, p_surface=dval.P_SURFACE):
 
         # Execute parent class' __init__ method
         super().__init__(eos, p_center_space, p_surface)
@@ -86,13 +86,12 @@ if __name__ == "__main__":
     # Set the pressure at the center and surface of the star
     rho_center = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
     p_center = eos.p(rho_center)                                # Central pressure [m^-2]
-    p_surface = 0.0                                             # Surface pressure [m^-2]
 
     # Set the p_center space that characterizes the star family
     p_center_space = p_center * np.logspace(-5.0, 0.0, 50)
 
     # Define the object
-    star_family_object = DeformedStarFamily(eos, p_center_space, p_surface)
+    star_family_object = DeformedStarFamily(eos, p_center_space)
 
     # Solve the tidal equation
     star_family_object.solve_tidal(max_step=100.0)

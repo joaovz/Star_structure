@@ -17,13 +17,13 @@ class StarFamily:
     # Class constants
     FIGURES_PATH = "figures/star_family"
 
-    def __init__(self, eos, p_center_space, p_surface):
+    def __init__(self, eos, p_center_space, p_surface=dval.P_SURFACE):
         """Initialization method
 
         Args:
             eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the stars
             p_center_space (array of float): Array with the central pressure of each star in the family [m^-2]
-            p_surface (float): Surface pressure of the stars [m^-2]
+            p_surface (float, optional): Surface pressure of the stars [m^-2]. Defaults to P_SURFACE
         """
 
         # Store the input parameters
@@ -231,13 +231,12 @@ if __name__ == "__main__":
     # Set the pressure at the center and surface of the star
     rho_center = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
     p_center = eos.p(rho_center)                                # Central pressure [m^-2]
-    p_surface = 0.0                                             # Surface pressure [m^-2]
 
     # Set the p_center space that characterizes the star family
     p_center_space = p_center * np.logspace(-5.0, 0.0, 50)
 
     # Define the object
-    star_family_object = StarFamily(eos, p_center_space, p_surface)
+    star_family_object = StarFamily(eos, p_center_space)
 
     # Solve the TOV equation
     star_family_object.solve_tov(max_step=100.0)

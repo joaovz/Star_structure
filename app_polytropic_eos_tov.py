@@ -21,7 +21,7 @@ p_center = eos.p(rho_center)                                # Central pressure [
 star_object = Star(eos, p_center)
 
 # Solve the TOV equation
-star_object.solve_tov(max_step=100.0)
+star_object.solve_tov()
 
 # Plot the star structure curves
 star_object.plot_star_structure_curves(figures_path)
@@ -35,7 +35,7 @@ p_center_space = p_center * np.logspace(-5.0, 0.0, 50)
 star_family_object = StarFamily(eos, p_center_space)
 
 # Solve the TOV equation
-star_family_object.solve_tov(max_step=100.0)
+star_family_object.solve_tov()
 
 # Plot all curves
 star_family_object.plot_all_curves(figures_path)

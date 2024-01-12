@@ -94,7 +94,7 @@ if __name__ == "__main__":
     star_family_object = DeformedStarFamily(eos, p_center_space)
 
     # Solve the tidal equation
-    star_family_object.solve_tidal(max_step=100.0)
+    star_family_object.solve_tidal()
 
     # Plot all curves
     star_family_object.plot_all_curves()

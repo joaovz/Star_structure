@@ -35,13 +35,13 @@ p_center = eos.p(rho_center)                    # Central pressure [m^-2]
 star_object = DeformedStar(eos, p_center)
 
 # Solve the TOV equation
-star_object.solve_tov(max_step=100.0)
+star_object.solve_tov()
 
 # Plot the star structure curves
 star_object.plot_star_structure_curves(figures_path)
 
 # Solve the tidal deformation
-star_object.solve_tidal(max_step=100.0)
+star_object.solve_tidal()
 
 # Plot the perturbation curves
 star_object.plot_perturbation_curves(figures_path)
@@ -55,7 +55,7 @@ p_center_space = p_center * np.logspace(-2.2, 0.0, 50)
 star_family_object = DeformedStarFamily(eos, p_center_space)
 
 # Solve the TOV equation and the tidal equation
-star_family_object.solve_tidal(max_step=100.0)
+star_family_object.solve_tidal()
 
 # Plot the calculated and expected Mass vs Radius curves
 star_family_object.plot_curve(

@@ -239,7 +239,7 @@ if __name__ == "__main__":
     star_family_object = StarFamily(eos, p_center_space)
 
     # Solve the TOV equation
-    star_family_object.solve_tov(max_step=100.0)
+    star_family_object.solve_tov()
 
     # Plot all curves
     star_family_object.plot_all_curves()

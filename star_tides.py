@@ -183,13 +183,13 @@ if __name__ == "__main__":
     star_object = DeformedStar(eos, p_center)
 
     # Solve the TOV equation
-    star_object.solve_tov(max_step=100.0)
+    star_object.solve_tov()
 
     # Plot the star structure curves
     star_object.plot_star_structure_curves()
 
     # Solve the tidal deformation
-    star_object.solve_tidal(max_step=100.0)
+    star_object.solve_tidal()
 
     # Plot the perturbation curves
     star_object.plot_perturbation_curves()

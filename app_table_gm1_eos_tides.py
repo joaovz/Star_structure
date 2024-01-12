@@ -27,13 +27,13 @@ p_surface = 1e23 * uconv.PRESSURE_CGS_TO_GU                 # Surface pressure [
 star_object = DeformedStar(eos, p_center, p_surface)
 
 # Solve the TOV equation
-star_object.solve_tov(max_step=100.0)
+star_object.solve_tov()
 
 # Plot the star structure curves
 star_object.plot_star_structure_curves(figures_path)
 
 # Solve the tidal deformation
-star_object.solve_tidal(max_step=100.0)
+star_object.solve_tidal()
 
 # Plot the perturbation curves
 star_object.plot_perturbation_curves(figures_path)
@@ -47,7 +47,7 @@ p_center_space = p_center * np.logspace(-2.85, 0.0, 50)
 star_family_object = DeformedStarFamily(eos, p_center_space, p_surface)
 
 # Solve the TOV equation and the tidal equation
-star_family_object.solve_tidal(max_step=100.0)
+star_family_object.solve_tidal()
 
 # Plot the calculated and expected Mass vs Radius curves
 star_family_object.plot_curve(

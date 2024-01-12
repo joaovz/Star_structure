@@ -134,7 +134,7 @@ def analyze_strange_stars(parameter_dataframe):
         star_family_object = StarFamily(quark_eos, p_center_space)
 
         # Find the maximum mass star and add the central density and mass to the dataframe
-        star_family_object.find_maximum_mass(max_step=30.0)
+        star_family_object.find_maximum_mass()
         parameter_dataframe.at[index, 'rho_center_max [g ⋅ cm^-3]'] = star_family_object.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS
         parameter_dataframe.at[index, 'M_max [solar mass]'] = star_family_object.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS
 

@@ -51,16 +51,11 @@ class Star:
             array of float: Right hand side of the equation ``dy/dr = f(r, y)`` (dp_dr, dm_dr, dnu_dr)
 
         Raises:
-            ValueError: Exception in case the pressure is outside the acceptable range (p > p_center)
             ValueError: Exception in case the EOS function didn't return a number
         """
 
         # Variables of the system
         (p, m, nu) = y
-
-        # Check if p is outside the acceptable range and raise an exception in this case
-        if p > self.p_center:
-            raise ValueError(f"The pressure is outside the acceptable range (p = {p} [m^-2]): p > p_center")
 
         # Set derivatives to zero to saturate functions, as this condition indicates the end of integration
         if p <= self.p_surface:
@@ -92,7 +87,12 @@ class Star:
             float: ``p - p_surface``
         """
 
-        return y[0] - self.p_surface            # Condition of the event: trigger when condition == 0 (p == p_surface)
+        # Force the event trigger when (p - p_surface) <= tolerance. This is a workaround for a solve_ivp issue
+        delta_p = y[0] - self.p_surface
+        if delta_p <= (dval.ATOL_TOV[0] + dval.RTOL * self.p_surface):
+            return 0.0
+        return delta_p
+
     _ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
 
     def solve_tov(self, p_center=None, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
@@ -168,8 +168,6 @@ class Star:
         # Create interpolated functions for the solution using CubicSpline
         self.p_spline_function = CubicSpline(self.r_ode_solution, self.p_ode_solution, extrapolate=False)
         self.m_spline_function = CubicSpline(self.r_ode_solution, self.m_ode_solution, extrapolate=False)
-        self.nu_spline_function = CubicSpline(self.r_ode_solution, self.nu_ode_solution, extrapolate=False)
-        self.rho_spline_function = CubicSpline(self.r_ode_solution, self.rho_ode_solution, extrapolate=False)
 
     def plot_star_structure_curves(self, figure_path=FIGURES_PATH):
         """Method that prints the star radius and mass and plots the solution found
@@ -217,7 +215,7 @@ if __name__ == "__main__":
     star_object = Star(eos, p_center)
 
     # Solve the TOV equation
-    star_object.solve_tov(max_step=100.0)
+    star_object.solve_tov()
 
     # Plot the star structure curves
     star_object.plot_star_structure_curves()

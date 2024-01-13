@@ -2,7 +2,6 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
-from scipy.special import spherical_jn
 from constants import DefaultValues as dval
 from constants import UnitConversion as uconv
 from eos_library import PolytropicEOS
@@ -25,10 +24,10 @@ class DeformedStar(Star):
         super().__init__(eos, p_center, p_surface)
 
         # Set the initial values: y at r = r_init
-        self.y_init = 0.0
+        self.y_init = 2.0       # Calculated with the power series solution of the analytical equation valid for r -> 0
 
         # Initialize deformed star properties: tidal Love number
-        self.k2 = 0.0       # Tidal Love number [dimensionless]
+        self.k2 = 0.0           # Tidal Love number [dimensionless]
 
     def _tidal_ode_system(self, r, y):
         """Method that implements the tidal ODE system in the form ``dy/dr = f(r, y)``, used by the IVP solver
@@ -55,10 +54,9 @@ class DeformedStar(Star):
         drho_dp = self.eos.drho_dp(p)
 
         # Coefficients of the ODE
-        l = 2
         c0 = (
             exp_lambda * (
-                - (l * (l + 1) / r**2)
+                - (6 / r**2)
                 + 4 * np.pi * ((rho + p) * drho_dp + 5 * rho + 9 * p)
             )
             - (dnu_dr)**2
@@ -68,31 +66,6 @@ class DeformedStar(Star):
         # ODE System that describes the tidal deformation of the star
         dy_dr = ((1 / r) - c1) * y - (y**2 / r) - c0 * r
         return [dy_dr]
-
-    def _calc_y_analytic_center(self, r):
-        """Method that calculates the analytic expression for y, valid for r -> 0.
-        The expression is given by y(x) = x jl'(x) / jl(x), with x = k r.
-
-        Args:
-            r (float): Radial coordinate to evaluate the y function
-
-        Returns:
-            float: y evaluated at given r
-        """
-
-        # Functions evaluated at the center
-        p_c = self.p_center
-        rho_c = self.eos.rho(p_c)
-        drho_dp_c = self.eos.drho_dp(p_c)
-
-        # Calculating x
-        k = (4 * np.pi * ((rho_c + p_c) * drho_dp_c + 5 * rho_c + 9 * p_c))**(1 / 2)
-        x = k * r
-
-        # Calculating y analytic, valid for r -> 0
-        l = 2
-        y = x * spherical_jn(l, x, derivative=True) / spherical_jn(l, x)
-        return y
 
     def solve_tidal(self, r_init=dval.R_INIT, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TIDAL, rtol=dval.RTOL):
         """Method that solves the tidal system for the star, finding the tidal Love number k2
@@ -107,9 +80,6 @@ class DeformedStar(Star):
         Raises:
             RuntimeError: Exception in case the IVP fails to solve the equation
         """
-
-        # Calculate the initial values, given by the analytic solution valid for r -> 0
-        self.y_init = self._calc_y_analytic_center(r_init)
 
         # Solve the ODE system
         ode_solution = solve_ivp(
@@ -151,10 +121,7 @@ class DeformedStar(Star):
 
         # Show a simple plot of the solution
         plt.figure()
-        r_tidal_ode_solution_km = self.r_tidal_ode_solution / 10**3
-        y_analytic_center = self._calc_y_analytic_center(self.r_tidal_ode_solution)
-        plt.plot(r_tidal_ode_solution_km, self.y_tidal_ode_solution, linewidth=1, label="$y_{numeric} ~ [dimensionless]$")
-        plt.plot(r_tidal_ode_solution_km, y_analytic_center, linewidth=1, label="$y_{analytic} ~ [dimensionless]$ (valid for $r \\rightarrow 0$)")
+        plt.plot(self.r_tidal_ode_solution / 10**3, self.y_tidal_ode_solution, linewidth=1, label="$y ~ [dimensionless]$")
         plt.title(f"Perturbation solution for the {self.eos.eos_name.replace('EOS', ' EOS')} star", y=1.05)
         plt.xlabel("$r ~ [km]$")
         plt.legend()

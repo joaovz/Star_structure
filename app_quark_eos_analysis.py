@@ -258,6 +258,6 @@ def main():
     analyze_strange_stars(parameter_dataframe)
 
 
-# This logic is a simple example, only executed when this file is run directly in the command prompt
+# This logic is only executed when this file is run directly in the command prompt
 if __name__ == "__main__":
     main()

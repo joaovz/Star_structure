@@ -472,8 +472,9 @@ class BSk20EOS(EOS):
         return self.dp_drho_spline_function(rho)
 
 
-# This logic is a simple example, only executed when this file is run directly in the command prompt
-if __name__ == "__main__":
+def main():
+    """Main logic
+    """
 
     # BSk20 EOS test
 
@@ -574,3 +575,8 @@ if __name__ == "__main__":
 
     # Create the EOS graphs
     table_sly4_eos.plot_all_curves(p_space)
+
+
+# This logic is only executed when this file is run directly in the command prompt
+if __name__ == "__main__":
+    main()

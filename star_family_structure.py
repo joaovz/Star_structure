@@ -222,8 +222,9 @@ class StarFamily:
         plt.show()
 
 
-# This logic is a simple example, only executed when this file is run directly in the command prompt
-if __name__ == "__main__":
+def main():
+    """Main logic
+    """
 
     # Create the EOS object
     eos = PolytropicEOS(k=1.0e8, n=1)
@@ -243,3 +244,8 @@ if __name__ == "__main__":
 
     # Plot all curves
     star_family_object.plot_all_curves()
+
+
+# This logic is only executed when this file is run directly in the command prompt
+if __name__ == "__main__":
+    main()

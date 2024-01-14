@@ -20,8 +20,9 @@ def csv_to_arrays(fname='file_name.csv', usecols=(0, 1), unit_conversion=(1.0, 1
     return (x_converted, y_converted)
 
 
-# This logic is a simple example, only executed when this file is run directly in the command prompt
-if __name__ == "__main__":
+def main():
+    """Main logic
+    """
 
     # Open an example .csv file
     (rho, p) = csv_to_arrays(fname='data/GM1.csv')
@@ -33,3 +34,8 @@ if __name__ == "__main__":
     plt.xlabel('$p ~ [dyn \\cdot cm^{-2}]$')
     plt.ylabel('$\\rho ~ [g \\cdot cm^{-3}]$')
     plt.show()
+
+
+# This logic is only executed when this file is run directly in the command prompt
+if __name__ == "__main__":
+    main()

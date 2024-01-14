@@ -67,6 +67,21 @@ class DeformedStar(Star):
         dy_dr = ((1 / r) - c1) * y - (y**2 / r) - c0 * r
         return [dy_dr]
 
+    def _calc_k2(self):
+        """Method that calculates the tidal Love number k2, that represents the star tidal deformation
+        """
+
+        # Calculate the tidal Love number k2, that represents the star tidal deformation
+        c = self.star_mass / self.star_radius
+        y_s = self.y_tidal_ode_solution[-1]
+        self.k2 = (
+            (8 / 5) * c**5 * ((1 - 2 * c)**2) * (2 + 2 * c * (y_s - 1) - y_s) / (
+                2 * c * (6 - 3 * y_s + 3 * c * (5 * y_s - 8))
+                + 4 * c**3 * (13 - 11 * y_s + c * (3 * y_s - 2) + 2 * c**2 * (1 + y_s))
+                + 3 * ((1 - 2 * c)**2) * (2 - y_s + 2 * c * (y_s - 1)) * np.log(1 - 2 * c)
+            )
+        )
+
     def solve_tidal(self, r_init=dval.R_INIT, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TIDAL, rtol=dval.RTOL):
         """Method that solves the tidal system for the star, finding the tidal Love number k2
 
@@ -97,16 +112,8 @@ class DeformedStar(Star):
         if ode_solution.status == -1:
             raise RuntimeError(ode_solution.message)
 
-        # Calculate the tidal Love number k2, that represents the star tidal deformation
-        c = self.star_mass / self.star_radius
-        y_s = self.y_tidal_ode_solution[-1]
-        self.k2 = (
-            (8 / 5) * c**5 * ((1 - 2 * c)**2) * (2 + 2 * c * (y_s - 1) - y_s) / (
-                2 * c * (6 - 3 * y_s + 3 * c * (5 * y_s - 8))
-                + 4 * c**3 * (13 - 11 * y_s + c * (3 * y_s - 2) + 2 * c**2 * (1 + y_s))
-                + 3 * ((1 - 2 * c)**2) * (2 - y_s + 2 * c * (y_s - 1)) * np.log(1 - 2 * c)
-            )
-        )
+        # Calculate the tidal Love number k2
+        self._calc_k2()
 
     def plot_perturbation_curves(self, figure_path=FIGURES_PATH):
         """Method that prints the tidal Love number (k2) and the compactness of the star, and plots the perturbation solution found

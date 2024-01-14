@@ -40,7 +40,7 @@ class Star:
         self.star_radius = 0.0          # Star radius (R) [m]
         self.star_mass = 0.0            # Star mass (M) [m]
 
-    def _ode_system(self, r, y):
+    def _tov_ode_system(self, r, y):
         """Method that implements the TOV ODE system in the form ``dy/dr = f(r, y)``, used by the IVP solver
 
         Args:
@@ -75,7 +75,7 @@ class Star:
 
         return (dp_dr, dm_dr, dnu_dr)
 
-    def _ode_termination_event(self, r, y):
+    def _tov_ode_termination_event(self, r, y):
         """Event method used by the IVP solver. The solver will find an accurate value of r at which
         ``event(r, y(r)) = 0`` using a root-finding algorithm
 
@@ -93,29 +93,18 @@ class Star:
             return 0.0
         return delta_p
 
-    _ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
+    _tov_ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
 
-    def solve_tov(self, p_center=None, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
-        """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)
+    def _calc_tov_init_values(self, r_init, rtol):
+        """Method that calculates the initial values used by the TOV solver
 
         Args:
-            p_center (float, optional): Central pressure of the star [m^-2]
-            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
-            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
-            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
-            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TOV
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
+            r_init (float): Initial radial coordinate r of the IVP solve
+            rtol (float): Relative tolerance of the IVP solver
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
-            RuntimeError: Exception in case the IVP fails to solve the equation
-            RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
-
-        # Transfer the p_center parameter if it was passed as an argument
-        if p_center is not None:
-            self.p_center = p_center
 
         # Calculate the coefficients of the series solution, used to calculate the initial conditions
         p_c = self.p_center
@@ -138,13 +127,37 @@ class Star:
         self.p_init = p_c + p_2 * r**2
         self.m_init = m_3 * r**3 + m_5 * r**5
 
+    def solve_tov(self, p_center=None, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
+        """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)
+
+        Args:
+            p_center (float, optional): Central pressure of the star [m^-2]
+            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
+            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
+            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
+            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
+            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TOV
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
+
+        Raises:
+            RuntimeError: Exception in case the IVP fails to solve the equation
+            RuntimeError: Exception in case the IVP fails to find the ODE termination event
+        """
+
+        # Transfer the p_center parameter if it was passed as an argument
+        if p_center is not None:
+            self.p_center = p_center
+
+        # Calculate the initial values
+        self._calc_tov_init_values(r_init, rtol)
+
         # Solve the ODE system
         ode_solution = solve_ivp(
-            self._ode_system,
+            self._tov_ode_system,
             (r_init, r_final),
             (self.p_init, self.m_init, self.nu_init),
             method,
-            events=(self._ode_termination_event),
+            events=(self._tov_ode_termination_event),
             max_step=max_step,
             atol=atol,
             rtol=rtol)

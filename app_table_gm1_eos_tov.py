@@ -30,11 +30,9 @@ def main():
     # Define the object
     star_object = Star(eos, p_center, p_surface)
 
-    # Solve the TOV equation
+    # Solve the TOV equation and plot all curves
     star_object.solve_tov()
-
-    # Plot the star structure curves
-    star_object.plot_star_structure_curves(figures_path)
+    star_object.plot_all_curves(figures_path)
 
     # Star Family
 

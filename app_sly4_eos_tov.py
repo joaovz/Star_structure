@@ -19,7 +19,7 @@ def main():
     # Create the EOS object
     eos = SLy4EOS(rho_space)
 
-    # Set the pressure at the center of the star
+    # Set the central pressure of the star
     rho_center = max_rho                            # Central density [m^-2]
     p_center = eos.p(rho_center)                    # Central pressure [m^-2]
 
@@ -28,11 +28,9 @@ def main():
     # Define the object
     star_object = Star(eos, p_center)
 
-    # Solve the TOV equation
+    # Solve the TOV equation and plot all curves
     star_object.solve_tov()
-
-    # Plot the star structure curves
-    star_object.plot_star_structure_curves(figures_path)
+    star_object.plot_all_curves(figures_path)
 
     # Star Family
 
@@ -42,10 +40,8 @@ def main():
     # Create the star family object
     star_family_object = StarFamily(eos, p_center_space)
 
-    # Solve the TOV equation
+    # Solve the TOV equation and plot all curves
     star_family_object.solve_tov()
-
-    # Plot all curves
     star_family_object.plot_all_curves(figures_path)
 
 

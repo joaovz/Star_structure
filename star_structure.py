@@ -131,7 +131,7 @@ class Star:
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)
 
         Args:
-            p_center (float, optional): Central pressure of the star [m^-2]
+            p_center (float, optional): Central pressure of the star [m^-2]. Defaults to None
             r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
             r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
             method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
@@ -182,7 +182,7 @@ class Star:
         self.p_spline_function = CubicSpline(self.r_ode_solution, self.p_ode_solution, extrapolate=False)
         self.m_spline_function = CubicSpline(self.r_ode_solution, self.m_ode_solution, extrapolate=False)
 
-    def plot_star_structure_curves(self, figure_path=FIGURES_PATH):
+    def plot_all_curves(self, figure_path=FIGURES_PATH):
         """Method that prints the star radius and mass and plots the solution found
 
         Args:
@@ -221,18 +221,16 @@ def main():
     # Create the EOS object
     eos = PolytropicEOS(k=1.0e8, n=1)
 
-    # Set the pressure at the center and surface of the star
+    # Set the central pressure of the star
     rho_center = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
     p_center = eos.p(rho_center)                                # Central pressure [m^-2]
 
     # Define the object
     star_object = Star(eos, p_center)
 
-    # Solve the TOV equation
+    # Solve the TOV equation and plot all curves
     star_object.solve_tov()
-
-    # Plot the star structure curves
-    star_object.plot_star_structure_curves()
+    star_object.plot_all_curves()
 
 
 # This logic is only executed when this file is run directly in the command prompt

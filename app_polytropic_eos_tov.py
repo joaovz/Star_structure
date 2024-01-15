@@ -15,7 +15,7 @@ def main():
     # Create the EOS object
     eos = PolytropicEOS(k=1.0e8, n=1)
 
-    # Set the pressure at the center of the star
+    # Set the central pressure of the star
     rho_center = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
     p_center = eos.p(rho_center)                                # Central pressure [m^-2]
 
@@ -24,11 +24,9 @@ def main():
     # Define the object
     star_object = Star(eos, p_center)
 
-    # Solve the TOV equation
+    # Solve the TOV equation and plot all curves
     star_object.solve_tov()
-
-    # Plot the star structure curves
-    star_object.plot_star_structure_curves(figures_path)
+    star_object.plot_all_curves(figures_path)
 
     # Star Family
 
@@ -38,10 +36,8 @@ def main():
     # Define the object
     star_family_object = StarFamily(eos, p_center_space)
 
-    # Solve the TOV equation
+    # Solve the TOV equation and plot all curves
     star_family_object.solve_tov()
-
-    # Plot all curves
     star_family_object.plot_all_curves(figures_path)
 
 

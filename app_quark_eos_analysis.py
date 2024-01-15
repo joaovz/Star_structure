@@ -123,7 +123,7 @@ def analyze_strange_stars(parameter_dataframe):
 
         # TOV analysis
 
-        # Set the pressure at the center of the star
+        # Set the central pressure of the star
         rho_center = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
         p_center = quark_eos.p(rho_center)                      # Central pressure [m^-2]
 

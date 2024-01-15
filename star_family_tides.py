@@ -58,15 +58,14 @@ class DeformedStarFamily(StarFamily):
             method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
             atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV equation. Defaults to ATOL_TOV
-            atol_tidal (float or array of float, optional): Absolute tolerance of the IVP solver for the tidal equation. Defaults to ATOL_TIDAL
+            atol_tidal (float, optional): Absolute tolerance of the IVP solver for the tidal equation. Defaults to ATOL_TIDAL
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
         """
 
-        # Solve the TOV equation and the tidal equation for each star in the family
+        # Solve the tidal equation for each star in the family
         with alive_bar(self.p_center_space.size) as bar:
             for k in range(self.p_center_space.size):
-                self.star_object.solve_tov(self.p_center_space[k], r_init, r_final, method, max_step, atol_tov, rtol)
-                self.star_object.solve_tidal(r_init, method, max_step, atol_tidal, rtol)
+                self.star_object.solve_tidal(self.p_center_space[k], r_init, r_final, method, max_step, atol_tov, atol_tidal, rtol)
                 self.radius_array[k] = self.star_object.star_radius
                 self.mass_array[k] = self.star_object.star_mass
                 self.k2_array[k] = self.star_object.k2
@@ -84,7 +83,7 @@ def main():
     # Create the EOS object
     eos = PolytropicEOS(k=1.0e8, n=1)
 
-    # Set the pressure at the center and surface of the star
+    # Set the central pressure of the star
     rho_center = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
     p_center = eos.p(rho_center)                                # Central pressure [m^-2]
 
@@ -94,10 +93,8 @@ def main():
     # Define the object
     star_family_object = DeformedStarFamily(eos, p_center_space)
 
-    # Solve the tidal equation
+    # Solve the tidal equation and plot all curves
     star_family_object.solve_tidal()
-
-    # Plot all curves
     star_family_object.plot_all_curves()
 
 

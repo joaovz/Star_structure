@@ -82,19 +82,26 @@ class DeformedStar(Star):
             )
         )
 
-    def solve_tidal(self, r_init=dval.R_INIT, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TIDAL, rtol=dval.RTOL):
+    def solve_tidal(self, p_center=None, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP,
+                    atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
         """Method that solves the tidal system for the star, finding the tidal Love number k2
 
         Args:
+            p_center (float, optional): Central pressure of the star [m^-2]. Defaults to None
             r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
+            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
             method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TIDAL
+            atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV equation. Defaults to ATOL_TOV
+            atol_tidal (float, optional): Absolute tolerance of the IVP solver for the tidal equation. Defaults to ATOL_TIDAL
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:
             RuntimeError: Exception in case the IVP fails to solve the equation
         """
+
+        # Solve the TOV equation before solving the tidal equation
+        self.solve_tov(p_center, r_init, r_final, method, max_step, atol_tov, rtol)
 
         # Solve the ODE system
         ode_solution = solve_ivp(
@@ -103,7 +110,7 @@ class DeformedStar(Star):
             [self.y_init],
             method,
             max_step=max_step,
-            atol=atol,
+            atol=atol_tidal,
             rtol=rtol)
         self.r_tidal_ode_solution = ode_solution.t
         self.y_tidal_ode_solution = ode_solution.y[0]
@@ -115,12 +122,15 @@ class DeformedStar(Star):
         # Calculate the tidal Love number k2
         self._calc_k2()
 
-    def plot_perturbation_curves(self, figure_path=FIGURES_PATH):
-        """Method that prints the tidal Love number (k2) and the compactness of the star, and plots the perturbation solution found
+    def plot_all_curves(self, figure_path=FIGURES_PATH):
+        """Method that prints the star radius, mass, tidal Love number (k2), and compactness and plots the solution
 
         Args:
             figure_path (str, optional): Path used to save the figure. Defaults to FIGURES_PATH
         """
+
+        # Execute parent class' plot_all_curves method
+        super().plot_all_curves(figure_path)
 
         # Print the tidal Love number (k2) and the compactness of the star
         print(f"Tidal Love number (k2) = {(self.k2):e} [dimensionless]")
@@ -128,10 +138,10 @@ class DeformedStar(Star):
 
         # Show a simple plot of the solution
         plt.figure()
-        plt.plot(self.r_tidal_ode_solution / 10**3, self.y_tidal_ode_solution, linewidth=1, label="$y ~ [dimensionless]$")
+        plt.plot(self.r_tidal_ode_solution / 10**3, self.y_tidal_ode_solution, linewidth=1)
         plt.title(f"Perturbation solution for the {self.eos.eos_name.replace('EOS', ' EOS')} star", y=1.05)
         plt.xlabel("$r ~ [km]$")
-        plt.legend()
+        plt.ylabel("$y ~ [dimensionless]$")
 
         # Create the folder if necessary and save the figure
         os.makedirs(figure_path, exist_ok=True)
@@ -150,24 +160,16 @@ def main():
     # Create the EOS object
     eos = PolytropicEOS(k=1.0e8, n=1)
 
-    # Set the pressure at the center and surface of the star
+    # Set the central pressure of the star
     rho_center = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Central density [m^-2]
     p_center = eos.p(rho_center)                                # Central pressure [m^-2]
 
     # Define the object
     star_object = DeformedStar(eos, p_center)
 
-    # Solve the TOV equation
-    star_object.solve_tov()
-
-    # Plot the star structure curves
-    star_object.plot_star_structure_curves()
-
-    # Solve the tidal deformation
+    # Solve the tidal equation and plot all curves
     star_object.solve_tidal()
-
-    # Plot the perturbation curves
-    star_object.plot_perturbation_curves()
+    star_object.plot_all_curves()
 
 
 # This logic is only executed when this file is run directly in the command prompt

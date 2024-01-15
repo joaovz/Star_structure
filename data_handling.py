@@ -25,14 +25,14 @@ def main():
     """
 
     # Open an example .csv file
-    (rho, p) = csv_to_arrays(fname='data/GM1.csv')
+    (radius, mass) = csv_to_arrays(fname='data/BSk20_M_vs_R.csv')
 
     # Plot the curve given in the example .csv file
     plt.figure()
-    plt.plot(p, rho, linewidth=1, marker='.')
-    plt.title("GM1 EOS from .csv file", y=1.05)
-    plt.xlabel('$p ~ [dyn \\cdot cm^{-2}]$')
-    plt.ylabel('$\\rho ~ [g \\cdot cm^{-3}]$')
+    plt.plot(radius, mass, linewidth=1, marker='.')
+    plt.title("BSk20 EOS M vs R from .csv file", y=1.05)
+    plt.xlabel('$R ~ [km]$')
+    plt.ylabel('$M ~ [M_{\\odot}]$')
     plt.show()
 
 

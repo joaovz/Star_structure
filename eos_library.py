@@ -596,25 +596,6 @@ def main():
     # Create the EOS graphs
     sly4_eos.plot_all_curves(p_space)
 
-    # Table GM1 EOS test
-
-    # Create the EOS object
-    table_gm1_eos = TableEOS(fname='data/GM1.csv', eos_name='GM1EOS')
-
-    # Set the p_space
-    max_rho = 1.977e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
-    max_p = table_gm1_eos.p(max_rho)                        # Maximum pressure [m^-2]
-    p_space = max_p * np.logspace(-13.0, 0.0, 1000)
-
-    # Print the minimum pressure calculated. Should be less than 10**23 [dyn ⋅ cm^-2]
-    print(f"GM1EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
-
-    # Check the EOS
-    table_gm1_eos.check_eos(p_space)
-
-    # Create the EOS graphs
-    table_gm1_eos.plot_all_curves(p_space)
-
 
 # This logic is only executed when this file is run directly in the command prompt
 if __name__ == "__main__":

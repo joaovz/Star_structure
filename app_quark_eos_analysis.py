@@ -169,7 +169,7 @@ def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"
 
     # Create the folder if necessary and save the figure
     os.makedirs(figure_path, exist_ok=True)
-    figure_name = "quark_eos_parameter_points.png"
+    figure_name = "quark_eos_parameter_points.svg"
     complete_path = os.path.join(figure_path, figure_name)
     plt.savefig(complete_path)
 
@@ -228,7 +228,7 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
 
     # Create the folder if necessary and save the figure
     os.makedirs(figure_path, exist_ok=True)
-    figure_name = "quark_eos_parameter_space.png"
+    figure_name = "quark_eos_parameter_space.svg"
     complete_path = os.path.join(figure_path, figure_name)
     plt.savefig(complete_path)
 

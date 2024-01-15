@@ -145,7 +145,7 @@ class DeformedStar(Star):
 
         # Create the folder if necessary and save the figure
         os.makedirs(figure_path, exist_ok=True)
-        figure_name = "star_perturbation_graph.png"
+        figure_name = "star_perturbation_graph.svg"
         complete_path = os.path.join(figure_path, figure_name)
         plt.savefig(complete_path)
 

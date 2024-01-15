@@ -214,7 +214,7 @@ class EOS:
         os.makedirs(complete_figure_path, exist_ok=True)
         x_axis_name = self.plot_dict[x_axis]['name'].lower().replace(' ', '_')
         y_axis_name = self.plot_dict[y_axis]['name'].lower().replace(' ', '_')
-        figure_name = f"{y_axis_name}_vs_{x_axis_name}_curve.png"
+        figure_name = f"{y_axis_name}_vs_{x_axis_name}_curve.svg"
         complete_path = os.path.join(complete_figure_path, figure_name)
         plt.savefig(complete_path)
 

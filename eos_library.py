@@ -319,6 +319,61 @@ class TableEOS(EOS):
         return self.dp_drho_spline_function(rho)
 
 
+class InterpolatedEOS(EOS):
+    """Class with the pressure of the EOS given by an interpolation function
+    """
+
+    def __init__(self, rho_space):
+        """Initialization method
+
+        Args:
+            rho_space (array of float): Array that defines the density interval [m^-2]
+        """
+
+        # Execute parent class' __init__ method
+        super().__init__()
+
+        # Calculate the p_space from the analytic expression
+        p_space = self._p_analytic(rho_space)
+
+        # Convert the EOS to spline functions
+        self.rho_spline_function = CubicSpline(p_space, rho_space, extrapolate=False)
+        self.p_spline_function = CubicSpline(rho_space, p_space, extrapolate=False)
+
+        # Calculate the derivatives
+        self.drho_dp_spline_function = self.rho_spline_function.derivative()
+        self.dp_drho_spline_function = self.p_spline_function.derivative()
+
+        # Save the maximum and minimum density and pressure
+        self.rho_max = rho_space[-1]
+        self.p_max = p_space[-1]
+        self.rho_min = rho_space[0]
+        self.p_min = p_space[0]
+
+    def _p_analytic(self, rho):
+        """Analytic expression of the pressure
+
+        Args:
+            rho (float): Density [m^-2]
+
+        Returns:
+            float: Pressure [m^-2]
+        """
+        return rho
+
+    def rho(self, p):
+        return self.rho_spline_function(p)
+
+    def p(self, rho):
+        return self.p_spline_function(rho)
+
+    def drho_dp(self, p):
+        return self.drho_dp_spline_function(p)
+
+    def dp_drho(self, rho):
+        return self.dp_drho_spline_function(rho)
+
+
 class QuarkEOS(EOS):
     """Class with the functions of the Quark EOS, defined by the grand thermodynamic potential given by:
     Omega = (3 / (4 * pi**2)) * (-a4 * mu**4 + a2 * mu**2) + B
@@ -394,46 +449,11 @@ class QuarkEOS(EOS):
         return dp_drho
 
 
-class BSk20EOS(EOS):
+class BSk20EOS(InterpolatedEOS):
     """Class with the functions of the BSk20 EOS
     """
 
-    def __init__(self, rho_space):
-        """Initialization method
-
-        Args:
-            rho_space (array of float): Array that defines the density interval [m^-2]
-        """
-
-        # Execute parent class' __init__ method
-        super().__init__()
-
-        # Calculate the p_space from the analytic expression
-        p_space = self._p_analytic(rho_space)
-
-        # Convert the EOS to spline functions
-        self.rho_spline_function = CubicSpline(p_space, rho_space, extrapolate=False)
-        self.p_spline_function = CubicSpline(rho_space, p_space, extrapolate=False)
-
-        # Calculate the derivatives
-        self.drho_dp_spline_function = self.rho_spline_function.derivative()
-        self.dp_drho_spline_function = self.p_spline_function.derivative()
-
-        # Save the maximum and minimum density and pressure
-        self.rho_max = rho_space[-1]
-        self.p_max = p_space[-1]
-        self.rho_min = rho_space[0]
-        self.p_min = p_space[0]
-
     def _p_analytic(self, rho):
-        """Analytic expression of the pressure
-
-        Args:
-            rho (float): Density [m^-2]
-
-        Returns:
-            float: Pressure [m^-2]
-        """
 
         # Set the a_i parameters
         a = (
@@ -459,43 +479,39 @@ class BSk20EOS(EOS):
 
         return p
 
-    def rho(self, p):
-        return self.rho_spline_function(p)
 
-    def p(self, rho):
-        return self.p_spline_function(rho)
+class SLy4EOS(InterpolatedEOS):
+    """Class with the functions of the SLy4 EOS
+    """
 
-    def drho_dp(self, p):
-        return self.drho_dp_spline_function(p)
+    def _p_analytic(self, rho):
 
-    def dp_drho(self, rho):
-        return self.dp_drho_spline_function(rho)
+        # Set the a_i parameters
+        a = (
+            0.0, 6.22, 6.121, 0.005925, 0.16326, 6.48, 11.4971, 19.105, 0.8938, 6.54,
+            11.4950, -22.775, 1.5707, 4.3, 14.08, 27.80, -1.653, 1.50, 14.67
+        )
+
+        # Calculating xi
+        xi = np.log10(rho * uconv.MASS_DENSITY_GU_TO_CGS)
+
+        # Calculating zeta
+        zeta = (
+            ((a[1] + a[2] * xi + a[3] * xi**3) / (1 + a[4] * xi)) * (np.exp(a[5] * (xi - a[6])) + 1)**(-1)
+            + (a[7] + a[8] * xi) * (np.exp(a[9] * (a[10] - xi)) + 1)**(-1)
+            + (a[11] + a[12] * xi) * (np.exp(a[13] * (a[14] - xi)) + 1)**(-1)
+            + (a[15] + a[16] * xi) * (np.exp(a[17] * (a[18] - xi)) + 1)**(-1)
+        )
+
+        # Calculating p
+        p = 10**(zeta) * uconv.PRESSURE_CGS_TO_GU
+
+        return p
 
 
 def main():
     """Main logic
     """
-
-    # BSk20 EOS test
-
-    # Set the rho_space
-    max_rho = 2.181e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
-    rho_space = max_rho * np.logspace(-11.0, 0.0, 10000)
-
-    # Create the EOS object
-    bsk20_eos = BSk20EOS(rho_space)
-
-    # Set the p_space
-    p_space = bsk20_eos.p(rho_space)
-
-    # Print the minimum pressure calculated. Should be less than 10**21 [dyn ⋅ cm^-2]
-    print(f"BSk20EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
-
-    # Check the EOS
-    bsk20_eos.check_eos(p_space)
-
-    # Create the EOS graphs
-    bsk20_eos.plot_all_curves(p_space)
 
     # Polytropic EOS test
 
@@ -538,6 +554,48 @@ def main():
     # Create the EOS graphs
     quark_eos.plot_all_curves(p_space)
 
+    # BSk20 EOS test
+
+    # Set the rho_space
+    max_rho = 2.181e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    rho_space = max_rho * np.logspace(-11.0, 0.0, 10000)
+
+    # Create the EOS object
+    bsk20_eos = BSk20EOS(rho_space)
+
+    # Set the p_space
+    p_space = bsk20_eos.p(rho_space)
+
+    # Print the minimum pressure calculated. Should be less than 10**21 [dyn ⋅ cm^-2]
+    print(f"BSk20EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
+
+    # Check the EOS
+    bsk20_eos.check_eos(p_space)
+
+    # Create the EOS graphs
+    bsk20_eos.plot_all_curves(p_space)
+
+    # SLy4 EOS test
+
+    # Set the rho_space
+    max_rho = 2.864e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    rho_space = max_rho * np.logspace(-11.0, 0.0, 10000)
+
+    # Create the EOS object
+    sly4_eos = SLy4EOS(rho_space)
+
+    # Set the p_space
+    p_space = sly4_eos.p(rho_space)
+
+    # Print the minimum pressure calculated. Should be less than 10**21 [dyn ⋅ cm^-2]
+    print(f"SLy4EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
+
+    # Check the EOS
+    sly4_eos.check_eos(p_space)
+
+    # Create the EOS graphs
+    sly4_eos.plot_all_curves(p_space)
+
     # Table GM1 EOS test
 
     # Create the EOS object
@@ -556,25 +614,6 @@ def main():
 
     # Create the EOS graphs
     table_gm1_eos.plot_all_curves(p_space)
-
-    # Table SLy4 EOS test
-
-    # Create the EOS object
-    table_sly4_eos = TableEOS(fname='data/SLy4.csv', eos_name='SLy4EOS')
-
-    # Set the p_space
-    max_rho = 2.864e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
-    max_p = table_sly4_eos.p(max_rho)                       # Maximum pressure [m^-2]
-    p_space = max_p * np.logspace(-16.0, 0.0, 1000)
-
-    # Print the minimum pressure calculated. Should be less than 10**21 [dyn ⋅ cm^-2]
-    print(f"SLy4EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
-
-    # Check the EOS
-    table_sly4_eos.check_eos(p_space)
-
-    # Create the EOS graphs
-    table_sly4_eos.plot_all_curves(p_space)
 
 
 # This logic is only executed when this file is run directly in the command prompt

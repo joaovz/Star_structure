@@ -29,6 +29,44 @@ class DeformedStar(Star):
         # Initialize deformed star properties: tidal Love number
         self.k2 = 0.0           # Tidal Love number [dimensionless]
 
+    def _combined_tov_tidal_ode_system(self, r, s):
+        """Method that implements the combined TOV+tidal ODE system in the form ``ds/dr = f(r, s)``, used by the IVP solver
+
+        Args:
+            r (float): Independent variable of the ODE system (radial coordinate r)
+            s (array of float): Array with the dependent variables of the ODE system (p, m, nu, y)
+
+        Returns:
+            array of float: Right hand side of the equation ``ds/dr = f(r, s)`` (dp_dr, dm_dr, dnu_dr, dy_dr)
+        """
+
+        # Variables of the system
+        (p, m, nu, y) = s
+
+        # Call the TOV ODE system
+        (dp_dr, dm_dr, dnu_dr) = self._tov_ode_system(r, (p, m, nu))
+
+        # Functions and derivatives evaluated at current r
+        rho = self.eos.rho(p)
+        exp_lambda = (1 - 2 * m / r)**(-1)
+        drho_dp = self.eos.drho_dp(p)
+
+        # Coefficients of the tidal ODE
+        c0 = (
+            exp_lambda * (
+                - (6 / r**2)
+                + 4 * np.pi * ((rho + p) * drho_dp + 5 * rho + 9 * p)
+            )
+            - (dnu_dr)**2
+        )
+        c1 = (2 / r) + exp_lambda * ((2 * m / r**2) + 4 * np.pi * r * (p - rho))
+
+        # ODE system that describes the tidal deformation of the star
+        dy_dr = ((1 / r) - c1) * y - (y**2 / r) - c0 * r
+
+        # Return f(r, s) of the combined system
+        return (dp_dr, dm_dr, dnu_dr, dy_dr)
+
     def _tidal_ode_system(self, r, y):
         """Method that implements the tidal ODE system in the form ``dy/dr = f(r, y)``, used by the IVP solver
 
@@ -82,6 +120,52 @@ class DeformedStar(Star):
             )
         )
 
+    def solve_combined_tov_tidal(self, p_center=None, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP,
+                                atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
+        """Method that solves the combined TOV+tidal system for the star, finding p, m, nu, and k2
+
+        Args:
+            p_center (float, optional): Central pressure of the star [m^-2]. Defaults to None
+            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
+            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
+            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
+            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
+            atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV equation. Defaults to ATOL_TOV
+            atol_tidal (float, optional): Absolute tolerance of the IVP solver for the tidal equation. Defaults to ATOL_TIDAL
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
+
+        Raises:
+            ValueError: Exception in case the initial radial coordinate is too large
+            ValueError: Exception in case the EOS function didn't return a number
+            RuntimeError: Exception in case the IVP fails to solve the equation
+            RuntimeError: Exception in case the IVP fails to find the ODE termination event
+        """
+
+        # Calculate the TOV ODE system initial values
+        self._calc_tov_init_values(p_center, r_init, rtol)
+
+        # Solve the combined TOV+tidal ODE system
+        atol = list(atol_tov) + [atol_tidal]
+        ode_solution = solve_ivp(
+            self._combined_tov_tidal_ode_system,
+            (r_init, r_final),
+            (self.p_init, self.m_init, self.nu_init, self.y_init),
+            method,
+            events=self._tov_ode_termination_event,
+            max_step=max_step,
+            atol=atol,
+            rtol=rtol)
+
+        # Process the TOV ODE solution
+        self._process_tov_ode_solution(ode_solution)
+
+        # Unpack the tidal variables
+        self.r_tidal_ode_solution = ode_solution.t
+        self.y_tidal_ode_solution = ode_solution.y[3]
+
+        # Calculate the tidal Love number k2
+        self._calc_k2()
+
     def solve_tidal(self, p_center=None, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP,
                     atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
         """Method that solves the tidal system for the star, finding the tidal Love number k2
@@ -97,13 +181,16 @@ class DeformedStar(Star):
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:
+            ValueError: Exception in case the initial radial coordinate is too large
+            ValueError: Exception in case the EOS function didn't return a number
             RuntimeError: Exception in case the IVP fails to solve the equation
+            RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
 
         # Solve the TOV equation before solving the tidal equation
         self.solve_tov(p_center, r_init, r_final, method, max_step, atol_tov, rtol)
 
-        # Solve the ODE system
+        # Solve the tidal ODE system
         ode_solution = solve_ivp(
             self._tidal_ode_system,
             (r_init, self.star_radius),
@@ -112,12 +199,14 @@ class DeformedStar(Star):
             max_step=max_step,
             atol=atol_tidal,
             rtol=rtol)
-        self.r_tidal_ode_solution = ode_solution.t
-        self.y_tidal_ode_solution = ode_solution.y[0]
 
         # Check the ODE solution status and treat the exception case
         if ode_solution.status == -1:
             raise RuntimeError(ode_solution.message)
+
+        # Unpack the tidal variables
+        self.r_tidal_ode_solution = ode_solution.t
+        self.y_tidal_ode_solution = ode_solution.y[0]
 
         # Calculate the tidal Love number k2
         self._calc_k2()

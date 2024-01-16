@@ -64,8 +64,8 @@ class DeformedStarFamily(StarFamily):
 
         # Solve the tidal equation for each star in the family
         with alive_bar(self.p_center_space.size) as bar:
-            for k in range(self.p_center_space.size):
-                self.star_object.solve_tidal(self.p_center_space[k], r_init, r_final, method, max_step, atol_tov, atol_tidal, rtol)
+            for k, p_center in enumerate(self.p_center_space):
+                self.star_object.solve_tidal(p_center, r_init, r_final, method, max_step, atol_tov, atol_tidal, rtol)
                 self.radius_array[k] = self.star_object.star_radius
                 self.mass_array[k] = self.star_object.star_mass
                 self.k2_array[k] = self.star_object.k2

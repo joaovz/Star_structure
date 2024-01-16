@@ -168,8 +168,8 @@ class StarFamily:
 
         # Solve the TOV equation for each star in the family
         with alive_bar(self.p_center_space.size) as bar:
-            for k in range(self.p_center_space.size):
-                self.star_object.solve_tov(self.p_center_space[k], r_init, r_final, method, max_step, atol, rtol)
+            for k, p_center in enumerate(self.p_center_space):
+                self.star_object.solve_tov(p_center, r_init, r_final, method, max_step, atol, rtol)
                 self.radius_array[k] = self.star_object.star_radius
                 self.mass_array[k] = self.star_object.star_mass
                 bar()

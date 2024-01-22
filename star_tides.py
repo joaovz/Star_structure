@@ -96,8 +96,8 @@ class DeformedStar(Star):
             r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
             method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV equation. Defaults to ATOL_TOV
-            atol_tidal (float, optional): Absolute tolerance of the IVP solver for the tidal equation. Defaults to ATOL_TIDAL
+            atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV system. Defaults to ATOL_TOV
+            atol_tidal (float, optional): Absolute tolerance of the IVP solver for the tidal system. Defaults to ATOL_TIDAL
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:
@@ -177,7 +177,7 @@ def main():
     # Define the object
     star_object = DeformedStar(eos, p_center)
 
-    # Solve the tidal equation and plot all curves
+    # Solve the combined TOV+tidal system and plot all curves
     star_object.solve_combined_tov_tidal()
     star_object.plot_all_curves()
 

@@ -10,8 +10,8 @@ class DefaultValues:
     R_FINAL = np.inf                    # Final radial coordinate r of the IVP solve [m]
     IVP_METHOD = 'RK45'                 # Method used by the IVP solver
     MAX_STEP = np.inf                   # Maximum allowed step size for the IVP solver [m]
-    ATOL_TOV = (1e-26, 1e-21, 1e-7)     # Absolute tolerances for the TOV equation solution (ATOL = y_min * RTOL * 0.1, except pressure, with a larger tolerance)
-    ATOL_TIDAL = 1e-7                   # Absolute tolerance for the tidal equation solution (ATOL = y_min * RTOL * 0.1)
+    ATOL_TOV = (1e-26, 1e-21, 1e-7)     # Absolute tolerances for the TOV system solution (ATOL = y_min * RTOL * 0.1, except pressure, with a larger tolerance)
+    ATOL_TIDAL = 1e-7                   # Absolute tolerance for the tidal system solution (ATOL = y_min * RTOL * 0.1)
     RTOL = 1e-6                         # Relative tolerance of numerical values
     P_SURFACE = 1e-24                   # Surface pressure [m^-2] (Around 1.21e21 dyn ⋅ cm^-2)
 

@@ -62,7 +62,7 @@ class Star:
             # ODE System that describes the interior structure of the star
             rho = self.eos.rho(p)
             dnu_dr = (2 * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))       # Rate of change of the metric function
-            dp_dr = -((rho + p) / 2) * dnu_dr                                   # TOV equation
+            dp_dr = -((rho + p) / 2) * dnu_dr                                   # Rate of change of the pressure
             dm_dr = 4 * np.pi * r**2 * rho                                      # Rate of change of the mass
 
         return (dp_dr, dm_dr, dnu_dr)
@@ -232,7 +232,7 @@ def main():
     # Define the object
     star_object = Star(eos, p_center)
 
-    # Solve the TOV equation and plot all curves
+    # Solve the TOV system and plot all curves
     star_object.solve_tov()
     star_object.plot_all_curves()
 

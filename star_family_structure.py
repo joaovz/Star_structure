@@ -174,7 +174,7 @@ class StarFamily:
         self.radius_array = np.zeros(self.p_center_space.size)
         self.mass_array = np.zeros(self.p_center_space.size)
 
-        # Solve the TOV equation for each star in the family
+        # Solve the TOV system for each star in the family
         with alive_bar(self.p_center_space.size) as bar:
             for k, p_center in enumerate(self.p_center_space):
                 self.star_object.solve_tov(p_center, r_init, r_final, method, max_step, atol, rtol)
@@ -247,7 +247,7 @@ def main():
     # Define the object
     star_family_object = StarFamily(eos, p_center_space)
 
-    # Solve the TOV equation and plot all curves
+    # Solve the TOV system and plot all curves
     star_family_object.solve_tov()
     star_family_object.plot_all_curves()
 

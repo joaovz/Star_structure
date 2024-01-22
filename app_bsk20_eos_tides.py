@@ -38,7 +38,7 @@ def main():
     # Define the object
     star_object = DeformedStar(eos, p_center)
 
-    # Solve the tidal equation and plot all curves
+    # Solve the combined TOV+tidal system and plot all curves
     star_object.solve_combined_tov_tidal()
     star_object.plot_all_curves(figures_path)
 
@@ -50,8 +50,8 @@ def main():
     # Define the object
     star_family_object = DeformedStarFamily(eos, p_center_space)
 
-    # Solve the tidal equation
-    star_family_object.solve_tidal()
+    # Solve the combined TOV+tidal system
+    star_family_object.solve_combined_tov_tidal()
 
     # Plot the calculated and expected Mass vs Radius curves
     star_family_object.plot_curve(

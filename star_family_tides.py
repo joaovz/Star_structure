@@ -48,17 +48,17 @@ class DeformedStarFamily(StarFamily):
         ]
         self.curves_list += extra_curves_list
 
-    def solve_tidal(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP,
-                    atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
-        """Method that solves the tidal system for each star in the family, finding the tidal Love number k2
+    def solve_combined_tov_tidal(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP,
+                                atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
+        """Method that solves the combined TOV+tidal system for each star in the family, finding p, m, nu, and k2
 
         Args:
             r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
             r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
             method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV equation. Defaults to ATOL_TOV
-            atol_tidal (float, optional): Absolute tolerance of the IVP solver for the tidal equation. Defaults to ATOL_TIDAL
+            atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV system. Defaults to ATOL_TOV
+            atol_tidal (float, optional): Absolute tolerance of the IVP solver for the tidal system. Defaults to ATOL_TIDAL
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:
@@ -67,7 +67,7 @@ class DeformedStarFamily(StarFamily):
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
 
-        # Solve the tidal equation for each star in the family
+        # Solve the combined TOV+tidal system for each star in the family
         with alive_bar(self.p_center_space.size) as bar:
             for k, p_center in enumerate(self.p_center_space):
                 self.star_object.solve_combined_tov_tidal(p_center, r_init, r_final, method, max_step, atol_tov, atol_tidal, rtol)
@@ -98,8 +98,8 @@ def main():
     # Define the object
     star_family_object = DeformedStarFamily(eos, p_center_space)
 
-    # Solve the tidal equation and plot all curves
-    star_family_object.solve_tidal()
+    # Solve the combined TOV+tidal system and plot all curves
+    star_family_object.solve_combined_tov_tidal()
     star_family_object.plot_all_curves()
 
 

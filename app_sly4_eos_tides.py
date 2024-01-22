@@ -4,6 +4,7 @@ from eos_library import SLy4EOS
 from star_family_tides import DeformedStarFamily
 from star_tides import DeformedStar
 
+
 def main():
     """Main logic
     """

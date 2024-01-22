@@ -49,7 +49,7 @@ class DeformedStarFamily(StarFamily):
         self.curves_list += extra_curves_list
 
     def solve_combined_tov_tidal(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP,
-                                atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
+                                 atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
         """Method that solves the combined TOV+tidal system for each star in the family, finding p, m, nu, and k2
 
         Args:

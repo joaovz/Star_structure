@@ -87,7 +87,7 @@ class DeformedStar(Star):
         )
 
     def solve_combined_tov_tidal(self, p_center=None, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP,
-                                atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
+                                 atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
         """Method that solves the combined TOV+tidal system for the star, finding p, m, nu, and k2
 
         Args:

@@ -1,4 +1,5 @@
 import os
+from alive_progress import alive_bar
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
@@ -100,43 +101,47 @@ def analyze_strange_stars(parameter_dataframe):
 
     # Iterate over each strange star
     n_rows = parameter_dataframe.shape[0]
-    for row in parameter_dataframe.itertuples():
+    with alive_bar(n_rows) as bar:
+        for row in parameter_dataframe.itertuples():
 
-        # Unpack the row values
-        (index, a2, a4, B, *_) = row
+            # Unpack the row values
+            (index, a2, a4, B, *_) = row
 
-        # Print a message at the beginning to separate each star
-        print(f"({index + 1} / {n_rows}) {'#' * 100}")
+            # Print a message at the beginning to separate each star
+            print(f"({index + 1} / {n_rows}) {'#' * 100}")
 
-        # Create the EOS object
-        quark_eos = QuarkEOS(a2, a4, B)
+            # Create the EOS object
+            quark_eos = QuarkEOS(a2, a4, B)
 
-        # EOS analysis
+            # EOS analysis
 
-        # Set the p_space
-        max_rho = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU     # Maximum density [m^-2]
-        max_p = quark_eos.p(max_rho)                        # Maximum pressure [m^-2]
-        p_space = max_p * np.logspace(-15.0, 0.0, 1000)
+            # Set the p_space
+            max_rho = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU     # Maximum density [m^-2]
+            max_p = quark_eos.p(max_rho)                        # Maximum pressure [m^-2]
+            p_space = max_p * np.logspace(-15.0, 0.0, 1000)
 
-        # Check the EOS
-        quark_eos.check_eos(p_space)
+            # Check the EOS
+            quark_eos.check_eos(p_space)
 
-        # TOV analysis
+            # TOV analysis
 
-        # Set the central pressure of the star
-        rho_center = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
-        p_center = quark_eos.p(rho_center)                      # Central pressure [m^-2]
+            # Set the central pressure of the star
+            rho_center = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
+            p_center = quark_eos.p(rho_center)                      # Central pressure [m^-2]
 
-        # Set the p_center space that characterizes the star family
-        p_center_space = p_center * np.logspace(-3.0, 0.0, 20)
+            # Set the p_center space that characterizes the star family
+            p_center_space = p_center * np.logspace(-3.0, 0.0, 20)
 
-        # Define the object
-        star_family_object = StarFamily(quark_eos, p_center_space)
+            # Define the object
+            star_family_object = StarFamily(quark_eos, p_center_space)
 
-        # Find the maximum mass star and add the central density and mass to the dataframe
-        star_family_object.find_maximum_mass()
-        parameter_dataframe.at[index, 'rho_center_max [g ⋅ cm^-3]'] = star_family_object.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS
-        parameter_dataframe.at[index, 'M_max [solar mass]'] = star_family_object.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS
+            # Find the maximum mass star and add the central density and mass to the dataframe
+            star_family_object.find_maximum_mass()
+            parameter_dataframe.at[index, 'rho_center_max [g ⋅ cm^-3]'] = star_family_object.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS
+            parameter_dataframe.at[index, 'M_max [solar mass]'] = star_family_object.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS
+
+            # Update progress bar
+            bar()
 
     # Print the parameter dataframe at the end
     print(parameter_dataframe)

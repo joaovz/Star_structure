@@ -1,4 +1,4 @@
-from alive_progress import alive_bar
+from time import perf_counter
 import numpy as np
 from constants import DefaultValues as dval
 from constants import UnitConversion as uconv
@@ -68,13 +68,14 @@ class DeformedStarFamily(StarFamily):
         """
 
         # Solve the combined TOV+tidal system for each star in the family
-        with alive_bar(self.p_center_space.size) as bar:
-            for k, p_center in enumerate(self.p_center_space):
-                self.star_object.solve_combined_tov_tidal(p_center, r_init, r_final, method, max_step, atol_tov, atol_tidal, rtol)
-                self.radius_array[k] = self.star_object.star_radius
-                self.mass_array[k] = self.star_object.star_mass
-                self.k2_array[k] = self.star_object.k2
-                bar()
+        start_time = perf_counter()
+        for k, p_center in enumerate(self.p_center_space):
+            self.star_object.solve_combined_tov_tidal(p_center, r_init, r_final, method, max_step, atol_tov, atol_tidal, rtol)
+            self.radius_array[k] = self.star_object.star_radius
+            self.mass_array[k] = self.star_object.star_mass
+            self.k2_array[k] = self.star_object.k2
+        end_time = perf_counter()
+        print(f"Executed the TOV+tidal solution in: {(end_time - start_time):.3f} [s]")
 
         # Execute the stability criterion check and configure the plot
         self._check_stability()

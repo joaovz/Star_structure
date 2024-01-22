@@ -1,5 +1,5 @@
 import os
-from alive_progress import alive_bar
+from time import perf_counter
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import CubicSpline
@@ -175,12 +175,13 @@ class StarFamily:
         self.mass_array = np.zeros(self.p_center_space.size)
 
         # Solve the TOV system for each star in the family
-        with alive_bar(self.p_center_space.size) as bar:
-            for k, p_center in enumerate(self.p_center_space):
-                self.star_object.solve_tov(p_center, r_init, r_final, method, max_step, atol, rtol)
-                self.radius_array[k] = self.star_object.star_radius
-                self.mass_array[k] = self.star_object.star_mass
-                bar()
+        start_time = perf_counter()
+        for k, p_center in enumerate(self.p_center_space):
+            self.star_object.solve_tov(p_center, r_init, r_final, method, max_step, atol, rtol)
+            self.radius_array[k] = self.star_object.star_radius
+            self.mass_array[k] = self.star_object.star_mass
+        end_time = perf_counter()
+        print(f"Executed the TOV solution in: {(end_time - start_time):.3f} [s]")
 
         # Execute the stability criterion check and configure the plot
         self._check_stability()

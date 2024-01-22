@@ -35,7 +35,7 @@ def main():
     # Star Family
 
     # Set the p_center space that characterizes the star family
-    p_center_space = p_center * np.logspace(-3.0, 0.0, 50)
+    p_center_space = p_center * np.logspace(-2.4, 0.0, 50)
 
     # Create the star family object
     star_family_object = StarFamily(eos, p_center_space)

@@ -2,7 +2,6 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
-from scipy.interpolate import CubicSpline
 from constants import DefaultValues as dval
 from constants import UnitConversion as uconv
 from eos_library import PolytropicEOS
@@ -79,12 +78,7 @@ class Star:
         Returns:
             float: ``p - p_surface``
         """
-
-        # Force the event trigger when (p - p_surface) <= tolerance. This is a workaround for a solve_ivp issue
-        delta_p = s[0] - self.p_surface
-        if delta_p <= (dval.ATOL_TOV[0] + dval.RTOL * self.p_surface):
-            return 0.0
-        return delta_p
+        return s[0] - self.p_surface
 
     _tov_ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
 
@@ -191,10 +185,6 @@ class Star:
 
         # Process the TOV ODE solution
         self._process_tov_ode_solution(ode_solution)
-
-        # Create interpolated functions for the solution using CubicSpline
-        self.p_spline_function = CubicSpline(self.r_ode_solution, self.p_ode_solution, extrapolate=False)
-        self.m_spline_function = CubicSpline(self.r_ode_solution, self.m_ode_solution, extrapolate=False)
 
     def plot_all_curves(self, figure_path=FIGURES_PATH):
         """Method that prints the star radius and mass and plots the solution found

@@ -71,44 +71,6 @@ class DeformedStar(Star):
         # Return f(r, s) of the combined system
         return (dp_dr, dm_dr, dnu_dr, dy_dr)
 
-    def _tidal_ode_system(self, r, y):
-        """Method that implements the tidal ODE system in the form ``dy/dr = f(r, y)``, used by the IVP solver
-
-        Args:
-            r (float): Independent variable of the ODE system (radial coordinate r)
-            y (array of float): Array with the dependent variables of the ODE system [y = r H' / H]
-
-        Returns:
-            array of float: Right hand side of the equation ``dy/dr = f(r, y)`` [dy_dr]
-        """
-
-        # Variables of the system
-        y = y[0]
-
-        # Functions evaluated at current r
-        p = self.p_spline_function(r)
-        m = self.m_spline_function(r)
-        rho = self.eos.rho(p)
-        exp_lambda = (1 - 2 * m / r)**(-1)
-
-        # Derivatives of the functions evaluated at current r
-        dnu_dr = (2 * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))
-        drho_dp = self.eos.drho_dp(p)
-
-        # Coefficients of the ODE
-        c0 = (
-            exp_lambda * (
-                - (6 / r**2)
-                + 4 * np.pi * ((rho + p) * drho_dp + 5 * rho + 9 * p)
-            )
-            - (dnu_dr)**2
-        )
-        c1 = (2 / r) + exp_lambda * ((2 * m / r**2) + 4 * np.pi * r * (p - rho))
-
-        # ODE System that describes the tidal deformation of the star
-        dy_dr = ((1 / r) - c1) * y - (y**2 / r) - c0 * r
-        return [dy_dr]
-
     def _calc_k2(self):
         """Method that calculates the tidal Love number k2, that represents the star tidal deformation
         """
@@ -165,50 +127,6 @@ class DeformedStar(Star):
         # Unpack the tidal variables
         self.r_tidal_ode_solution = ode_solution.t
         self.y_tidal_ode_solution = ode_solution.y[3]
-
-        # Calculate the tidal Love number k2
-        self._calc_k2()
-
-    def solve_tidal(self, p_center=None, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP,
-                    atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
-        """Method that solves the tidal system for the star, finding the tidal Love number k2
-
-        Args:
-            p_center (float, optional): Central pressure of the star [m^-2]. Defaults to None
-            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
-            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
-            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
-            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV equation. Defaults to ATOL_TOV
-            atol_tidal (float, optional): Absolute tolerance of the IVP solver for the tidal equation. Defaults to ATOL_TIDAL
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
-
-        Raises:
-            ValueError: Exception in case the initial radial coordinate is too large
-            RuntimeError: Exception in case the IVP fails to solve the equation
-            RuntimeError: Exception in case the IVP fails to find the ODE termination event
-        """
-
-        # Solve the TOV equation before solving the tidal equation
-        self.solve_tov(p_center, r_init, r_final, method, max_step, atol_tov, rtol)
-
-        # Solve the tidal ODE system
-        ode_solution = solve_ivp(
-            self._tidal_ode_system,
-            (r_init, self.star_radius),
-            [self.y_init],
-            method,
-            max_step=max_step,
-            atol=atol_tidal,
-            rtol=rtol)
-
-        # Check the ODE solution status and treat the exception case
-        if ode_solution.status == -1:
-            raise RuntimeError(ode_solution.message)
-
-        # Unpack the tidal variables
-        self.r_tidal_ode_solution = ode_solution.t
-        self.y_tidal_ode_solution = ode_solution.y[0]
 
         # Calculate the tidal Love number k2
         self._calc_k2()

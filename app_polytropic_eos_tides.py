@@ -30,7 +30,7 @@ def main():
     star_object = DeformedStar(eos, p_center)
 
     # Solve the tidal equation and plot all curves
-    star_object.solve_tidal()
+    star_object.solve_combined_tov_tidal()
     star_object.plot_all_curves(figures_path)
 
     # Star Family

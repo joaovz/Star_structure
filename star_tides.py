@@ -38,10 +38,6 @@ class DeformedStar(Star):
 
         Returns:
             array of float: Right hand side of the equation ``ds/dr = f(r, s)`` (dp_dr, dm_dr, dnu_dr, dy_dr)
-
-        Raises:
-            ValueError: Exception in case the EOS function didn't return a number
-            ValueError: Exception in case the EOS derivative didn't return a number
         """
 
         # Variables of the system
@@ -54,18 +50,12 @@ class DeformedStar(Star):
         if p <= self.p_surface:
             dy_dr = 0.0
         else:
-            # Calculate rho, check if it is some invalid value, and raise an exception in this case
+            # Functions and derivatives evaluated at current r
             rho = self.eos.rho(p)
-            if np.isnan(rho):
-                raise ValueError(f"The EOS function didn't return a number: p = {p} [m^-2], rho = {rho} [m^-2]")
-
-            # Calculate drho_dp, check if it is some invalid value, and raise an exception in this case
             drho_dp = self.eos.drho_dp(p)
-            if np.isnan(drho_dp):
-                raise ValueError(f"The EOS derivative didn't return a number: p = {p} [m^-2], drho_dp = {drho_dp} [dimensionless]")
+            exp_lambda = (1 - 2 * m / r)**(-1)
 
             # Coefficients of the tidal ODE
-            exp_lambda = (1 - 2 * m / r)**(-1)
             c0 = (
                 exp_lambda * (
                     - (6 / r**2)
@@ -150,8 +140,6 @@ class DeformedStar(Star):
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
-            ValueError: Exception in case the EOS function didn't return a number
-            ValueError: Exception in case the EOS derivative didn't return a number
             RuntimeError: Exception in case the IVP fails to solve the equation
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
@@ -197,7 +185,6 @@ class DeformedStar(Star):
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
-            ValueError: Exception in case the EOS function didn't return a number
             RuntimeError: Exception in case the IVP fails to solve the equation
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """

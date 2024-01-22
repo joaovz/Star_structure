@@ -124,6 +124,9 @@ class StarFamily:
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:
+            ValueError: Exception in case the initial radial coordinate is too large
+            RuntimeError: Exception in case the IVP fails to solve the equation
+            RuntimeError: Exception in case the IVP fails to find the ODE termination event
             RuntimeError: Exception in case maximum mass star is not found
         """
 
@@ -160,6 +163,11 @@ class StarFamily:
             max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
             atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TOV
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
+
+        Raises:
+            ValueError: Exception in case the initial radial coordinate is too large
+            RuntimeError: Exception in case the IVP fails to solve the equation
+            RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
 
         # Initialize the radius and mass arrays with the right size

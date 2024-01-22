@@ -60,6 +60,11 @@ class DeformedStarFamily(StarFamily):
             atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV equation. Defaults to ATOL_TOV
             atol_tidal (float, optional): Absolute tolerance of the IVP solver for the tidal equation. Defaults to ATOL_TIDAL
             rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
+
+        Raises:
+            ValueError: Exception in case the initial radial coordinate is too large
+            RuntimeError: Exception in case the IVP fails to solve the equation
+            RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
 
         # Solve the tidal equation for each star in the family

@@ -49,9 +49,6 @@ class Star:
 
         Returns:
             array of float: Right hand side of the equation ``ds/dr = f(r, s)`` (dp_dr, dm_dr, dnu_dr)
-
-        Raises:
-            ValueError: Exception in case the EOS function didn't return a number
         """
 
         # Variables of the system
@@ -63,12 +60,8 @@ class Star:
             dm_dr = 0.0
             dnu_dr = 0.0
         else:
-            # Calculate rho, check if it is some invalid value, and raise an exception in this case
-            rho = self.eos.rho(p)
-            if np.isnan(rho):
-                raise ValueError(f"The EOS function didn't return a number: p = {p} [m^-2], rho = {rho} [m^-2]")
-
             # ODE System that describes the interior structure of the star
+            rho = self.eos.rho(p)
             dnu_dr = (2 * (m + 4 * np.pi * r**3 * p)) / (r * (r - 2 * m))       # Rate of change of the metric function
             dp_dr = -((rho + p) / 2) * dnu_dr                                   # TOV equation
             dm_dr = 4 * np.pi * r**2 * rho                                      # Rate of change of the mass
@@ -178,7 +171,6 @@ class Star:
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
-            ValueError: Exception in case the EOS function didn't return a number
             RuntimeError: Exception in case the IVP fails to solve the equation
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """

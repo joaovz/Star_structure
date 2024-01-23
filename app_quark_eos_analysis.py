@@ -132,7 +132,7 @@ def analyze_strange_stars(parameter_dataframe):
             # Set the p_center space that characterizes the star family
             p_center_space = p_center * np.logspace(-3.0, 0.0, 20)
 
-            # Define the object
+            # Create the star family object
             star_family_object = StarFamily(quark_eos, p_center_space)
 
             # Find the maximum mass star and add the central density and mass to the dataframe

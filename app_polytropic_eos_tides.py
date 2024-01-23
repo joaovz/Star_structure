@@ -17,8 +17,8 @@ def main():
     STARS_LOGSPACE = np.logspace(-5.0, 0.0, 50)                     # Logspace used to create the star family
 
     # EOS parameters
-    k = 1.0e8       # [dimensionless]
-    n = 1           # [dimensionless]
+    k = 1.0e8       # Proportional constant [dimensionless]
+    n = 1           # Polytropic index [dimensionless]
 
     # Open the .csv file with the expected Love number vs Compactness curve
     (expected_C, expected_k2) = csv_to_arrays(EXPECTED_K2_VS_C_FILE)
@@ -33,7 +33,7 @@ def main():
 
     # Single star
 
-    # Define the object
+    # Create the star object
     star_object = DeformedStar(eos, p_center)
 
     # Solve the combined TOV+tidal system and plot all curves
@@ -42,7 +42,7 @@ def main():
 
     # Star Family
 
-    # Define the object
+    # Create the star family object
     star_family_object = DeformedStarFamily(eos, p_center_space)
 
     # Solve the combined TOV+tidal system

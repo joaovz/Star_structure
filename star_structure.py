@@ -226,8 +226,8 @@ def main():
     MAX_RHO = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
 
     # EOS parameters
-    k = 1.0e8       # [dimensionless]
-    n = 1           # [dimensionless]
+    k = 1.0e8       # Proportional constant [dimensionless]
+    n = 1           # Polytropic index [dimensionless]
 
     # Create the EOS object
     eos = PolytropicEOS(k, n)
@@ -236,7 +236,7 @@ def main():
     rho_center = MAX_RHO                # Central density [m^-2]
     p_center = eos.p(rho_center)        # Central pressure [m^-2]
 
-    # Define the object
+    # Create the star object
     star_object = Star(eos, p_center)
 
     # Solve the TOV system and plot all curves

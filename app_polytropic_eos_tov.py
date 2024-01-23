@@ -15,8 +15,8 @@ def main():
     STARS_LOGSPACE = np.logspace(-5.0, 0.0, 50)             # Logspace used to create the star family
 
     # EOS parameters
-    k = 1.0e8       # [dimensionless]
-    n = 1           # [dimensionless]
+    k = 1.0e8       # Proportional constant [dimensionless]
+    n = 1           # Polytropic index [dimensionless]
 
     # Create the EOS object
     eos = PolytropicEOS(k, n)
@@ -28,7 +28,7 @@ def main():
 
     # Single star
 
-    # Define the object
+    # Create the star object
     star_object = Star(eos, p_center)
 
     # Solve the TOV system and plot all curves
@@ -37,7 +37,7 @@ def main():
 
     # Star Family
 
-    # Define the object
+    # Create the star family object
     star_family_object = StarFamily(eos, p_center_space)
 
     # Solve the TOV system and plot all curves

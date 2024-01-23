@@ -26,7 +26,7 @@ def main():
 
     # Single star
 
-    # Define the object
+    # Create the star object
     star_object = Star(eos, p_center)
 
     # Solve the TOV system and plot all curves

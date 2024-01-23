@@ -15,9 +15,9 @@ def main():
     STARS_LOGSPACE = np.logspace(-4.0, 0.0, 50)             # Logspace used to create the star family
 
     # EOS parameters (values chosen to build a strange star)
-    a2 = 100**2     # [MeV^2]
-    a4 = 0.6        # [dimensionless]
-    B = 130**4      # [MeV^4]
+    a2 = 100**2     # Model free parameter [MeV^2]
+    a4 = 0.6        # Model free parameter [dimensionless]
+    B = 130**4      # Model free parameter [MeV^4]
 
     # Create the EOS object
     eos = QuarkEOS(a2, a4, B)
@@ -29,7 +29,7 @@ def main():
 
     # Single star
 
-    # Define the object
+    # Create the star object
     star_object = DeformedStar(eos, p_center)
 
     # Solve the combined TOV+tidal system and plot all curves
@@ -38,7 +38,7 @@ def main():
 
     # Star Family
 
-    # Define the object
+    # Create the star family object
     star_family_object = DeformedStarFamily(eos, p_center_space)
 
     # Solve the combined TOV+tidal system and plot all curves

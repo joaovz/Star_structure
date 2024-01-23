@@ -36,7 +36,7 @@ def main():
 
     # Single star
 
-    # Define the object
+    # Create the star object
     star_object = DeformedStar(eos, p_center)
 
     # Solve the combined TOV+tidal system and plot all curves
@@ -45,7 +45,7 @@ def main():
 
     # Star Family
 
-    # Define the object
+    # Create the star family object
     star_family_object = DeformedStarFamily(eos, p_center_space)
 
     # Solve the combined TOV+tidal system

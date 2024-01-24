@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -18,6 +19,20 @@ def csv_to_arrays(file_name="file_name.csv", usecols=(0, 1), unit_conversion=(1.
     (x_converted, y_converted) = (x * unit_conversion[0], y * unit_conversion[1])
 
     return (x_converted, y_converted)
+
+
+def dataframe_to_csv(dataframe, file_path="results", file_name="dataframe.csv"):
+    """Saves a dataframe to a csv file
+
+    Args:
+        dataframe (pandas dataframe): Dataframe to be saved
+        file_path (str, optional): Path of the file to be created. Defaults to "results"
+        file_name (str, optional): Name of the file to be created. Defaults to "dataframe.csv"
+    """
+
+    os.makedirs(file_path, exist_ok=True)
+    complete_path = os.path.join(file_path, file_name)
+    dataframe.to_csv(complete_path, index=False)
 
 
 def main():

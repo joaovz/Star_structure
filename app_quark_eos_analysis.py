@@ -5,6 +5,7 @@ from matplotlib import cm
 import numpy as np
 import pandas as pd
 from constants import UnitConversion as uconv
+from data_handling import dataframe_to_csv
 from eos_library import QuarkEOS
 from star_family_structure import StarFamily
 
@@ -86,9 +87,9 @@ def generate_strange_stars(mesh_size=21):
     for x in iterator:
         if bool(x) is False:
             index = iterator.multi_index
-            star_parameters = (a2[index], a4[index], B[index])
+            star_parameters = (a2[index]**(1 / 2), a4[index], B[index]**(1 / 4))
             parameter_points.append(star_parameters)
-    parameter_dataframe = pd.DataFrame(parameter_points, columns=["a2 [MeV^2]", "a4 [dimensionless]", "B [MeV^4]"])
+    parameter_dataframe = pd.DataFrame(parameter_points, columns=["a2^(1/2) [MeV]", "a4 [dimensionless]", "B^(1/4) [MeV]"])
 
     return (a2_masked, a4_masked, B_masked, parameter_dataframe)
 
@@ -96,7 +97,7 @@ def generate_strange_stars(mesh_size=21):
 def analyze_strange_stars(parameter_dataframe):
 
     # Pre-allocate the new dataframe columns with NaN
-    parameter_dataframe["rho_center_max [g ⋅ cm^-3]"] = np.nan
+    parameter_dataframe["rho_center_max [10^15 g ⋅ cm^-3]"] = np.nan
     parameter_dataframe["M_max [solar mass]"] = np.nan
 
     # Iterate over each strange star
@@ -105,7 +106,9 @@ def analyze_strange_stars(parameter_dataframe):
         for row in parameter_dataframe.itertuples():
 
             # Unpack the row values
-            (index, a2, a4, B, *_) = row
+            (index, a2_1_2, a4, B_1_4, *_) = row
+            a2 = a2_1_2**2
+            B = B_1_4**4
 
             # Print a message at the beginning to separate each star
             print(f"({index + 1} / {n_rows}) {"#" * 100}")
@@ -137,14 +140,15 @@ def analyze_strange_stars(parameter_dataframe):
 
             # Find the maximum mass star and add the central density and mass to the dataframe
             star_family_object.find_maximum_mass()
-            parameter_dataframe.at[index, "rho_center_max [g ⋅ cm^-3]"] = star_family_object.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS
+            parameter_dataframe.at[index, "rho_center_max [10^15 g ⋅ cm^-3]"] = star_family_object.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
             parameter_dataframe.at[index, "M_max [solar mass]"] = star_family_object.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS
 
             # Update progress bar
             bar()
 
-    # Print the parameter dataframe at the end
+    # Print and return the parameter dataframe at the end
     print(parameter_dataframe)
+    return parameter_dataframe
 
 
 def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"):
@@ -246,9 +250,11 @@ def main():
     """
 
     # Constants
-    figure_path = "figures/app_quark_eos"
-    parameter_space_mesh_size = 1001        # Number of points used in the meshgrid for the parameter space plot
-    scatter_plot_mesh_size = 11             # Number of points used in the meshgrid for the scatter plot
+    figure_path = "figures/app_quark_eos"               # Path of the figures folder
+    dataframe_csv_path = "results"                      # Path of the results folder
+    dataframe_csv_name = "quark_eos_analysis.csv"       # Name of the csv file with the results
+    parameter_space_mesh_size = 1001                    # Number of points used in the meshgrid for the parameter space plot
+    scatter_plot_mesh_size = 11                         # Number of points used in the meshgrid for the scatter plot
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figure_path)
@@ -260,7 +266,10 @@ def main():
     plot_parameter_points_scatter(a2_masked, a4_masked, B_masked, figure_path)
 
     # Analize the strange stars generated
-    analyze_strange_stars(parameter_dataframe)
+    parameter_dataframe = analyze_strange_stars(parameter_dataframe)
+
+    # Save the dataframe to a csv file
+    dataframe_to_csv(dataframe=parameter_dataframe, file_path=dataframe_csv_path, file_name=dataframe_csv_name)
 
 
 # This logic is only executed when this file is run directly in the command prompt

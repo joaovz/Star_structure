@@ -15,7 +15,10 @@ class StarFamily:
     """
 
     # Class constants
-    FIGURES_PATH = "figures/star_family"
+    FIGURES_PATH = "figures/star_family"                # Path of the figures folder
+    MAX_RHO = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU     # Maximum density [m^-2]
+    WIDE_LOGSPACE = np.logspace(-3.0, 0.0, 10)          # Wide logspace used in values search
+    NARROW_LOGSPACE = np.logspace(-0.1, 0.1, 10)        # Narrow logspace used in values search
 
     def __init__(self, eos, p_center_space, p_surface=dval.P_SURFACE):
         """Initialization method
@@ -40,6 +43,8 @@ class StarFamily:
         self.mass_array = np.zeros(self.p_center_space.size)
         self.maximum_mass = None
         self.maximum_stable_rho_center = None
+        self.canonical_rho_center = None
+        self.canonical_radius = None
 
     def _check_stability(self):
         """Method that checks the stability criterion for the star family
@@ -59,6 +64,23 @@ class StarFamily:
             print(f"Maximum mass = {(self.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
         else:
             print("Maximum stable rho_center not reached")
+
+    def _calc_canonical_star(self):
+        """Method that calculates the canonical star properties
+        """
+
+        # Create the (mass - canonical_mass) vs rho_center interpolated function
+        mass_minus_canonical_array = self.mass_array - 1.4 * uconv.MASS_SOLAR_MASS_TO_GU
+        mass_minus_canonical_rho_center_spline = CubicSpline(self.rho_center_space, mass_minus_canonical_array, extrapolate=False)
+
+        # Create the radius vs rho_center interpolated function
+        radius_rho_center_spline = CubicSpline(self.rho_center_space, self.radius_array, extrapolate=False)
+
+        # Calculate the canonical radius and rho_center
+        mass_minus_canonical_rho_center_roots = mass_minus_canonical_rho_center_spline.roots()
+        if mass_minus_canonical_rho_center_roots.size > 0:
+            self.canonical_rho_center = mass_minus_canonical_rho_center_roots[0]
+            self.canonical_radius = radius_rho_center_spline(self.canonical_rho_center)
 
     def _config_plot(self):
         """Method that configures the plotting
@@ -131,9 +153,9 @@ class StarFamily:
         """
 
         # Set the p_center space and rho_center space used to find the maximum mass star
-        rho_center = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
-        p_center = self.star_object.eos.p(rho_center)           # Central pressure [m^-2]
-        self.p_center_space = p_center * np.logspace(-3.0, 0.0, 10)
+        rho_center = self.MAX_RHO                           # Central density [m^-2]
+        p_center = self.star_object.eos.p(rho_center)       # Central pressure [m^-2]
+        self.p_center_space = p_center * self.WIDE_LOGSPACE
         self.rho_center_space = self.star_object.eos.rho(self.p_center_space)
 
         # Solve the TOV system and find the maximum mass star through _check_stability method
@@ -142,7 +164,7 @@ class StarFamily:
         # Redefine the p_center space to a stricter interval
         rho_center = self.maximum_stable_rho_center         # Central density [m^-2]
         p_center = self.star_object.eos.p(rho_center)       # Central pressure [m^-2]
-        self.p_center_space = p_center * np.logspace(-0.1, 0.1, 10)
+        self.p_center_space = p_center * self.NARROW_LOGSPACE
         self.rho_center_space = self.star_object.eos.rho(self.p_center_space)
 
         # Solve the TOV system and find the maximum mass star through _check_stability method
@@ -152,6 +174,49 @@ class StarFamily:
         # If the maximum stable rho_center is not found in the second TOV solve, raise an exception
         if self.maximum_stable_rho_center is None:
             raise RuntimeError(f"Maximum mass star not found!")
+
+    def find_canonical_star(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
+        """Method that finds the canonical star
+
+         Args:
+            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
+            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
+            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
+            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
+            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TOV
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
+
+        Raises:
+            ValueError: Exception in case the initial radial coordinate is too large
+            RuntimeError: Exception in case the IVP fails to solve the equation
+            RuntimeError: Exception in case the IVP fails to find the ODE termination event
+            RuntimeError: Exception in case canonical star is not found
+        """
+
+        # Set the p_center space and rho_center space used to find the canonical star
+        rho_center = self.MAX_RHO                           # Central density [m^-2]
+        p_center = self.star_object.eos.p(rho_center)       # Central pressure [m^-2]
+        self.p_center_space = p_center * self.WIDE_LOGSPACE
+        self.rho_center_space = self.star_object.eos.rho(self.p_center_space)
+
+        # Solve the TOV system and find the canonical star through _calc_canonical_star method
+        self.solve_tov(r_init, r_final, method, max_step, atol, rtol)
+        self._calc_canonical_star()
+
+        # Redefine the p_center space to a stricter interval
+        rho_center = self.canonical_rho_center              # Central density [m^-2]
+        p_center = self.star_object.eos.p(rho_center)       # Central pressure [m^-2]
+        self.p_center_space = p_center * self.NARROW_LOGSPACE
+        self.rho_center_space = self.star_object.eos.rho(self.p_center_space)
+
+        # Solve the TOV system and find the canonical star through _calc_canonical_star method
+        self.canonical_rho_center = None
+        self.solve_tov(r_init, r_final, method, max_step, atol, rtol)
+        self._calc_canonical_star()
+
+        # If the canonical star rho_center is not found in the second TOV solve, raise an exception
+        if self.canonical_rho_center is None:
+            raise RuntimeError(f"Canonical star not found!")
 
     def solve_tov(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
         """Method that solves the TOV system, finding the radius and mass of each star in the family

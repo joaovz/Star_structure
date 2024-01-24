@@ -143,6 +143,11 @@ def analyze_strange_stars(parameter_dataframe):
             parameter_dataframe.at[index, "rho_center_max [10^15 g ⋅ cm^-3]"] = star_family_object.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
             parameter_dataframe.at[index, "M_max [solar mass]"] = star_family_object.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS
 
+            # Find the canonical star and add the central density and radius to the dataframe
+            star_family_object.find_canonical_star()
+            parameter_dataframe.at[index, "rho_center_canonical [10^15 g ⋅ cm^-3]"] = star_family_object.canonical_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
+            parameter_dataframe.at[index, "R_canonical [km]"] = star_family_object.canonical_radius / 10**3
+
             # Update progress bar
             bar()
 

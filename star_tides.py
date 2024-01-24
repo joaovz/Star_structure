@@ -149,7 +149,7 @@ class DeformedStar(Star):
         # Show a simple plot of the solution
         plt.figure()
         plt.plot(self.r_tidal_ode_solution / 10**3, self.y_tidal_ode_solution, linewidth=1)
-        plt.title(f"Perturbation solution for the {self.eos.eos_name.replace('EOS', ' EOS')} star", y=1.05)
+        plt.title(f"Perturbation solution for the {self.eos.eos_name.replace("EOS", " EOS")} star", y=1.05)
         plt.xlabel("$r ~ [km]$")
         plt.ylabel("$y ~ [dimensionless]$")
 

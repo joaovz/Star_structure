@@ -100,16 +100,16 @@ class StarFamily:
 
         # Create a list with all the curves to be plotted
         self.curves_list = [
-            ['p_c', 'R'],
-            ['p_c', 'M'],
-            ['p_c', 'C'],
-            ['rho_c', 'R'],
-            ['rho_c', 'M'],
-            ['rho_c', 'C'],
-            ['rho_c', 'dM_drho_c'],
-            ['R', 'M'],
-            ['C', 'R'],
-            ['C', 'M'],
+            ["p_c", "R"],
+            ["p_c", "M"],
+            ["p_c", "C"],
+            ["rho_c", "R"],
+            ["rho_c", "M"],
+            ["rho_c", "C"],
+            ["rho_c", "dM_drho_c"],
+            ["R", "M"],
+            ["C", "R"],
+            ["C", "M"],
         ]
 
     def find_maximum_mass(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
@@ -200,11 +200,11 @@ class StarFamily:
 
         # Create a simple plot
         plt.figure()
-        plt.plot(self.plot_dict[x_axis]['value'], self.plot_dict[y_axis]['value'], linewidth=1, label="Calculated curve", marker='.')
-        eos_name = self.star_object.eos.eos_name.replace('EOS', ' EOS')
-        plt.title(f"{self.plot_dict[y_axis]['name']} vs {self.plot_dict[x_axis]['name']} curve of the {eos_name} star family", y=1.05)
-        plt.xlabel(self.plot_dict[x_axis]['label'])
-        plt.ylabel(self.plot_dict[y_axis]['label'])
+        plt.plot(self.plot_dict[x_axis]["value"], self.plot_dict[y_axis]["value"], linewidth=1, label="Calculated curve", marker=".")
+        eos_name = self.star_object.eos.eos_name.replace("EOS", " EOS")
+        plt.title(f"{self.plot_dict[y_axis]["name"]} vs {self.plot_dict[x_axis]["name"]} curve of the {eos_name} star family", y=1.05)
+        plt.xlabel(self.plot_dict[x_axis]["label"])
+        plt.ylabel(self.plot_dict[y_axis]["label"])
 
         # If expected curve is received, add a second comparison curve, and enable legend
         if (expected_x is not None) and (expected_y is not None):
@@ -213,8 +213,8 @@ class StarFamily:
 
         # Create the folder if necessary and save the figure
         os.makedirs(figure_path, exist_ok=True)
-        x_axis_name = self.plot_dict[x_axis]['name'].lower().replace(' ', '_')
-        y_axis_name = self.plot_dict[y_axis]['name'].lower().replace(' ', '_')
+        x_axis_name = self.plot_dict[x_axis]["name"].lower().replace(" ", "_")
+        y_axis_name = self.plot_dict[y_axis]["name"].lower().replace(" ", "_")
         figure_name = f"{y_axis_name}_vs_{x_axis_name}_curve.svg"
         complete_path = os.path.join(figure_path, figure_name)
         plt.savefig(complete_path)

@@ -81,16 +81,16 @@ class EOS:
 
         # Create a list with all the curves to be plotted
         self.curves_list = [
-            ['p', 'rho'],
-            ['p', 'drho_dp'],
-            ['p', 'dp_drho'],
-            ['p', 'gamma'],
-            ['p', 'c_s'],
-            ['rho', 'p'],
-            ['rho', 'drho_dp'],
-            ['rho', 'dp_drho'],
-            ['rho', 'gamma'],
-            ['rho', 'c_s'],
+            ["p", "rho"],
+            ["p", "drho_dp"],
+            ["p", "dp_drho"],
+            ["p", "gamma"],
+            ["p", "c_s"],
+            ["rho", "p"],
+            ["rho", "drho_dp"],
+            ["rho", "dp_drho"],
+            ["rho", "gamma"],
+            ["rho", "c_s"],
         ]
 
     def rho(self, p):
@@ -204,16 +204,16 @@ class EOS:
 
         # Create a simple plot
         plt.figure()
-        plt.plot(self.plot_dict[x_axis]['value'], self.plot_dict[y_axis]['value'], linewidth=1)
-        plt.title(f"{self.plot_dict[y_axis]['name']} vs {self.plot_dict[x_axis]['name']} curve of the {self.eos_name.replace('EOS', ' EOS')}", y=1.05)
-        plt.xlabel(self.plot_dict[x_axis]['label'])
-        plt.ylabel(self.plot_dict[y_axis]['label'])
+        plt.plot(self.plot_dict[x_axis]["value"], self.plot_dict[y_axis]["value"], linewidth=1)
+        plt.title(f"{self.plot_dict[y_axis]["name"]} vs {self.plot_dict[x_axis]["name"]} curve of the {self.eos_name.replace("EOS", " EOS")}", y=1.05)
+        plt.xlabel(self.plot_dict[x_axis]["label"])
+        plt.ylabel(self.plot_dict[y_axis]["label"])
 
         # Create the folder if necessary and save the figure
-        complete_figure_path = os.path.join(figure_path, self.eos_name.lower().replace('eos', '_eos'))
+        complete_figure_path = os.path.join(figure_path, self.eos_name.lower().replace("eos", "_eos"))
         os.makedirs(complete_figure_path, exist_ok=True)
-        x_axis_name = self.plot_dict[x_axis]['name'].lower().replace(' ', '_')
-        y_axis_name = self.plot_dict[y_axis]['name'].lower().replace(' ', '_')
+        x_axis_name = self.plot_dict[x_axis]["name"].lower().replace(" ", "_")
+        y_axis_name = self.plot_dict[y_axis]["name"].lower().replace(" ", "_")
         figure_name = f"{y_axis_name}_vs_{x_axis_name}_curve.svg"
         complete_path = os.path.join(complete_figure_path, figure_name)
         plt.savefig(complete_path)

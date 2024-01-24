@@ -81,7 +81,7 @@ def generate_strange_stars(mesh_size=21):
     B_masked = np.ma.masked_where(mesh_mask, B)
 
     # Loop over the mask and store the parameter points of the strange stars in a dataframe
-    iterator = np.nditer(mesh_mask, flags=['multi_index'])
+    iterator = np.nditer(mesh_mask, flags=["multi_index"])
     parameter_points = []
     for x in iterator:
         if bool(x) is False:
@@ -96,8 +96,8 @@ def generate_strange_stars(mesh_size=21):
 def analyze_strange_stars(parameter_dataframe):
 
     # Pre-allocate the new dataframe columns with NaN
-    parameter_dataframe['rho_center_max [g ⋅ cm^-3]'] = np.nan
-    parameter_dataframe['M_max [solar mass]'] = np.nan
+    parameter_dataframe["rho_center_max [g ⋅ cm^-3]"] = np.nan
+    parameter_dataframe["M_max [solar mass]"] = np.nan
 
     # Iterate over each strange star
     n_rows = parameter_dataframe.shape[0]
@@ -108,7 +108,7 @@ def analyze_strange_stars(parameter_dataframe):
             (index, a2, a4, B, *_) = row
 
             # Print a message at the beginning to separate each star
-            print(f"({index + 1} / {n_rows}) {'#' * 100}")
+            print(f"({index + 1} / {n_rows}) {"#" * 100}")
 
             # Create the EOS object
             quark_eos = QuarkEOS(a2, a4, B)
@@ -137,8 +137,8 @@ def analyze_strange_stars(parameter_dataframe):
 
             # Find the maximum mass star and add the central density and mass to the dataframe
             star_family_object.find_maximum_mass()
-            parameter_dataframe.at[index, 'rho_center_max [g ⋅ cm^-3]'] = star_family_object.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS
-            parameter_dataframe.at[index, 'M_max [solar mass]'] = star_family_object.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS
+            parameter_dataframe.at[index, "rho_center_max [g ⋅ cm^-3]"] = star_family_object.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS
+            parameter_dataframe.at[index, "M_max [solar mass]"] = star_family_object.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS
 
             # Update progress bar
             bar()
@@ -227,9 +227,9 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
     ax.legend(loc=(0.7, 0.25))
 
     # Add each contour plot (grey projections on each plane)
-    ax.contourf(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, levels=0, zdir='x', offset=a2_max**(1 / 2), colors="gray", alpha=0.7, antialiased=True)
-    ax.contourf(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, levels=0, zdir='y', offset=a4_max, colors="gray", alpha=0.7, antialiased=True)
-    ax.contourf(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, levels=0, zdir='z', offset=0, colors="gray", alpha=0.7, antialiased=True)
+    ax.contourf(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, levels=0, zdir="x", offset=a2_max**(1 / 2), colors="gray", alpha=0.7, antialiased=True)
+    ax.contourf(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, levels=0, zdir="y", offset=a4_max, colors="gray", alpha=0.7, antialiased=True)
+    ax.contourf(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, levels=0, zdir="z", offset=0, colors="gray", alpha=0.7, antialiased=True)
 
     # Create the folder if necessary and save the figure
     os.makedirs(figure_path, exist_ok=True)

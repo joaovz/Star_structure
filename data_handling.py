@@ -15,7 +15,7 @@ def csv_to_arrays(file_name="file_name.csv", usecols=(0, 1), unit_conversion=(1.
         tuple of arrays: Numpy arrays with the data read from the .csv file
     """
 
-    (x, y) = np.loadtxt(fname=file_name, delimiter=";", skiprows=1, usecols=usecols, unpack=True)
+    (x, y) = np.loadtxt(fname=file_name, delimiter=",", skiprows=1, usecols=usecols, unpack=True)
     (x_converted, y_converted) = (x * unit_conversion[0], y * unit_conversion[1])
 
     return (x_converted, y_converted)

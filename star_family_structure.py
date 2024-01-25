@@ -194,7 +194,7 @@ class StarFamily:
         """
 
         # Set the p_center space and rho_center space used to find the canonical star
-        rho_center = self.MAX_RHO                           # Central density [m^-2]
+        rho_center = self.maximum_stable_rho_center         # Central density [m^-2]
         p_center = self.star_object.eos.p(rho_center)       # Central pressure [m^-2]
         self.p_center_space = p_center * self.WIDE_LOGSPACE
         self.rho_center_space = self.star_object.eos.rho(self.p_center_space)

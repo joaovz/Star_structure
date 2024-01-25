@@ -52,11 +52,6 @@ class StarFamily:
 
         # Create a dictionary with all the functions used in plotting, with each name and label description
         self.plot_dict = {
-            "p_c": {
-                "name": "Central pressure",
-                "label": "$p_{c} ~ [dyn \\cdot cm^{-2}]$",
-                "value": self.p_center_space * uconv.PRESSURE_GU_TO_CGS,
-            },
             "rho_c": {
                 "name": "Central density",
                 "label": "$\\rho_{c} ~ [g \\cdot cm^{-3}]$",
@@ -77,22 +72,13 @@ class StarFamily:
                 "label": "$C ~ [dimensionless]$",
                 "value": self.mass_array / self.radius_array,
             },
-            "dM_drho_c": {
-                "name": "Mass derivative",
-                "label": "$\\dfrac{\\partial M}{\\partial \\rho_{c}} ~ [m^3]$",
-                "value": self.dm_drho_center,
-            },
         }
 
         # Create a list with all the curves to be plotted
         self.curves_list = [
-            ["p_c", "R"],
-            ["p_c", "M"],
-            ["p_c", "C"],
             ["rho_c", "R"],
             ["rho_c", "M"],
             ["rho_c", "C"],
-            ["rho_c", "dM_drho_c"],
             ["R", "M"],
             ["C", "R"],
             ["C", "M"],
@@ -245,9 +231,7 @@ class StarFamily:
         end_time = perf_counter()
         print(f"Executed the TOV solution in: {(end_time - start_time):.3f} [s]")
 
-        # Calculate star family properties and configure the plot
-        self._calc_maximum_mass_star()
-        self._calc_canonical_star()
+        # Configure the plot
         self._config_plot()
 
     def plot_curve(self, x_axis="R", y_axis="M", figure_path=FIGURES_PATH, expected_x=None, expected_y=None):

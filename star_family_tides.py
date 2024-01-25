@@ -40,7 +40,6 @@ class DeformedStarFamily(StarFamily):
 
         # Add new curves to be plotted on the list
         extra_curves_list = [
-            ["p_c", "k2"],
             ["rho_c", "k2"],
             ["R", "k2"],
             ["M", "k2"],
@@ -77,8 +76,7 @@ class DeformedStarFamily(StarFamily):
         end_time = perf_counter()
         print(f"Executed the TOV+tidal solution in: {(end_time - start_time):.3f} [s]")
 
-        # Execute the stability criterion check and configure the plot
-        self._check_stability()
+        # Configure the plot
         self._config_plot()
 
 

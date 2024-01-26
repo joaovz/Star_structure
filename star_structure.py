@@ -12,23 +12,34 @@ class Star:
     """
 
     # Class constants
-    FIGURES_PATH = "figures/star_structure"
+    FIGURES_PATH = "figures/star"       # Path of the figures folder
 
-    def __init__(self, eos, p_center, p_surface=dval.P_SURFACE):
+    def __init__(self, eos, p_center, p_surface=dval.P_SURFACE, r_init=dval.R_INIT, r_final=dval.R_FINAL,
+                 method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol_tov=dval.ATOL_TOV, rtol=dval.RTOL):
         """Initialization method
 
         Args:
             eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the star
             p_center (float): Central pressure of the star [m^-2]
             p_surface (float, optional): Surface pressure of the star [m^-2]. Defaults to P_SURFACE
+            r_init (float, optional): Initial radial coordinate r of the IVP solve [m]. Defaults to R_INIT
+            r_final (float, optional): Final radial coordinate r of the IVP solve [m]. Defaults to R_FINAL
+            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
+            max_step (float, optional): Maximum allowed step size for the IVP solver [m]. Defaults to MAX_STEP
+            atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV system. Defaults to ATOL_TOV
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
         """
 
         # Store the input parameters
-        self.p_center = p_center        # Central pressure (p(r = 0)) [m^-2]
-        self.p_surface = p_surface      # Surface pressure (p(r = R)) [m^-2]. Boundary value for the termination of the ODE integration
-
-        # Set the EOS object
         self.eos = eos
+        self.p_center = p_center
+        self.p_surface = p_surface
+        self.r_init = r_init
+        self.r_final = r_final
+        self.method = method
+        self.max_step = max_step
+        self.atol_tov = atol_tov
+        self.rtol = rtol
 
         # Set the initial values: pressure, mass, and metric function at r = r_init
         self.p_init = p_center          # Initial pressure [m^-2]
@@ -82,13 +93,11 @@ class Star:
 
     _tov_ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
 
-    def _calc_tov_init_values(self, p_center=None, r_init=dval.R_INIT, rtol=dval.RTOL):
+    def _calc_tov_init_values(self, p_center=None):
         """Method that calculates the initial values used by the TOV solver
 
         Args:
             p_center (float, optional): Central pressure of the star [m^-2]. Defaults to None
-            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
@@ -108,14 +117,14 @@ class Star:
         m_5 = (4 / 5) * np.pi * rho_2
 
         # Calculate the r_init_max, based on the allowed relative error tolerance
-        r_max_p = (np.abs(p_c / p_2) * rtol)**(1 / 2)
-        r_max_rho = (np.abs(rho_c / rho_2) * rtol)**(1 / 2)
+        r_max_p = (np.abs(p_c / p_2) * self.rtol)**(1 / 2)
+        r_max_rho = (np.abs(rho_c / rho_2) * self.rtol)**(1 / 2)
         r_init_max = min(r_max_p, r_max_rho)
-        if r_init > r_init_max:
-            raise ValueError(f"The initial radial coordinate is too large: (r_init = {r_init} [m]) > (r_init_max = {r_init_max} [m])")
+        if self.r_init > r_init_max:
+            raise ValueError(f"The initial radial coordinate is too large: (r_init = {self.r_init} [m]) > (r_init_max = {r_init_max} [m])")
 
         # Calculate the initial values, given by the series solution near r = 0
-        r = r_init
+        r = self.r_init
         self.p_init = p_c + p_2 * r**2
         self.m_init = m_3 * r**3 + m_5 * r**5
 
@@ -151,17 +160,11 @@ class Star:
         # Adjust metric function with the correct boundary condition (nu(R) = ln(1 - 2M/R))
         self.nu_ode_solution += - nu_surface + np.log(1 - 2 * self.star_mass / self.star_radius)
 
-    def solve_tov(self, p_center=None, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
+    def solve_tov(self, p_center=None):
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)
 
         Args:
             p_center (float, optional): Central pressure of the star [m^-2]. Defaults to None
-            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
-            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
-            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
-            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TOV
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
@@ -170,18 +173,18 @@ class Star:
         """
 
         # Calculate the TOV ODE system initial values
-        self._calc_tov_init_values(p_center, r_init, rtol)
+        self._calc_tov_init_values(p_center)
 
         # Solve the TOV ODE system
         ode_solution = solve_ivp(
             self._tov_ode_system,
-            (r_init, r_final),
+            (self.r_init, self.r_final),
             (self.p_init, self.m_init, self.nu_init),
-            method,
+            self.method,
             events=self._tov_ode_termination_event,
-            max_step=max_step,
-            atol=atol,
-            rtol=rtol)
+            max_step=self.max_step,
+            atol=self.atol_tov,
+            rtol=self.rtol)
 
         # Process the TOV ODE solution
         self._process_tov_ode_solution(ode_solution)

@@ -15,18 +15,33 @@ class DeformedStar(Star):
         Star (class): Parent class with all the properties and methods necessary to describe a single star
     """
 
-    # Class constants
-    FIGURES_PATH = "figures/star_tides"
+    def __init__(self, eos, p_center, p_surface=dval.P_SURFACE, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD,
+                 max_step=dval.MAX_STEP, atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
+        """Initialization method
 
-    def __init__(self, eos, p_center, p_surface=dval.P_SURFACE):
+        Args:
+            eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the star
+            p_center (float): Central pressure of the star [m^-2]
+            p_surface (float, optional): Surface pressure of the star [m^-2]. Defaults to P_SURFACE
+            r_init (float, optional): Initial radial coordinate r of the IVP solve [m]. Defaults to R_INIT
+            r_final (float, optional): Final radial coordinate r of the IVP solve [m]. Defaults to R_FINAL
+            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
+            max_step (float, optional): Maximum allowed step size for the IVP solver [m]. Defaults to MAX_STEP
+            atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV system. Defaults to ATOL_TOV
+            atol_tidal (float, optional): Absolute tolerance of the IVP solver for the tidal system. Defaults to ATOL_TIDAL
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
+        """
 
         # Execute parent class' __init__ method
-        super().__init__(eos, p_center, p_surface)
+        super().__init__(eos, p_center, p_surface, r_init, r_final, method, max_step, atol_tov, rtol)
+
+        # Store the input parameters
+        self.atol_tidal = atol_tidal
 
         # Set the initial values: y at r = r_init
         self.y_init = 2.0       # Calculated with the power series solution of the analytical equation valid for r -> 0
 
-        # Initialize deformed star properties: tidal Love number
+        # Initialize deformed star properties
         self.k2 = 0.0           # Tidal Love number [dimensionless]
 
     def _combined_tov_tidal_ode_system(self, r, s):
@@ -86,19 +101,11 @@ class DeformedStar(Star):
             )
         )
 
-    def solve_combined_tov_tidal(self, p_center=None, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP,
-                                 atol_tov=dval.ATOL_TOV, atol_tidal=dval.ATOL_TIDAL, rtol=dval.RTOL):
+    def solve_combined_tov_tidal(self, p_center=None):
         """Method that solves the combined TOV+tidal system for the star, finding p, m, nu, and k2
 
         Args:
             p_center (float, optional): Central pressure of the star [m^-2]. Defaults to None
-            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
-            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
-            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
-            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV system. Defaults to ATOL_TOV
-            atol_tidal (float, optional): Absolute tolerance of the IVP solver for the tidal system. Defaults to ATOL_TIDAL
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
@@ -107,19 +114,19 @@ class DeformedStar(Star):
         """
 
         # Calculate the TOV ODE system initial values
-        self._calc_tov_init_values(p_center, r_init, rtol)
+        self._calc_tov_init_values(p_center)
 
         # Solve the combined TOV+tidal ODE system
-        atol = list(atol_tov) + [atol_tidal]
+        atol = list(self.atol_tov) + [self.atol_tidal]
         ode_solution = solve_ivp(
             self._combined_tov_tidal_ode_system,
-            (r_init, r_final),
+            (self.r_init, self.r_final),
             (self.p_init, self.m_init, self.nu_init, self.y_init),
-            method,
+            self.method,
             events=self._tov_ode_termination_event,
-            max_step=max_step,
+            max_step=self.max_step,
             atol=atol,
-            rtol=rtol)
+            rtol=self.rtol)
 
         # Process the TOV ODE solution
         self._process_tov_ode_solution(ode_solution)
@@ -131,7 +138,7 @@ class DeformedStar(Star):
         # Calculate the tidal Love number k2
         self._calc_k2()
 
-    def plot_all_curves(self, figure_path=FIGURES_PATH):
+    def plot_all_curves(self, figure_path=Star.FIGURES_PATH):
         """Method that prints the star radius, mass, tidal Love number (k2), and compactness and plots the solution
 
         Args:

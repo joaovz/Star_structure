@@ -20,31 +20,46 @@ class StarFamily:
     WIDE_LOGSPACE = np.logspace(-3.0, 0.0, 10)          # Wide logspace used in values search
     NARROW_LOGSPACE = np.logspace(-0.1, 0.1, 10)        # Narrow logspace used in values search
 
-    def __init__(self, eos, p_center_space, p_surface=dval.P_SURFACE):
+    def __init__(self, eos, p_center_space, p_surface=dval.P_SURFACE, r_init=dval.R_INIT, r_final=dval.R_FINAL,
+                 method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol_tov=dval.ATOL_TOV, rtol=dval.RTOL):
         """Initialization method
 
         Args:
             eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the stars
             p_center_space (array of float): Array with the central pressure of each star in the family [m^-2]
             p_surface (float, optional): Surface pressure of the stars [m^-2]. Defaults to P_SURFACE
+            r_init (float, optional): Initial radial coordinate r of the IVP solve [m]. Defaults to R_INIT
+            r_final (float, optional): Final radial coordinate r of the IVP solve [m]. Defaults to R_FINAL
+            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
+            max_step (float, optional): Maximum allowed step size for the IVP solver [m]. Defaults to MAX_STEP
+            atol_tov (float or array of float, optional): Absolute tolerance of the IVP solver for the TOV system. Defaults to ATOL_TOV
+            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
         """
 
         # Store the input parameters
+        self.eos = eos
         self.p_center_space = p_center_space
+        self.p_surface = p_surface
+        self.r_init = r_init
+        self.r_final = r_final
+        self.method = method
+        self.max_step = max_step
+        self.atol_tov = atol_tov
+        self.rtol = rtol
 
         # Create a star object with the first p_center value
-        self.star_object = Star(eos, self.p_center_space[0], p_surface)
+        self.star_object = Star(eos, self.p_center_space[0], p_surface, r_init, r_final, method, max_step, atol_tov, rtol)
 
         # Calculate the rho_center_space
-        self.rho_center_space = self.star_object.eos.rho(self.p_center_space)
+        self.rho_center_space = self.eos.rho(self.p_center_space)
 
         # Initialize star family properties
-        self.radius_array = np.zeros(self.p_center_space.size)
-        self.mass_array = np.zeros(self.p_center_space.size)
-        self.maximum_mass = np.inf
-        self.maximum_stable_rho_center = self.MAX_RHO
-        self.canonical_rho_center = self.MAX_RHO
-        self.canonical_radius = np.inf
+        self.radius_array = np.zeros(self.p_center_space.size)      # Array with the radii of the stars [m]
+        self.mass_array = np.zeros(self.p_center_space.size)        # Array with the masses of the stars [m]
+        self.maximum_mass = np.inf                                  # Maximum mass of the star family [m]
+        self.maximum_stable_rho_center = self.MAX_RHO               # Maximum stable central density of the star family [m^-2]
+        self.canonical_rho_center = self.MAX_RHO                    # Central density of the canonical star (M = 1.4 M_sun) [m^-2]
+        self.canonical_radius = np.inf                              # Radius of the canonical star (M = 1.4 M_sun) [m]
 
     def _config_plot(self):
         """Method that configures the plotting
@@ -122,110 +137,76 @@ class StarFamily:
         # Return the calculated rho_center
         return self.canonical_rho_center
 
-    def _find_star(self, initial_rho_center=MAX_RHO, finder_method=_calc_maximum_mass_star, r_init=dval.R_INIT, r_final=dval.R_FINAL,
-                   method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
+    def _find_star(self, initial_rho_center=MAX_RHO, finder_method=_calc_maximum_mass_star):
         """Method that finds a specific star in the family using the finder method
 
         Args:
             initial_rho_center (float, optional): Initial central density used by the finder. Defaults to MAX_RHO
             finder_method (method, optional): Method used to find the star. Defaults to _calc_maximum_mass_star
-            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
-            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
-            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
-            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TOV
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
             RuntimeError: Exception in case the IVP fails to solve the equation
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
-            RuntimeError: Exception in case maximum mass star is not found
         """
 
         # Set the p_center space and rho_center space used to find the star
-        p_center = self.star_object.eos.p(initial_rho_center)           # Central pressure [m^-2]
+        p_center = self.eos.p(initial_rho_center)           # Central pressure [m^-2]
         self.p_center_space = p_center * self.WIDE_LOGSPACE
-        self.rho_center_space = self.star_object.eos.rho(self.p_center_space)
+        self.rho_center_space = self.eos.rho(self.p_center_space)
 
         # Solve the TOV system and find the star through finder_method
-        self.solve_tov(r_init, r_final, method, max_step, atol, rtol)
+        self.solve_tov()
         calculated_rho_center = finder_method()
 
         # Redefine the p_center space to a stricter interval
-        p_center = self.star_object.eos.p(calculated_rho_center)        # Central pressure [m^-2]
+        p_center = self.eos.p(calculated_rho_center)        # Central pressure [m^-2]
         self.p_center_space = p_center * self.NARROW_LOGSPACE
-        self.rho_center_space = self.star_object.eos.rho(self.p_center_space)
+        self.rho_center_space = self.eos.rho(self.p_center_space)
 
         # Solve the TOV system and find the star through finder_method
-        self.solve_tov(r_init, r_final, method, max_step, atol, rtol)
+        self.solve_tov()
         finder_method()
 
-    def find_maximum_mass_star(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
+    def find_maximum_mass_star(self):
         """Method that finds the maximum mass star
 
-         Args:
-            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
-            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
-            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
-            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TOV
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
-
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
             RuntimeError: Exception in case the IVP fails to solve the equation
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
-            RuntimeError: Exception in case maximum mass star is not found
         """
 
-        self._find_star(self.MAX_RHO, self._calc_maximum_mass_star, r_init, r_final, method, max_step, atol, rtol)
+        self._find_star(self.MAX_RHO, self._calc_maximum_mass_star)
 
-    def find_canonical_star(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
+    def find_canonical_star(self):
         """Method that finds the canonical star
 
-         Args:
-            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
-            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
-            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
-            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TOV
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
-
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
             RuntimeError: Exception in case the IVP fails to solve the equation
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
-            RuntimeError: Exception in case canonical star is not found
         """
 
-        self._find_star(self.maximum_stable_rho_center, self._calc_canonical_star, r_init, r_final, method, max_step, atol, rtol)
+        self._find_star(self.maximum_stable_rho_center, self._calc_canonical_star)
 
-    def solve_tov(self, r_init=dval.R_INIT, r_final=dval.R_FINAL, method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol=dval.ATOL_TOV, rtol=dval.RTOL):
+    def solve_tov(self):
         """Method that solves the TOV system, finding the radius and mass of each star in the family
 
-        Args:
-            r_init (float, optional): Initial radial coordinate r of the IVP solve. Defaults to R_INIT
-            r_final (float, optional): Final radial coordinate r of the IVP solve. Defaults to R_FINAL
-            method (str, optional): Method used by the IVP solver. Defaults to IVP_METHOD
-            max_step (float, optional): Maximum allowed step size for the IVP solver. Defaults to MAX_STEP
-            atol (float or array of float, optional): Absolute tolerance of the IVP solver. Defaults to ATOL_TOV
-            rtol (float, optional): Relative tolerance of the IVP solver. Defaults to RTOL
-
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
             RuntimeError: Exception in case the IVP fails to solve the equation
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
 
-        # Initialize the radius and mass arrays with the right size
+        # Reinitialize the radius and mass arrays with the right size
         self.radius_array = np.zeros(self.p_center_space.size)
         self.mass_array = np.zeros(self.p_center_space.size)
 
         # Solve the TOV system for each star in the family
         start_time = perf_counter()
         for k, p_center in enumerate(self.p_center_space):
-            self.star_object.solve_tov(p_center, r_init, r_final, method, max_step, atol, rtol)
+            self.star_object.solve_tov(p_center)
             self.radius_array[k] = self.star_object.star_radius
             self.mass_array[k] = self.star_object.star_mass
         end_time = perf_counter()
@@ -248,7 +229,7 @@ class StarFamily:
         # Create a simple plot
         plt.figure()
         plt.plot(self.plot_dict[x_axis]["value"], self.plot_dict[y_axis]["value"], linewidth=1, label="Calculated curve", marker=".")
-        eos_name = self.star_object.eos.eos_name.replace("EOS", " EOS")
+        eos_name = self.eos.eos_name.replace("EOS", " EOS")
         plt.title(f"{self.plot_dict[y_axis]["name"]} vs {self.plot_dict[x_axis]["name"]} curve of the {eos_name} star family", y=1.05)
         plt.xlabel(self.plot_dict[x_axis]["label"])
         plt.ylabel(self.plot_dict[y_axis]["label"])

@@ -92,7 +92,7 @@ class DeformedStar(Star):
 
         # Calculate the tidal Love number k2, that represents the star tidal deformation
         c = self.star_mass / self.star_radius
-        y_s = self.y_tidal_ode_solution[-1]
+        y_s = self.y_ode_solution[-1]
         self.k2 = (
             (8 / 5) * c**5 * ((1 - 2 * c)**2) * (2 + 2 * c * (y_s - 1) - y_s) / (
                 2 * c * (6 - 3 * y_s + 3 * c * (5 * y_s - 8))
@@ -132,8 +132,7 @@ class DeformedStar(Star):
         self._process_tov_ode_solution(ode_solution)
 
         # Unpack the tidal variables
-        self.r_tidal_ode_solution = ode_solution.t
-        self.y_tidal_ode_solution = ode_solution.y[3]
+        self.y_ode_solution = ode_solution.y[3]
 
         # Calculate the tidal Love number k2
         self._calc_k2()
@@ -151,11 +150,11 @@ class DeformedStar(Star):
         # Print the tidal Love number (k2), compactness, and perturbation (y(R)) of the star
         print(f"Tidal Love number (k2) = {(self.k2):e} [dimensionless]")
         print(f"Compactness (C = M/R) = {(self.star_mass / self.star_radius):e} [dimensionless]")
-        print(f"Perturbation (y(R)) = {(self.y_tidal_ode_solution[-1]):e} [dimensionless]")
+        print(f"Perturbation (y(R)) = {(self.y_ode_solution[-1]):e} [dimensionless]")
 
         # Show a simple plot of the solution
         plt.figure()
-        plt.plot(self.r_tidal_ode_solution / 10**3, self.y_tidal_ode_solution, linewidth=1)
+        plt.plot(self.r_ode_solution / 10**3, self.y_ode_solution, linewidth=1)
         plt.title(f"Perturbation solution for the {self.eos.eos_name.replace("EOS", " EOS")} star", y=1.05)
         plt.xlabel("$r ~ [km]$")
         plt.ylabel("$y ~ [dimensionless]$")

@@ -86,9 +86,23 @@ class DeformedStar(Star):
         # Return f(r, s) of the combined system
         return (dp_dr, dm_dr, dnu_dr, dy_dr)
 
-    def _calc_k2(self):
-        """Method that calculates the tidal Love number k2, that represents the star tidal deformation
+    def _process_tov_tidal_ode_solution(self, ode_solution):
+        """Method that processes the combined TOV+tidal ODE solution, identifying errors, saving variables,
+        and calculating the tidal Love number k2
+
+        Args:
+            ode_solution (Object returned by solve_ivp): Object that contains all information about the ODE solution
+
+        Raises:
+            RuntimeError: Exception in case the IVP fails to solve the equation
+            RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
+
+        # Process the TOV ODE solution
+        self._process_tov_ode_solution(ode_solution)
+
+        # Unpack the tidal variables
+        self.y_ode_solution = ode_solution.y[3]
 
         # Calculate the tidal Love number k2, that represents the star tidal deformation
         c = self.star_mass / self.star_radius
@@ -128,14 +142,8 @@ class DeformedStar(Star):
             atol=atol,
             rtol=self.rtol)
 
-        # Process the TOV ODE solution
-        self._process_tov_ode_solution(ode_solution)
-
-        # Unpack the tidal variables
-        self.y_ode_solution = ode_solution.y[3]
-
-        # Calculate the tidal Love number k2
-        self._calc_k2()
+        # Process the TOV+tidal ODE solution
+        self._process_tov_tidal_ode_solution(ode_solution)
 
     def plot_all_curves(self, figure_path=Star.FIGURES_PATH):
         """Method that prints the star radius, mass, tidal Love number (k2), and compactness and plots the solution

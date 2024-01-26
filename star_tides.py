@@ -115,11 +115,12 @@ class DeformedStar(Star):
             )
         )
 
-    def solve_combined_tov_tidal(self, p_center=None):
+    def solve_combined_tov_tidal(self, p_center=None, show_results=True):
         """Method that solves the combined TOV+tidal system for the star, finding p, m, nu, and k2
 
         Args:
             p_center (float, optional): Central pressure of the star [m^-2]. Defaults to None
+            show_results (bool, optional): Flag that enables the results printing after the solve. Defaults to True
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
@@ -145,8 +146,23 @@ class DeformedStar(Star):
         # Process the TOV+tidal ODE solution
         self._process_tov_tidal_ode_solution(ode_solution)
 
+        # Show results if requested
+        if show_results is True:
+            self.print_results()
+
+    def print_results(self):
+        """Method that prints the results found
+        """
+
+        # Execute parent class' print_results method
+        super().print_results()
+
+        # Print the results
+        print(f"Tidal Love number (k2) = {(self.k2):e} [dimensionless]")
+        print(f"Perturbation (y(R)) = {(self.y_ode_solution[-1]):e} [dimensionless]")
+
     def plot_all_curves(self, figure_path=Star.FIGURES_PATH):
-        """Method that prints the star radius, mass, tidal Love number (k2), and compactness and plots the solution
+        """Method that plots the solution found
 
         Args:
             figure_path (str, optional): Path used to save the figure. Defaults to FIGURES_PATH
@@ -154,11 +170,6 @@ class DeformedStar(Star):
 
         # Execute parent class' plot_all_curves method
         super().plot_all_curves(figure_path)
-
-        # Print the tidal Love number (k2), compactness, and perturbation (y(R)) of the star
-        print(f"Tidal Love number (k2) = {(self.k2):e} [dimensionless]")
-        print(f"Compactness (C = M/R) = {(self.star_mass / self.star_radius):e} [dimensionless]")
-        print(f"Perturbation (y(R)) = {(self.y_ode_solution[-1]):e} [dimensionless]")
 
         # Show a simple plot of the solution
         plt.figure()

@@ -156,7 +156,7 @@ class StarFamily:
         self.rho_center_space = self.eos.rho(self.p_center_space)
 
         # Solve the TOV system and find the star through finder_method
-        self.solve_tov()
+        self.solve_tov(False)
         calculated_rho_center = finder_method()
 
         # Redefine the p_center space to a stricter interval
@@ -165,7 +165,7 @@ class StarFamily:
         self.rho_center_space = self.eos.rho(self.p_center_space)
 
         # Solve the TOV system and find the star through finder_method
-        self.solve_tov()
+        self.solve_tov(False)
         finder_method()
 
     def find_maximum_mass_star(self):
@@ -190,8 +190,11 @@ class StarFamily:
 
         self._find_star(self.maximum_stable_rho_center, self._calc_canonical_star)
 
-    def solve_tov(self):
+    def solve_tov(self, show_results=True):
         """Method that solves the TOV system, finding the radius and mass of each star in the family
+
+        Args:
+            show_results (bool, optional): Flag that enables the results printing after the solve. Defaults to True
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
@@ -206,14 +209,33 @@ class StarFamily:
         # Solve the TOV system for each star in the family
         start_time = perf_counter()
         for k, p_center in enumerate(self.p_center_space):
-            self.star_object.solve_tov(p_center)
+            self.star_object.solve_tov(p_center, False)
             self.radius_array[k] = self.star_object.star_radius
             self.mass_array[k] = self.star_object.star_mass
-        end_time = perf_counter()
-        print(f"Executed the TOV solution in: {(end_time - start_time):.3f} [s]")
+        self.execution_time = perf_counter() - start_time
 
         # Configure the plot
         self._config_plot()
+
+        # Show results if requested
+        if show_results is True:
+            self.print_results()
+
+    def print_results(self):
+        """Method that prints the results found
+        """
+
+        # Calculate the star family properties
+        self._calc_maximum_mass_star()
+        self._calc_canonical_star()
+
+        # Print the results
+        print(f"\n##########    Star family solve results    ##########")
+        print(f"Executed the solution in: {(self.execution_time):.3f} [s]")
+        print(f"Maximum mass (M_max) = {(self.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
+        print(f"Maximum stable central density (rho_center_max) = {(self.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
+        print(f"Radius of the canonical star (R_canonical) = {(self.canonical_radius / 10**3):e} [km]")
+        print(f"Central density of the canonical star (rho_center_canonical) = {(self.canonical_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
 
     def plot_curve(self, x_axis="R", y_axis="M", figure_path=FIGURES_PATH, expected_x=None, expected_y=None):
         """Method that plots some curve of the star family

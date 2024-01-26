@@ -160,11 +160,12 @@ class Star:
         # Adjust metric function with the correct boundary condition (nu(R) = ln(1 - 2M/R))
         self.nu_ode_solution += - nu_surface + np.log(1 - 2 * self.star_mass / self.star_radius)
 
-    def solve_tov(self, p_center=None):
+    def solve_tov(self, p_center=None, show_results=True):
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)
 
         Args:
             p_center (float, optional): Central pressure of the star [m^-2]. Defaults to None
+            show_results (bool, optional): Flag that enables the results printing after the solve. Defaults to True
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
@@ -189,16 +190,26 @@ class Star:
         # Process the TOV ODE solution
         self._process_tov_ode_solution(ode_solution)
 
+        # Show results if requested
+        if show_results is True:
+            self.print_results()
+
+    def print_results(self):
+        """Method that prints the results found
+        """
+
+        # Print the results
+        print(f"\n##########    Single star solve results    ##########")
+        print(f"Star radius (R) = {(self.star_radius / 10**3):e} [km]")
+        print(f"Star mass (M) = {(self.star_mass * uconv.MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
+        print(f"Compactness (C = M/R) = {(self.star_mass / self.star_radius):e} [dimensionless]")
+
     def plot_all_curves(self, figure_path=FIGURES_PATH):
-        """Method that prints the star radius and mass and plots the solution found
+        """Method that plots the solution found
 
         Args:
             figure_path (str, optional): Path used to save the figure. Defaults to FIGURES_PATH
         """
-
-        # Print the star radius and mass
-        print(f"Star radius = {(self.star_radius / 10**3):e} [km]")
-        print(f"Star mass = {(self.star_mass * uconv.MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
 
         # Show a simple plot of the solution
         plt.figure()

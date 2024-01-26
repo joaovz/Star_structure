@@ -65,8 +65,11 @@ class DeformedStarFamily(StarFamily):
         ]
         self.curves_list += extra_curves_list
 
-    def solve_combined_tov_tidal(self):
+    def solve_combined_tov_tidal(self, show_results=True):
         """Method that solves the combined TOV+tidal system for each star in the family, finding p, m, nu, and k2
+
+        Args:
+            show_results (bool, optional): Flag that enables the results printing after the solve. Defaults to True
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
@@ -80,15 +83,25 @@ class DeformedStarFamily(StarFamily):
         # Solve the combined TOV+tidal system for each star in the family
         start_time = perf_counter()
         for k, p_center in enumerate(self.p_center_space):
-            self.star_object.solve_combined_tov_tidal(p_center)
+            self.star_object.solve_combined_tov_tidal(p_center, False)
             self.radius_array[k] = self.star_object.star_radius
             self.mass_array[k] = self.star_object.star_mass
             self.k2_array[k] = self.star_object.k2
-        end_time = perf_counter()
-        print(f"Executed the TOV+tidal solution in: {(end_time - start_time):.3f} [s]")
+        self.execution_time = perf_counter() - start_time
 
         # Configure the plot
         self._config_plot()
+
+        # Show results if requested
+        if show_results is True:
+            self.print_results()
+
+    def print_results(self):
+        """Method that prints the results found
+        """
+
+        # Execute parent class' print_results method
+        super().print_results()
 
 
 def main():

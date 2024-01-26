@@ -110,9 +110,6 @@ def analyze_strange_stars(parameter_dataframe):
             a2 = a2_1_2**2
             B = B_1_4**4
 
-            # Print a message at the beginning to separate each star
-            print(f"({index + 1} / {n_rows}) {"#" * 100}")
-
             # Create the EOS object
             quark_eos = QuarkEOS(a2, a4, B)
 

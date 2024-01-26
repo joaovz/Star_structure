@@ -38,8 +38,6 @@ class EOS:
         if cs_minus_1_roots.size > 0:
             self.maximum_stable_rho = cs_minus_1_roots[0]
             print(f"{self.eos_name} maximum stable rho = {(self.maximum_stable_rho * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
-        else:
-            print(f"{self.eos_name} maximum stable rho not reached")
 
     def _config_plot(self):
         """Method that configures the plotting

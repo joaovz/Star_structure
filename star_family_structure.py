@@ -106,7 +106,6 @@ class StarFamily:
         # Create the mass vs rho_center interpolated function and calculate its derivative, used in the stability criterion
         mass_rho_center_spline = CubicSpline(self.rho_center_space, self.mass_array, extrapolate=False)
         dm_drho_center_spline = mass_rho_center_spline.derivative()
-        self.dm_drho_center = dm_drho_center_spline(self.rho_center_space)
 
         # Calculate the maximum stable rho_center and maximum mass
         dm_drho_center_roots = dm_drho_center_spline.roots()
@@ -137,12 +136,13 @@ class StarFamily:
         # Return the calculated rho_center
         return self.canonical_rho_center
 
-    def _find_star(self, initial_rho_center=MAX_RHO, finder_method=_calc_maximum_mass_star):
+    def _find_star(self, finder_method, solver_method, initial_rho_center=MAX_RHO):
         """Method that finds a specific star in the family using the finder method
 
         Args:
+            finder_method (method): Method used to find the star
+            solver_method (method): Method used to solve the properties of the star family
             initial_rho_center (float, optional): Initial central density used by the finder. Defaults to MAX_RHO
-            finder_method (method, optional): Method used to find the star. Defaults to _calc_maximum_mass_star
 
         Raises:
             ValueError: Exception in case the initial radial coordinate is too large
@@ -155,8 +155,8 @@ class StarFamily:
         self.p_center_space = p_center * self.WIDE_LOGSPACE
         self.rho_center_space = self.eos.rho(self.p_center_space)
 
-        # Solve the TOV system and find the star through finder_method
-        self.solve_tov(False)
+        # Solve the system and find the star through finder_method
+        solver_method(False)
         calculated_rho_center = finder_method()
 
         # Redefine the p_center space to a stricter interval
@@ -164,8 +164,8 @@ class StarFamily:
         self.p_center_space = p_center * self.NARROW_LOGSPACE
         self.rho_center_space = self.eos.rho(self.p_center_space)
 
-        # Solve the TOV system and find the star through finder_method
-        self.solve_tov(False)
+        # Solve the system and find the star through finder_method
+        solver_method(False)
         finder_method()
 
     def find_maximum_mass_star(self):
@@ -177,7 +177,7 @@ class StarFamily:
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
 
-        self._find_star(self.MAX_RHO, self._calc_maximum_mass_star)
+        self._find_star(self._calc_maximum_mass_star, self.solve_tov, self.MAX_RHO)
 
     def find_canonical_star(self):
         """Method that finds the canonical star
@@ -188,7 +188,7 @@ class StarFamily:
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
 
-        self._find_star(self.maximum_stable_rho_center, self._calc_canonical_star)
+        self._find_star(self._calc_canonical_star, self.solve_tov, self.maximum_stable_rho_center)
 
     def solve_tov(self, show_results=True):
         """Method that solves the TOV system, finding the radius and mass of each star in the family

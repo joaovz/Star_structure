@@ -1,5 +1,6 @@
 from time import perf_counter
 import numpy as np
+from scipy.interpolate import CubicSpline
 from constants import DefaultValues as dval
 from constants import UnitConversion as uconv
 from eos_library import PolytropicEOS
@@ -43,6 +44,8 @@ class DeformedStarFamily(StarFamily):
 
         # Initialize deformed star family properties
         self.k2_array = np.zeros(self.p_center_space.size)      # Array with the tidal Love numbers of the stars [dimensionless]
+        self.maximum_k2_star_rho_center = self.MAX_RHO          # Central density of the star with the maximum k2 [m^-2]
+        self.maximum_k2 = np.inf                                # Maximum k2 of the star family [dimensionless]
 
     def _config_plot(self):
 
@@ -64,6 +67,34 @@ class DeformedStarFamily(StarFamily):
             ["C", "k2"],
         ]
         self.curves_list += extra_curves_list
+
+    def _calc_maximum_k2_star(self):
+        """Method that calculates the maximum k2 star properties
+        """
+
+        # Create the k2 vs rho_center interpolated function and calculate its derivative
+        k2_rho_center_spline = CubicSpline(self.rho_center_space, self.k2_array, extrapolate=False)
+        dk2_drho_center_spline = k2_rho_center_spline.derivative()
+
+        # Calculate the maximum k2 star rho_center and mass
+        dk2_drho_center_roots = dk2_drho_center_spline.roots()
+        if dk2_drho_center_roots.size > 0:
+            self.maximum_k2_star_rho_center = dk2_drho_center_roots[0]
+            self.maximum_k2 = k2_rho_center_spline(self.maximum_k2_star_rho_center)
+
+        # Return the calculated rho_center
+        return self.maximum_k2_star_rho_center
+
+    def find_maximum_k2_star(self):
+        """Method that finds the maximum k2 star
+
+        Raises:
+            ValueError: Exception in case the initial radial coordinate is too large
+            RuntimeError: Exception in case the IVP fails to solve the equation
+            RuntimeError: Exception in case the IVP fails to find the ODE termination event
+        """
+
+        self._find_star(self._calc_maximum_k2_star, self.solve_combined_tov_tidal, self.maximum_stable_rho_center)
 
     def solve_combined_tov_tidal(self, show_results=True):
         """Method that solves the combined TOV+tidal system for each star in the family, finding p, m, nu, and k2
@@ -102,6 +133,13 @@ class DeformedStarFamily(StarFamily):
 
         # Execute parent class' print_results method
         super().print_results()
+
+        # Calculate the star family properties
+        self._calc_maximum_k2_star()
+
+        # Print the results
+        print(f"Maximum k2 (k2_max) = {(self.maximum_k2):e} [dimensionless]")
+        print(f"Maximum k2 star central density (rho_center_k2_max) = {(self.maximum_k2_star_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
 
 
 def main():

@@ -7,7 +7,7 @@ import pandas as pd
 from constants import UnitConversion as uconv
 from data_handling import dataframe_to_csv
 from eos_library import QuarkEOS
-from star_family_structure import StarFamily
+from star_family_tides import DeformedStarFamily
 
 
 # Constants
@@ -123,7 +123,7 @@ def analyze_strange_stars(parameter_dataframe):
             # Check the EOS
             quark_eos.check_eos(p_space)
 
-            # TOV analysis
+            # TOV and tidal analysis
 
             # Set the central pressure of the star
             rho_center = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU      # Central density [m^-2]
@@ -133,7 +133,7 @@ def analyze_strange_stars(parameter_dataframe):
             p_center_space = p_center * np.logspace(-3.0, 0.0, 20)
 
             # Create the star family object
-            star_family_object = StarFamily(quark_eos, p_center_space)
+            star_family_object = DeformedStarFamily(quark_eos, p_center_space)
 
             # Find the maximum mass star and add the central density and mass to the dataframe
             star_family_object.find_maximum_mass_star()
@@ -144,6 +144,11 @@ def analyze_strange_stars(parameter_dataframe):
             star_family_object.find_canonical_star()
             parameter_dataframe.at[index, "rho_center_canonical [10^15 g ⋅ cm^-3]"] = star_family_object.canonical_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
             parameter_dataframe.at[index, "R_canonical [km]"] = star_family_object.canonical_radius / 10**3
+
+            # Find the maximum k2 star and add the central density and k2 to the dataframe
+            star_family_object.find_maximum_k2_star()
+            parameter_dataframe.at[index, "rho_center_k2_max [10^15 g ⋅ cm^-3]"] = star_family_object.maximum_k2_star_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
+            parameter_dataframe.at[index, "k2_max [dimensionless]"] = star_family_object.maximum_k2
 
             # Update progress bar
             bar()

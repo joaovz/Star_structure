@@ -68,9 +68,16 @@ class DeformedStarFamily(StarFamily):
         ]
         self.curves_list += extra_curves_list
 
-    def _calc_maximum_k2_star(self):
+    def _calc_maximum_k2_star(self, solve_first=False):
         """Method that calculates the maximum k2 star properties
+
+        Args:
+            solve_first (bool, optional): Flag that enables the solve in the beginning of the logic. Defaults to False
         """
+
+        # Solve first if requested
+        if solve_first is True:
+            self.solve_combined_tov_tidal(False)
 
         # Create the k2 vs rho_center interpolated function and calculate its derivative
         k2_rho_center_spline = CubicSpline(self.rho_center_space, self.k2_array, extrapolate=False)
@@ -94,7 +101,7 @@ class DeformedStarFamily(StarFamily):
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
 
-        self._find_star(self._calc_maximum_k2_star, self.solve_combined_tov_tidal, self.maximum_stable_rho_center)
+        self._find_star(self._calc_maximum_k2_star, self.maximum_stable_rho_center)
 
     def solve_combined_tov_tidal(self, show_results=True):
         """Method that solves the combined TOV+tidal system for each star in the family, finding p, m, nu, and k2

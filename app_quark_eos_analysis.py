@@ -1,6 +1,6 @@
 import os
 import math
-from alive_progress import alive_bar
+import psutil
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
@@ -167,7 +167,7 @@ def analyze_strange_stars(parameter_dataframe):
 
     # Calculate the number of rows, number of processes and number of calculations per process (chunksize)
     n_rows = parameter_dataframe.shape[0]
-    processes = os.cpu_count() // 2                         # Number of processes are equal to the number of hardware cores
+    processes = psutil.cpu_count(logical=False)             # Number of processes are equal to the number of hardware cores
     chunksize = math.ceil(n_rows / (processes * 10))        # Create the chunksize smaller to provide some feedback on progress
 
     # Create a list with the rows of the dataframe

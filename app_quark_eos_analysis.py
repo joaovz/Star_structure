@@ -261,7 +261,7 @@ def main():
     dataframe_csv_path = "results"                      # Path of the results folder
     dataframe_csv_name = "quark_eos_analysis.csv"       # Name of the csv file with the results
     parameter_space_mesh_size = 1001                    # Number of points used in the meshgrid for the parameter space plot
-    scatter_plot_mesh_size = 11                         # Number of points used in the meshgrid for the scatter plot
+    scatter_plot_mesh_size = 21                         # Number of points used in the meshgrid for the scatter plot
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figure_path)

@@ -43,20 +43,25 @@ class DeformedStarFamily(StarFamily):
         self.star_object = DeformedStar(eos, self.p_center_space[0], p_surface, r_init, r_final, method, max_step, atol_tov, atol_tidal, rtol)
 
         # Initialize deformed star family properties
-        self.k2_array = np.zeros(self.p_center_space.size)      # Array with the tidal Love numbers of the stars [dimensionless]
-        self.maximum_k2_star_rho_center = self.MAX_RHO          # Central density of the star with the maximum k2 [m^-2]
-        self.maximum_k2 = np.inf                                # Maximum k2 of the star family [dimensionless]
+        self.k2_array = np.zeros(self.p_center_space.size)          # Array with the tidal Love numbers of the stars [dimensionless]
+        self.lambda_array = np.zeros(self.p_center_space.size)      # Array with the tidal deformabilities of the stars [dimensionless]
+        self.maximum_k2_star_rho_center = self.MAX_RHO              # Central density of the star with the maximum k2 [m^-2]
+        self.maximum_k2 = np.inf                                    # Maximum k2 of the star family [dimensionless]
 
-    def _config_plot(self):
-
-        # Execute parent class' _config_plot method
-        super()._config_plot()
+    def _config_tidal_plot(self):
+        """Method that configures the plotting of the tidal related curves
+        """
 
         # Add new functions to the plot dictionary
         self.plot_dict["k2"] = {
             "name": "Love number",
             "label": "$k2 ~ [dimensionless]$",
             "value": self.k2_array,
+        }
+        self.plot_dict["Lambda"] = {
+            "name": "Tidal deformability",
+            "label": "$\\log_{10} \\left( \\Lambda ~ [dimensionless] \\right)$",
+            "value": np.log10(self.lambda_array),
         }
 
         # Add new curves to be plotted on the list
@@ -65,6 +70,10 @@ class DeformedStarFamily(StarFamily):
             ["R", "k2"],
             ["M", "k2"],
             ["C", "k2"],
+            ["rho_c", "Lambda"],
+            ["R", "Lambda"],
+            ["M", "Lambda"],
+            ["C", "Lambda"],
         ]
         self.curves_list += extra_curves_list
 
@@ -104,7 +113,7 @@ class DeformedStarFamily(StarFamily):
         self._find_star(self._calc_maximum_k2_star, self.maximum_stable_rho_center)
 
     def solve_combined_tov_tidal(self, show_results=True):
-        """Method that solves the combined TOV+tidal system for each star in the family, finding p, m, nu, and k2
+        """Method that solves the combined TOV+tidal system for each star in the family, finding p, m, nu, and y
 
         Args:
             show_results (bool, optional): Flag that enables the results printing after the solve. Defaults to True
@@ -115,8 +124,9 @@ class DeformedStarFamily(StarFamily):
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
 
-        # Reinitialize the k2 array with the right size
+        # Reinitialize the k2 and Lambda arrays with the right size
         self.k2_array = np.zeros(self.p_center_space.size)
+        self.lambda_array = np.zeros(self.p_center_space.size)
 
         # Solve the combined TOV+tidal system for each star in the family
         start_time = perf_counter()
@@ -125,10 +135,12 @@ class DeformedStarFamily(StarFamily):
             self.radius_array[k] = self.star_object.star_radius
             self.mass_array[k] = self.star_object.star_mass
             self.k2_array[k] = self.star_object.k2
+            self.lambda_array[k] = self.star_object.lambda_tidal
         self.execution_time = perf_counter() - start_time
 
         # Configure the plot
         self._config_plot()
+        self._config_tidal_plot()
 
         # Show results if requested
         if show_results is True:

@@ -260,12 +260,12 @@ class StarFamily:
         """
 
         # Create a simple plot
-        plt.figure()
+        plt.figure(figsize=(6.0, 4.5))
         plt.plot(self.plot_dict[x_axis]["value"], self.plot_dict[y_axis]["value"], linewidth=1, label="Calculated curve", marker=".")
         eos_name = self.eos.eos_name.replace("EOS", " EOS")
-        plt.title(f"{self.plot_dict[y_axis]["name"]} vs {self.plot_dict[x_axis]["name"]} curve of the {eos_name} star family", y=1.05)
-        plt.xlabel(self.plot_dict[x_axis]["label"])
-        plt.ylabel(self.plot_dict[y_axis]["label"])
+        plt.title(f"{self.plot_dict[y_axis]["name"]} vs {self.plot_dict[x_axis]["name"]} curve of the {eos_name} star family", y=1.05, fontsize=11)
+        plt.xlabel(self.plot_dict[x_axis]["label"], fontsize=10)
+        plt.ylabel(self.plot_dict[y_axis]["label"], fontsize=10)
 
         # If expected curve is received, add a second comparison curve, and enable legend
         if (expected_x is not None) and (expected_y is not None):

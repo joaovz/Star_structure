@@ -201,11 +201,11 @@ class EOS:
         """
 
         # Create a simple plot
-        plt.figure()
+        plt.figure(figsize=(6.0, 4.5))
         plt.plot(self.plot_dict[x_axis]["value"], self.plot_dict[y_axis]["value"], linewidth=1)
-        plt.title(f"{self.plot_dict[y_axis]["name"]} vs {self.plot_dict[x_axis]["name"]} curve of the {self.eos_name.replace("EOS", " EOS")}", y=1.05)
-        plt.xlabel(self.plot_dict[x_axis]["label"])
-        plt.ylabel(self.plot_dict[y_axis]["label"])
+        plt.title(f"{self.plot_dict[y_axis]["name"]} vs {self.plot_dict[x_axis]["name"]} curve of the {self.eos_name.replace("EOS", " EOS")}", y=1.05, fontsize=11)
+        plt.xlabel(self.plot_dict[x_axis]["label"], fontsize=10)
+        plt.ylabel(self.plot_dict[y_axis]["label"], fontsize=10)
 
         # Create the folder if necessary and save the figure
         complete_figure_path = os.path.join(figure_path, self.eos_name.lower().replace("eos", "_eos"))

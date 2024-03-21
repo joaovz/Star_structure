@@ -42,7 +42,8 @@ class DeformedStar(Star):
         self.y_init = 2.0       # Calculated with the power series solution of the analytical equation valid for r -> 0
 
         # Initialize deformed star properties
-        self.k2 = 0.0           # Tidal Love number [dimensionless]
+        self.k2 = 0.0               # Tidal Love number [dimensionless]
+        self.lambda_tidal = 0.0     # Tidal deformability [dimensionless]
 
     def _combined_tov_tidal_ode_system(self, r, s):
         """Method that implements the combined TOV+tidal ODE system in the form ``ds/dr = f(r, s)``, used by the IVP solver
@@ -88,7 +89,7 @@ class DeformedStar(Star):
 
     def _process_tov_tidal_ode_solution(self, ode_solution):
         """Method that processes the combined TOV+tidal ODE solution, identifying errors, saving variables,
-        and calculating the tidal Love number k2
+        and calculating the tidal Love number k2 and the tidal deformability Lambda
 
         Args:
             ode_solution (Object returned by solve_ivp): Object that contains all information about the ODE solution
@@ -104,7 +105,7 @@ class DeformedStar(Star):
         # Unpack the tidal variables
         self.y_ode_solution = ode_solution.y[3]
 
-        # Calculate the tidal Love number k2, that represents the star tidal deformation
+        # Calculate the tidal Love number k2 and the tidal deformability Lambda
         c = self.star_mass / self.star_radius
         y_s = self.y_ode_solution[-1]
         self.k2 = (
@@ -114,9 +115,10 @@ class DeformedStar(Star):
                 + 3 * ((1 - 2 * c)**2) * (2 - y_s + 2 * c * (y_s - 1)) * np.log(1 - 2 * c)
             )
         )
+        self.lambda_tidal = (2 / 3) * self.k2 * c**(-5)
 
     def solve_combined_tov_tidal(self, p_center=None, show_results=True):
-        """Method that solves the combined TOV+tidal system for the star, finding p, m, nu, and k2
+        """Method that solves the combined TOV+tidal system for the star, finding p, m, nu, and y
 
         Args:
             p_center (float, optional): Central pressure of the star [m^-2]. Defaults to None
@@ -159,6 +161,7 @@ class DeformedStar(Star):
 
         # Print the results
         print(f"Tidal Love number (k2) = {(self.k2):e} [dimensionless]")
+        print(f"Tidal deformability (Lambda) = {(self.lambda_tidal):e} [dimensionless]")
         print(f"Perturbation (y(R)) = {(self.y_ode_solution[-1]):e} [dimensionless]")
 
     def plot_all_curves(self, figure_path=Star.FIGURES_PATH):
@@ -172,11 +175,11 @@ class DeformedStar(Star):
         super().plot_all_curves(figure_path)
 
         # Show a simple plot of the solution
-        plt.figure()
+        plt.figure(figsize=(6.0, 4.5))
         plt.plot(self.r_ode_solution / 10**3, self.y_ode_solution, linewidth=1)
-        plt.title(f"Perturbation solution for the {self.eos.eos_name.replace("EOS", " EOS")} star", y=1.05)
-        plt.xlabel("$r ~ [km]$")
-        plt.ylabel("$y ~ [dimensionless]$")
+        plt.title(f"Perturbation solution for the {self.eos.eos_name.replace("EOS", " EOS")} star", y=1.05, fontsize=11)
+        plt.xlabel("$r ~ [km]$", fontsize=10)
+        plt.ylabel("$y ~ [dimensionless]$", fontsize=10)
 
         # Create the folder if necessary and save the figure
         os.makedirs(figure_path, exist_ok=True)

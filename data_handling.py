@@ -43,11 +43,11 @@ def main():
     (radius, mass) = csv_to_arrays("data/BSk20_M_vs_R.csv")
 
     # Plot the curve given in the example .csv file
-    plt.figure()
+    plt.figure(figsize=(6.0, 4.5))
     plt.plot(radius, mass, linewidth=1, marker=".")
-    plt.title("BSk20 EOS M vs R from .csv file", y=1.05)
-    plt.xlabel("$R ~ [km]$")
-    plt.ylabel("$M ~ [M_{\\odot}]$")
+    plt.title("BSk20 EOS M vs R from .csv file", y=1.05, fontsize=11)
+    plt.xlabel("$R ~ [km]$", fontsize=10)
+    plt.ylabel("$M ~ [M_{\\odot}]$", fontsize=10)
     plt.show()
 
 

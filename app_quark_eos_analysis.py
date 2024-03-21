@@ -201,8 +201,8 @@ def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"
     """
 
     # Create figure and change properties
-    (fig, ax) = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.8), constrained_layout=True)
-    ax.set_title("Quark EOS parameter points", y=1.0)
+    (fig, ax) = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.5), constrained_layout=True)
+    ax.set_title("Quark EOS parameter points", y=1.0, fontsize=11)
     ax.view_init(elev=15, azim=-115, roll=0)
     ax.set_xlim3d(a2_min**(1 / 2), a2_max**(1 / 2))
     ax.set_ylim3d(a4_min, a4_max)
@@ -250,8 +250,8 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
     B_min_surface_masked = np.ma.masked_where(mesh_mask, B_min_surface)
 
     # Create figure and change properties
-    (fig, ax) = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.8), constrained_layout=True)
-    ax.set_title("Quark EOS parameter space for stable strange stars", y=1.0)
+    (fig, ax) = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.5), constrained_layout=True)
+    ax.set_title("Quark EOS parameter space for stable strange stars", y=1.0, fontsize=11)
     ax.view_init(elev=15, azim=-115, roll=0)
     ax.set_xlim3d(a2_min**(1 / 2), a2_max**(1 / 2))
     ax.set_ylim3d(a4_min, a4_max)

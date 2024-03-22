@@ -102,10 +102,9 @@ class DeformedStarFamily(StarFamily):
         # Return the calculated rho_center
         return self.maximum_k2_star_rho_center
 
-    def find_canonical_star(self):
-
-        # Execute parent class' find_canonical_star method
-        super().find_canonical_star()
+    def _calc_canonical_lambda(self):
+        """Method that calculates the tidal deformability of the canonical star (M = 1.4 M_sun)
+        """
 
         # Calculate canonical_lambda only if canonical_rho_center was found
         if self.canonical_rho_center < self.MAX_RHO:
@@ -113,6 +112,14 @@ class DeformedStarFamily(StarFamily):
             # Solve the combined TOV+tidal system for the canonical star and get the canonical tidal deformability
             self.star_object.solve_combined_tov_tidal(self.eos.p(self.canonical_rho_center), False)
             self.canonical_lambda = self.star_object.lambda_tidal
+
+    def find_canonical_star(self):
+
+        # Execute parent class' find_canonical_star method
+        super().find_canonical_star()
+
+        # Calculate canonical_lambda
+        self._calc_canonical_lambda()
 
     def find_maximum_k2_star(self):
         """Method that finds the maximum k2 star
@@ -168,10 +175,12 @@ class DeformedStarFamily(StarFamily):
 
         # Calculate the star family properties
         self._calc_maximum_k2_star()
+        self._calc_canonical_lambda()
 
         # Print the results
-        print(f"Maximum k2 (k2_max) = {(self.maximum_k2):e} [dimensionless]")
+        print(f"Tidal deformability of the canonical star (Lambda_canonical) = {(self.canonical_lambda):e} [dimensionless]")
         print(f"Maximum k2 star central density (rho_center_k2_max) = {(self.maximum_k2_star_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
+        print(f"Maximum k2 (k2_max) = {(self.maximum_k2):e} [dimensionless]")
 
 
 def main():

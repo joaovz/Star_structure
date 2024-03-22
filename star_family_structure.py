@@ -243,10 +243,10 @@ class StarFamily:
         # Print the results
         print(f"\n##########    Star family solve results    ##########")
         print(f"Executed the solution in: {(self.execution_time):.3f} [s]")
-        print(f"Maximum mass (M_max) = {(self.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
         print(f"Maximum stable central density (rho_center_max) = {(self.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
-        print(f"Radius of the canonical star (R_canonical) = {(self.canonical_radius / 10**3):e} [km]")
+        print(f"Maximum mass (M_max) = {(self.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
         print(f"Central density of the canonical star (rho_center_canonical) = {(self.canonical_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
+        print(f"Radius of the canonical star (R_canonical) = {(self.canonical_radius / 10**3):e} [km]")
 
     def plot_curve(self, x_axis="R", y_axis="M", figure_path=FIGURES_PATH, expected_x=None, expected_y=None):
         """Method that plots some curve of the star family

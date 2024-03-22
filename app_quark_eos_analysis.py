@@ -145,6 +145,7 @@ def analyze_strange_star_family(dataframe_row):
     star_family_object.find_canonical_star()
     canonical_rho_center = star_family_object.canonical_rho_center
     canonical_radius = star_family_object.canonical_radius
+    canonical_lambda = star_family_object.canonical_lambda
 
     # Find the maximum k2 star
     star_family_object.find_maximum_k2_star()
@@ -152,7 +153,7 @@ def analyze_strange_star_family(dataframe_row):
     maximum_k2 = star_family_object.maximum_k2
 
     # Return the index and results
-    return (index, maximum_stable_rho_center, maximum_mass, canonical_rho_center, canonical_radius, maximum_k2_star_rho_center, maximum_k2)
+    return (index, maximum_stable_rho_center, maximum_mass, canonical_rho_center, canonical_radius, canonical_lambda, maximum_k2_star_rho_center, maximum_k2)
 
 
 def analyze_strange_stars(parameter_dataframe):
@@ -177,11 +178,12 @@ def analyze_strange_stars(parameter_dataframe):
     results = process_map(analyze_strange_star_family, rows_list, max_workers=processes, chunksize=chunksize)
 
     # Update the dataframe with the results
-    for index, maximum_stable_rho_center, maximum_mass, canonical_rho_center, canonical_radius, maximum_k2_star_rho_center, maximum_k2 in results:
+    for index, maximum_stable_rho_center, maximum_mass, canonical_rho_center, canonical_radius, canonical_lambda, maximum_k2_star_rho_center, maximum_k2 in results:
         parameter_dataframe.at[index, "rho_center_max [10^15 g ⋅ cm^-3]"] = maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
         parameter_dataframe.at[index, "M_max [solar mass]"] = maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS
         parameter_dataframe.at[index, "rho_center_canonical [10^15 g ⋅ cm^-3]"] = canonical_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
         parameter_dataframe.at[index, "R_canonical [km]"] = canonical_radius / 10**3
+        parameter_dataframe.at[index, "Lambda_canonical [dimensionless]"] = canonical_lambda
         parameter_dataframe.at[index, "rho_center_k2_max [10^15 g ⋅ cm^-3]"] = maximum_k2_star_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
         parameter_dataframe.at[index, "k2_max [dimensionless]"] = maximum_k2
 

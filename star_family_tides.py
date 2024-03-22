@@ -45,6 +45,7 @@ class DeformedStarFamily(StarFamily):
         # Initialize deformed star family properties
         self.k2_array = np.zeros(self.p_center_space.size)          # Array with the tidal Love numbers of the stars [dimensionless]
         self.lambda_array = np.zeros(self.p_center_space.size)      # Array with the tidal deformabilities of the stars [dimensionless]
+        self.canonical_lambda = np.inf                              # Tidal deformability of the canonical star (M = 1.4 M_sun) [dimensionless]
         self.maximum_k2_star_rho_center = self.MAX_RHO              # Central density of the star with the maximum k2 [m^-2]
         self.maximum_k2 = np.inf                                    # Maximum k2 of the star family [dimensionless]
 
@@ -100,6 +101,18 @@ class DeformedStarFamily(StarFamily):
 
         # Return the calculated rho_center
         return self.maximum_k2_star_rho_center
+
+    def find_canonical_star(self):
+
+        # Execute parent class' find_canonical_star method
+        super().find_canonical_star()
+
+        # Calculate canonical_lambda only if canonical_rho_center was found
+        if self.canonical_rho_center < self.MAX_RHO:
+
+            # Solve the combined TOV+tidal system for the canonical star and get the canonical tidal deformability
+            self.star_object.solve_combined_tov_tidal(self.eos.p(self.canonical_rho_center), False)
+            self.canonical_lambda = self.star_object.lambda_tidal
 
     def find_maximum_k2_star(self):
         """Method that finds the maximum k2 star

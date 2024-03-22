@@ -2,6 +2,13 @@ from astropy import constants as const
 import numpy as np
 
 
+class Constants:
+    """Class with general purpose constants
+    """
+
+    C_SMALL = 0.005                     # Small compactness value, used to switch calculations to Taylor expansions for C -> 0
+
+
 class DefaultValues:
     """Class with default parameter values
     """

@@ -2,6 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.integrate import solve_ivp
+from constants import Constants as const
 from constants import DefaultValues as dval
 from constants import UnitConversion as uconv
 from eos_library import PolytropicEOS
@@ -105,16 +106,25 @@ class DeformedStar(Star):
         # Unpack the tidal variables
         self.y_ode_solution = ode_solution.y[3]
 
-        # Calculate the tidal Love number k2 and the tidal deformability Lambda
+        # Calculate the compactness C and perturbation at the surface y_s
         c = self.star_mass / self.star_radius
-        y_s = self.y_ode_solution[-1]
-        self.k2 = (
-            (8 / 5) * c**5 * ((1 - 2 * c)**2) * (2 + 2 * c * (y_s - 1) - y_s) / (
-                2 * c * (6 - 3 * y_s + 3 * c * (5 * y_s - 8))
-                + 4 * c**3 * (13 - 11 * y_s + c * (3 * y_s - 2) + 2 * c**2 * (1 + y_s))
-                + 3 * ((1 - 2 * c)**2) * (2 - y_s + 2 * c * (y_s - 1)) * np.log(1 - 2 * c)
+        rho_avg = self.star_mass / ((4 / 3) * np.pi * self.star_radius**3)
+        delta_y_s = 3 * self.rho_ode_solution[-1] / rho_avg
+        y_s = self.y_ode_solution[-1] - delta_y_s
+
+        # Calculate the tidal Love number k2 and the tidal deformability Lambda
+        if c <= const.C_SMALL:
+            # First order Taylor expansion of k2 for C -> 0, used for small C values (more stable)
+            self.k2 = (2 - y_s) / (2 * (y_s + 3)) + ((5 * y_s**2 + 10 * y_s - 30) * c) / (2 * (y_s + 3)**2)
+        else:
+            # Complete k2 expression
+            self.k2 = (
+                (8 / 5) * c**5 * ((1 - 2 * c)**2) * (2 + 2 * c * (y_s - 1) - y_s) / (
+                    2 * c * (6 - 3 * y_s + 3 * c * (5 * y_s - 8))
+                    + 4 * c**3 * (13 - 11 * y_s + c * (3 * y_s - 2) + 2 * c**2 * (1 + y_s))
+                    + 3 * ((1 - 2 * c)**2) * (2 - y_s + 2 * c * (y_s - 1)) * np.log(1 - 2 * c)
+                )
             )
-        )
         self.lambda_tidal = (2 / 3) * self.k2 * c**(-5)
 
     def solve_combined_tov_tidal(self, p_center=None, show_results=True):

@@ -89,6 +89,9 @@ class DeformedStarFamily(StarFamily):
         if solve_first is True:
             self.solve_combined_tov_tidal(False)
 
+        # Calculate the maximum k2 value position in the array
+        k2_max_index = np.argmax(self.k2_array)
+
         # Create the k2 vs rho_center interpolated function and calculate its derivative
         k2_rho_center_spline = CubicSpline(self.rho_center_space, self.k2_array, extrapolate=False)
         dk2_drho_center_spline = k2_rho_center_spline.derivative()
@@ -98,6 +101,10 @@ class DeformedStarFamily(StarFamily):
         if dk2_drho_center_roots.size > 0:
             self.maximum_k2_star_rho_center = dk2_drho_center_roots[0]
             self.maximum_k2 = k2_rho_center_spline(self.maximum_k2_star_rho_center)
+        # Use the maximum from the array if necessary
+        if self.maximum_k2 < self.k2_array[k2_max_index]:
+            self.maximum_k2_star_rho_center = self.rho_center_space[k2_max_index]
+            self.maximum_k2 = self.k2_array[k2_max_index]
 
         # Return the calculated rho_center
         return self.maximum_k2_star_rho_center

@@ -286,16 +286,94 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
     plt.show()
 
 
+def plot_analysis_graphs(parameter_dataframe, figures_path="figures/app_quark_eos/analysis"):
+    """Function that creates all the analysis graphs
+
+    Args:
+        parameter_dataframe (Pandas dataframe of float): Dataframe with the parameters of strange stars
+        figures_path (str, optional): Path used to save the figures. Defaults to "figures/app_quark_eos/analysis".
+    """
+
+    # Create a dictionary with all the functions used in plotting, with each name and label description
+    plot_dict = {
+        "a2^(1/2)": {
+            "name": "a2^(1/2)",
+            "label": "$a_2^{1/2} ~ [MeV]$",
+            "value": parameter_dataframe.loc[:, "a2^(1/2) [MeV]"],
+        },
+        "a4": {
+            "name": "a4",
+            "label": "$a_4 ~ [dimensionless]$",
+            "value": parameter_dataframe.loc[:, "a4 [dimensionless]"],
+        },
+        "B^(1/4)": {
+            "name": "B^(1/4)",
+            "label": "$B^{1/4} ~ [MeV]$",
+            "value": parameter_dataframe.loc[:, "B^(1/4) [MeV]"],
+        },
+        "M_max": {
+            "name": "Maximum mass",
+            "label": "$M_{max} ~ [M_{\\odot}]$",
+            "value": parameter_dataframe.loc[:, "M_max [solar mass]"],
+        },
+        "R_canonical": {
+            "name": "Canonical radius",
+            "label": "$R_{canonical} ~ [km]$",
+            "value": parameter_dataframe.loc[:, "R_canonical [km]"],
+        },
+        "Lambda_canonical": {
+            "name": "Canonical deformability",
+            "label": "$\\log_{10} \\left( \\Lambda_{canonical} [dimensionless] \\right)$",
+            "value": np.log10(parameter_dataframe.loc[:, "Lambda_canonical [dimensionless]"]),
+        },
+    }
+
+    # Create a list with all the graphs to be plotted
+    graphs_list = [
+        ["a2^(1/2)", "M_max"],
+        ["a4", "M_max"],
+        ["B^(1/4)", "M_max"],
+        ["a2^(1/2)", "R_canonical"],
+        ["a4", "R_canonical"],
+        ["B^(1/4)", "R_canonical"],
+        ["a2^(1/2)", "Lambda_canonical"],
+        ["a4", "Lambda_canonical"],
+        ["B^(1/4)", "Lambda_canonical"],
+    ]
+
+    # Plot all graphs specified in graphs_list
+    for (x_axis, y_axis) in graphs_list:
+
+        # Create the plot
+        plt.figure(figsize=(6.0, 4.5))
+        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"])
+        plt.title(f"{plot_dict[y_axis]["name"]} vs {plot_dict[x_axis]["name"]} graph of the Quark EOS", y=1.05, fontsize=11)
+        plt.xlabel(plot_dict[x_axis]["label"], fontsize=10)
+        plt.ylabel(plot_dict[y_axis]["label"], fontsize=10)
+
+        # Create the folder if necessary and save the figure
+        os.makedirs(figures_path, exist_ok=True)
+        x_axis_name = plot_dict[x_axis]["name"].lower().replace(" ", "_").replace("/", "_")
+        y_axis_name = plot_dict[y_axis]["name"].lower().replace(" ", "_").replace("/", "_")
+        figure_name = f"{y_axis_name}_vs_{x_axis_name}_graph.svg"
+        complete_path = os.path.join(figures_path, figure_name)
+        plt.savefig(complete_path)
+
+    # Show graphs at the end
+    plt.show()
+
+
 def main():
     """Main logic
     """
 
     # Constants
-    figure_path = "figures/app_quark_eos"               # Path of the figures folder
-    dataframe_csv_path = "results"                      # Path of the results folder
-    dataframe_csv_name = "quark_eos_analysis.csv"       # Name of the csv file with the results
-    parameter_space_mesh_size = 1001                    # Number of points used in the meshgrid for the parameter space plot
-    scatter_plot_mesh_size = 21                         # Number of points used in the meshgrid for the scatter plot
+    figure_path = "figures/app_quark_eos"                               # Path of the figures folder
+    analysis_figures_path = os.path.join(figure_path, "analysis")       # Path of the analysis figures folder
+    dataframe_csv_path = "results"                                      # Path of the results folder
+    dataframe_csv_name = "quark_eos_analysis.csv"                       # Name of the csv file with the results
+    parameter_space_mesh_size = 1001                                    # Number of points used in the meshgrid for the parameter space plot
+    scatter_plot_mesh_size = 21                                         # Number of points used in the meshgrid for the scatter plot
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figure_path)
@@ -308,6 +386,9 @@ def main():
 
     # Analize the strange stars generated
     parameter_dataframe = analyze_strange_stars(parameter_dataframe)
+
+    # Create all the analysis graphs
+    plot_analysis_graphs(parameter_dataframe, analysis_figures_path)
 
     # Save the dataframe to a csv file
     dataframe_to_csv(dataframe=parameter_dataframe, file_path=dataframe_csv_path, file_name=dataframe_csv_name)

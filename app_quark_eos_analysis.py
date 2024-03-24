@@ -320,7 +320,6 @@ def plot_analysis_graphs(parameter_dataframe, figures_path="figures/app_quark_eo
         "M_max": {
             "name": "Maximum mass",
             "label": "$M_{max} ~ [M_{\\odot}]$",
-            "unit": "$M_{\\odot}$",
             "value": parameter_dataframe.loc[:, "M_max [solar mass]"],
             "inf_limit": M_max_inf_limit,
             "sup_limit": None,
@@ -328,7 +327,6 @@ def plot_analysis_graphs(parameter_dataframe, figures_path="figures/app_quark_eo
         "R_canonical": {
             "name": "Canonical radius",
             "label": "$R_{canonical} ~ [km]$",
-            "unit": "$km$",
             "value": parameter_dataframe.loc[:, "R_canonical [km]"],
             "inf_limit": R_canonical_inf_limit,
             "sup_limit": R_canonical_sup_limit,
@@ -336,7 +334,6 @@ def plot_analysis_graphs(parameter_dataframe, figures_path="figures/app_quark_eo
         "Lambda_canonical": {
             "name": "Canonical deformability",
             "label": "$\\log_{10} \\left( \\Lambda_{canonical} [dimensionless] \\right)$",
-            "unit": "",
             "value": np.log10(parameter_dataframe.loc[:, "Lambda_canonical [dimensionless]"]),
             "inf_limit": None,
             "sup_limit": np.log10(Lambda_canonical_sup_limit),
@@ -361,21 +358,32 @@ def plot_analysis_graphs(parameter_dataframe, figures_path="figures/app_quark_eo
 
         # Create the plot
         plt.figure(figsize=(6.0, 4.5))
-        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"], s=3**2)
+        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"], s=3**2, zorder=3)
         plt.title(f"{plot_dict[y_axis]["name"]} vs {plot_dict[x_axis]["name"]} graph of the Quark EOS", y=1.05, fontsize=11)
         plt.xlabel(plot_dict[x_axis]["label"], fontsize=10)
         plt.ylabel(plot_dict[y_axis]["label"], fontsize=10)
 
-        # Add the y axis limit lines and legend
-        ones_array = np.ones(2)
-        x_axis_limits = np.array([np.min(plot_dict[x_axis]["value"]), np.max(plot_dict[x_axis]["value"])])
+        # Add the y axis limit lines and text
+        xlim0, xlim1 = plt.xlim()
         if plot_dict[y_axis]["sup_limit"] is not None:
-            label = f"Superior limit = {plot_dict[y_axis]["sup_limit"]:.2f} {plot_dict[y_axis]["unit"]}"
-            plt.plot(x_axis_limits, plot_dict[y_axis]["sup_limit"] * ones_array, linewidth=1, color="#d62728", label=label)
+            plt.axhline(y=plot_dict[y_axis]["sup_limit"], linewidth=1, color="#d62728", zorder=2)
+            text = f" {plot_dict[y_axis]["sup_limit"]:.2f} "
+            plt.text(xlim1, plot_dict[y_axis]["sup_limit"], text, horizontalalignment="left", verticalalignment="center", color="#d62728")
         if plot_dict[y_axis]["inf_limit"] is not None:
-            label = f"Inferior limit = {plot_dict[y_axis]["inf_limit"]:.2f} {plot_dict[y_axis]["unit"]}"
-            plt.plot(x_axis_limits, plot_dict[y_axis]["inf_limit"] * ones_array, linewidth=1, color="#2ca02c", label=label)
-        plt.legend()
+            plt.axhline(y=plot_dict[y_axis]["inf_limit"], linewidth=1, color="#2ca02c", zorder=2)
+            text = f" {plot_dict[y_axis]["inf_limit"]:.2f} "
+            plt.text(xlim1, plot_dict[y_axis]["inf_limit"], text, horizontalalignment="left", verticalalignment="center", color="#2ca02c")
+
+        # Create a shaded region between y axis limit lines
+        ylim0, ylim1 = plt.ylim()       # Get current y limits to use for the shaded region if necessary
+        span_min = plot_dict[y_axis]["inf_limit"]
+        span_max = plot_dict[y_axis]["sup_limit"]
+        if span_min is None:
+            span_min = ylim0
+        if span_max is None:
+            span_max = ylim1
+        plt.axhspan(span_min, span_max, facecolor="#2ca02c", alpha=0.25, zorder=1)
+        plt.ylim(ylim0, ylim1)          # Set original y limits after creating the shaded region
 
         # Create the folder if necessary and save the figure
         os.makedirs(figures_path, exist_ok=True)

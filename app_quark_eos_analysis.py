@@ -22,6 +22,12 @@ a4_max = 1.0                                                    # Maximum a4 par
 B_min = 0.0                                                     # Minimum B parameter value [MeV^4]
 B_max = g0**4 / (108 * np.pi**2)                                # Maximum B parameter value [MeV^4]
 
+# Observation data
+M_max_inf_limit = 2.13                                          # Inferior limit of the maximum mass [solar mass] (Romani - 2 sigma)
+R_canonical_inf_limit = 10.0                                    # Inferior limit of the radius of the canonical star [km]
+R_canonical_sup_limit = 13.25                                   # Superior limit of the radius of the canonical star [km]
+Lambda_canonical_sup_limit = 970.0                              # Superior limit of the tidal deformability of the canonical star [dimensionless] (Abbott - 2 sigma)
+
 
 def calc_B_max(a2, a4):
     """Function that calculates the maximum B parameter value
@@ -314,17 +320,26 @@ def plot_analysis_graphs(parameter_dataframe, figures_path="figures/app_quark_eo
         "M_max": {
             "name": "Maximum mass",
             "label": "$M_{max} ~ [M_{\\odot}]$",
+            "unit": "$M_{\\odot}$",
             "value": parameter_dataframe.loc[:, "M_max [solar mass]"],
+            "inf_limit": M_max_inf_limit,
+            "sup_limit": None,
         },
         "R_canonical": {
             "name": "Canonical radius",
             "label": "$R_{canonical} ~ [km]$",
+            "unit": "$km$",
             "value": parameter_dataframe.loc[:, "R_canonical [km]"],
+            "inf_limit": R_canonical_inf_limit,
+            "sup_limit": R_canonical_sup_limit,
         },
         "Lambda_canonical": {
             "name": "Canonical deformability",
             "label": "$\\log_{10} \\left( \\Lambda_{canonical} [dimensionless] \\right)$",
+            "unit": "",
             "value": np.log10(parameter_dataframe.loc[:, "Lambda_canonical [dimensionless]"]),
+            "inf_limit": None,
+            "sup_limit": np.log10(Lambda_canonical_sup_limit),
         },
     }
 
@@ -346,10 +361,21 @@ def plot_analysis_graphs(parameter_dataframe, figures_path="figures/app_quark_eo
 
         # Create the plot
         plt.figure(figsize=(6.0, 4.5))
-        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"])
+        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"], s=3**2)
         plt.title(f"{plot_dict[y_axis]["name"]} vs {plot_dict[x_axis]["name"]} graph of the Quark EOS", y=1.05, fontsize=11)
         plt.xlabel(plot_dict[x_axis]["label"], fontsize=10)
         plt.ylabel(plot_dict[y_axis]["label"], fontsize=10)
+
+        # Add the y axis limit lines and legend
+        ones_array = np.ones(2)
+        x_axis_limits = np.array([np.min(plot_dict[x_axis]["value"]), np.max(plot_dict[x_axis]["value"])])
+        if plot_dict[y_axis]["sup_limit"] is not None:
+            label = f"Superior limit = {plot_dict[y_axis]["sup_limit"]:.2f} {plot_dict[y_axis]["unit"]}"
+            plt.plot(x_axis_limits, plot_dict[y_axis]["sup_limit"] * ones_array, linewidth=1, color="#d62728", label=label)
+        if plot_dict[y_axis]["inf_limit"] is not None:
+            label = f"Inferior limit = {plot_dict[y_axis]["inf_limit"]:.2f} {plot_dict[y_axis]["unit"]}"
+            plt.plot(x_axis_limits, plot_dict[y_axis]["inf_limit"] * ones_array, linewidth=1, color="#2ca02c", label=label)
+        plt.legend()
 
         # Create the folder if necessary and save the figure
         os.makedirs(figures_path, exist_ok=True)

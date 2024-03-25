@@ -460,30 +460,31 @@ def main():
     """
 
     # Constants
-    figure_path = "figures/app_quark_eos"                               # Path of the figures folder
-    analysis_figures_path = os.path.join(figure_path, "analysis")       # Path of the analysis figures folder
+    figures_path = "figures/app_quark_eos/analysis"                     # Path of the figures folder
     dataframe_csv_path = "results"                                      # Path of the results folder
     dataframe_csv_name = "quark_eos_analysis.csv"                       # Name of the csv file with the results
+    filtered_dataframe_csv_name = "quark_eos_analysis_filtered.csv"     # Name of the csv file with the results after filtering with observation data restrictions
     parameter_space_mesh_size = 1001                                    # Number of points used in the meshgrid for the parameter space plot
     scatter_plot_mesh_size = 51                                         # Number of points used in the meshgrid for the scatter plot
 
     # Create the parameter space plot
-    plot_parameter_space(parameter_space_mesh_size, figure_path)
+    plot_parameter_space(parameter_space_mesh_size, figures_path)
 
     # Generate parameters for strange stars
     (a2_masked, a4_masked, B_masked, parameter_dataframe) = generate_strange_stars(scatter_plot_mesh_size)
 
     # Plot the parameter points generated for strange stars
-    plot_parameter_points_scatter(a2_masked, a4_masked, B_masked, figure_path)
+    plot_parameter_points_scatter(a2_masked, a4_masked, B_masked, figures_path)
 
     # Analize the strange stars generated
     (parameter_dataframe, filtered_dataframe, parameters_limits) = analyze_strange_stars(parameter_dataframe)
 
     # Create all the analysis graphs
-    plot_analysis_graphs(parameter_dataframe, parameters_limits, analysis_figures_path)
+    plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path)
 
-    # Save the dataframe to a csv file
+    # Save the dataframes to csv files
     dataframe_to_csv(dataframe=parameter_dataframe, file_path=dataframe_csv_path, file_name=dataframe_csv_name)
+    dataframe_to_csv(dataframe=filtered_dataframe, file_path=dataframe_csv_path, file_name=filtered_dataframe_csv_name)
 
 
 # This logic is only executed when this file is run directly in the command prompt

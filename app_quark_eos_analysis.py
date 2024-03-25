@@ -1,5 +1,6 @@
 import os
 import math
+import pprint
 import psutil
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -170,6 +171,8 @@ def analyze_strange_stars(parameter_dataframe):
 
     Returns:
         Pandas dataframe of float: Dataframe with the parameters and properties of strange stars
+        Pandas dataframe of float: Dataframe with the parameters and properties of strange stars filtered by the observation data restrictions
+        dict: Dictionary with the minimum and maximum values of the parameters for each observation data restrictions
     """
 
     # Calculate the number of rows, number of processes and number of calculations per process (chunksize)
@@ -193,9 +196,52 @@ def analyze_strange_stars(parameter_dataframe):
         parameter_dataframe.at[index, "rho_center_k2_max [10^15 g ⋅ cm^-3]"] = maximum_k2_star_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
         parameter_dataframe.at[index, "k2_max [dimensionless]"] = maximum_k2
 
-    # Print and return the parameter dataframe at the end
+    # Determine the EOS parameters limits based on observation data and create filtered dataframes
+    M_max_query = f"`M_max [solar mass]` > {M_max_inf_limit}"
+    R_canonical_query = f"`R_canonical [km]` > {R_canonical_inf_limit} & `R_canonical [km]` < {R_canonical_sup_limit}"
+    Lambda_canonical_query = f"`Lambda_canonical [dimensionless]` < {Lambda_canonical_sup_limit}"
+    combined_query = f"{M_max_query} & {R_canonical_query} & {Lambda_canonical_query}"
+    filtered_M_max_dataframe = parameter_dataframe.query(M_max_query)
+    filtered_R_canonical_dataframe = parameter_dataframe.query(R_canonical_query)
+    filtered_Lambda_canonical_dataframe = parameter_dataframe.query(Lambda_canonical_query)
+    filtered_dataframe = parameter_dataframe.query(combined_query)
+
+    # Create a dictionary with the minimum and maximum values of the parameters for each observation data restrictions
+    parameters_limits = {
+        "a2^(1/2)": {
+            "M_max": (np.min(filtered_M_max_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_M_max_dataframe.loc[:, "a2^(1/2) [MeV]"])),
+            "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_R_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"])),
+            "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"])),
+        },
+        "a4": {
+            "M_max": (np.min(filtered_M_max_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_M_max_dataframe.loc[:, "a4 [dimensionless]"])),
+            "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_R_canonical_dataframe.loc[:, "a4 [dimensionless]"])),
+            "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "a4 [dimensionless]"])),
+        },
+        "B^(1/4)": {
+            "M_max": (np.min(filtered_M_max_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_M_max_dataframe.loc[:, "B^(1/4) [MeV]"])),
+            "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_R_canonical_dataframe.loc[:, "B^(1/4) [MeV]"])),
+            "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "B^(1/4) [MeV]"])),
+        },
+    }
+
+    # Add the combined limits to the dictionary
+    a2_1_2_min = np.max([parameters_limits["a2^(1/2)"]["M_max"][0], parameters_limits["a2^(1/2)"]["R_canonical"][0], parameters_limits["a2^(1/2)"]["Lambda_canonical"][0]])
+    a2_1_2_max = np.min([parameters_limits["a2^(1/2)"]["M_max"][1], parameters_limits["a2^(1/2)"]["R_canonical"][1], parameters_limits["a2^(1/2)"]["Lambda_canonical"][1]])
+    a4_min = np.max([parameters_limits["a4"]["M_max"][0], parameters_limits["a4"]["R_canonical"][0], parameters_limits["a4"]["Lambda_canonical"][0]])
+    a4_max = np.min([parameters_limits["a4"]["M_max"][1], parameters_limits["a4"]["R_canonical"][1], parameters_limits["a4"]["Lambda_canonical"][1]])
+    B_1_4_min = np.max([parameters_limits["B^(1/4)"]["M_max"][0], parameters_limits["B^(1/4)"]["R_canonical"][0], parameters_limits["B^(1/4)"]["Lambda_canonical"][0]])
+    B_1_4_max = np.min([parameters_limits["B^(1/4)"]["M_max"][1], parameters_limits["B^(1/4)"]["R_canonical"][1], parameters_limits["B^(1/4)"]["Lambda_canonical"][1]])
+    parameters_limits["a2^(1/2)"]["combined"] = (a2_1_2_min, a2_1_2_max)
+    parameters_limits["a4"]["combined"] = (a4_min, a4_max)
+    parameters_limits["B^(1/4)"]["combined"] = (B_1_4_min, B_1_4_max)
+
+    # Print the parameter dataframe and limits
     print(parameter_dataframe)
-    return parameter_dataframe
+    pprint.pp(parameters_limits)
+
+    # Return the parameter dataframe, the filtered dataframe, and the parameters limits
+    return (parameter_dataframe, filtered_dataframe, parameters_limits)
 
 
 def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"):
@@ -292,11 +338,12 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
     plt.show()
 
 
-def plot_analysis_graphs(parameter_dataframe, figures_path="figures/app_quark_eos/analysis"):
+def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="figures/app_quark_eos/analysis"):
     """Function that creates all the analysis graphs
 
     Args:
         parameter_dataframe (Pandas dataframe of float): Dataframe with the parameters of strange stars
+        parameters_limits (dict): Dictionary with the minimum and maximum values of the parameters for each observation data restrictions
         figures_path (str, optional): Path used to save the figures. Defaults to "figures/app_quark_eos/analysis".
     """
 
@@ -358,19 +405,19 @@ def plot_analysis_graphs(parameter_dataframe, figures_path="figures/app_quark_eo
 
         # Create the plot
         plt.figure(figsize=(6.0, 4.5))
-        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"], s=3**2, zorder=3)
-        plt.title(f"{plot_dict[y_axis]["name"]} vs {plot_dict[x_axis]["name"]} graph of the Quark EOS", y=1.05, fontsize=11)
+        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"], s=3**2, zorder=4)
+        plt.title(f"{plot_dict[y_axis]["name"]} vs {plot_dict[x_axis]["name"]} graph of the Quark EOS", y=1.08, fontsize=11)
         plt.xlabel(plot_dict[x_axis]["label"], fontsize=10)
         plt.ylabel(plot_dict[y_axis]["label"], fontsize=10)
 
         # Add the y axis limit lines and text
         xlim0, xlim1 = plt.xlim()
         if plot_dict[y_axis]["sup_limit"] is not None:
-            plt.axhline(y=plot_dict[y_axis]["sup_limit"], linewidth=1, color="#d62728", zorder=2)
+            plt.axhline(y=plot_dict[y_axis]["sup_limit"], linewidth=1, color="#d62728", zorder=3)
             text = f" {plot_dict[y_axis]["sup_limit"]:.2f} "
             plt.text(xlim1, plot_dict[y_axis]["sup_limit"], text, horizontalalignment="left", verticalalignment="center", color="#d62728")
         if plot_dict[y_axis]["inf_limit"] is not None:
-            plt.axhline(y=plot_dict[y_axis]["inf_limit"], linewidth=1, color="#2ca02c", zorder=2)
+            plt.axhline(y=plot_dict[y_axis]["inf_limit"], linewidth=1, color="#2ca02c", zorder=3)
             text = f" {plot_dict[y_axis]["inf_limit"]:.2f} "
             plt.text(xlim1, plot_dict[y_axis]["inf_limit"], text, horizontalalignment="left", verticalalignment="center", color="#2ca02c")
 
@@ -382,8 +429,19 @@ def plot_analysis_graphs(parameter_dataframe, figures_path="figures/app_quark_eo
             span_min = ylim0
         if span_max is None:
             span_max = ylim1
-        plt.axhspan(span_min, span_max, facecolor="#2ca02c", alpha=0.25, zorder=1)
+        plt.axhspan(span_min, span_max, facecolor="#2ca02c", alpha=0.25, zorder=2)
         plt.ylim(ylim0, ylim1)          # Set original y limits after creating the shaded region
+
+        # Add the x axis limit lines and text
+        (x_inf_limit, x_sup_limit) = parameters_limits[x_axis][y_axis]
+        # Superior limit
+        plt.axvline(x=x_sup_limit, linewidth=1, color="#d62728", zorder=1)
+        text = f" {x_sup_limit:.2f} "
+        plt.text(x_sup_limit, ylim1, text, horizontalalignment="center", verticalalignment="bottom", color="#d62728")
+        # Inferior limit
+        plt.axvline(x=x_inf_limit, linewidth=1, color="#2ca02c", zorder=1)
+        text = f" {x_inf_limit:.2f} "
+        plt.text(x_inf_limit, ylim1, text, horizontalalignment="center", verticalalignment="bottom", color="#2ca02c")
 
         # Create the folder if necessary and save the figure
         os.makedirs(figures_path, exist_ok=True)
@@ -407,7 +465,7 @@ def main():
     dataframe_csv_path = "results"                                      # Path of the results folder
     dataframe_csv_name = "quark_eos_analysis.csv"                       # Name of the csv file with the results
     parameter_space_mesh_size = 1001                                    # Number of points used in the meshgrid for the parameter space plot
-    scatter_plot_mesh_size = 21                                         # Number of points used in the meshgrid for the scatter plot
+    scatter_plot_mesh_size = 51                                         # Number of points used in the meshgrid for the scatter plot
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figure_path)
@@ -419,10 +477,10 @@ def main():
     plot_parameter_points_scatter(a2_masked, a4_masked, B_masked, figure_path)
 
     # Analize the strange stars generated
-    parameter_dataframe = analyze_strange_stars(parameter_dataframe)
+    (parameter_dataframe, filtered_dataframe, parameters_limits) = analyze_strange_stars(parameter_dataframe)
 
     # Create all the analysis graphs
-    plot_analysis_graphs(parameter_dataframe, analysis_figures_path)
+    plot_analysis_graphs(parameter_dataframe, parameters_limits, analysis_figures_path)
 
     # Save the dataframe to a csv file
     dataframe_to_csv(dataframe=parameter_dataframe, file_path=dataframe_csv_path, file_name=dataframe_csv_name)

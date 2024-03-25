@@ -52,8 +52,8 @@ class EOS:
             },
             "p": {
                 "name": "Pressure",
-                "label": "$p ~ [dyn \\cdot cm^{-2}]$",
-                "value": self.p_space * uconv.PRESSURE_GU_TO_CGS,
+                "label": "$\\log_{10} \\left( p ~ [dyn \\cdot cm^{-2}] \\right)$",
+                "value": np.log10(self.p_space * uconv.PRESSURE_GU_TO_CGS),
             },
             "drho_dp": {
                 "name": "Density derivative",
@@ -67,8 +67,8 @@ class EOS:
             },
             "gamma": {
                 "name": "Adiabatic index",
-                "label": "$\\Gamma ~ [dimensionless]$",
-                "value": self.gamma(self.p_space),
+                "label": "$\\log_{10} \\left( \\Gamma ~ [dimensionless] \\right)$",
+                "value": np.log10(self.gamma(self.p_space)),
             },
             "c_s": {
                 "name": "Speed of sound",
@@ -79,13 +79,7 @@ class EOS:
 
         # Create a list with all the curves to be plotted
         self.curves_list = [
-            ["p", "rho"],
-            ["p", "drho_dp"],
-            ["p", "dp_drho"],
-            ["p", "gamma"],
-            ["p", "c_s"],
             ["rho", "p"],
-            ["rho", "drho_dp"],
             ["rho", "dp_drho"],
             ["rho", "gamma"],
             ["rho", "c_s"],

@@ -178,6 +178,7 @@ def analyze_strange_stars(parameter_dataframe):
         Pandas dataframe of float: Dataframe with the parameters and properties of strange stars
         Pandas dataframe of float: Dataframe with the parameters and properties of strange stars filtered by the observation data restrictions
         dict: Dictionary with the minimum and maximum values of the parameters for each observation data restrictions
+        dict: Dictionary with the minimum and maximum values of the properties of strange stars
     """
 
     # Calculate the number of rows, number of processes and number of calculations per process (chunksize)
@@ -244,12 +245,27 @@ def analyze_strange_stars(parameter_dataframe):
     parameters_limits["a4"]["combined"] = (a4_min, a4_max)
     parameters_limits["B^(1/4)"]["combined"] = (B_1_4_min, B_1_4_max)
 
-    # Print the parameter dataframe and limits
+    # Create a dictionary with the minimum and maximum values of the properties of strange stars
+    properties_limits = {
+        "rho_surface [10^15 g ⋅ cm^-3]": (np.min(filtered_dataframe.loc[:, "rho_surface [10^15 g ⋅ cm^-3]"]), np.max(filtered_dataframe.loc[:, "rho_surface [10^15 g ⋅ cm^-3]"])),
+        "cs_min [dimensionless]": (np.min(filtered_dataframe.loc[:, "cs_min [dimensionless]"]), np.max(filtered_dataframe.loc[:, "cs_min [dimensionless]"])),
+        "rho_center_max [10^15 g ⋅ cm^-3]": (np.min(filtered_dataframe.loc[:, "rho_center_max [10^15 g ⋅ cm^-3]"]), np.max(filtered_dataframe.loc[:, "rho_center_max [10^15 g ⋅ cm^-3]"])),
+        "M_max [solar mass]": (np.min(filtered_dataframe.loc[:, "M_max [solar mass]"]), np.max(filtered_dataframe.loc[:, "M_max [solar mass]"])),
+        "cs_max [dimensionless]": (np.min(filtered_dataframe.loc[:, "cs_max [dimensionless]"]), np.max(filtered_dataframe.loc[:, "cs_max [dimensionless]"])),
+        "rho_center_canonical [10^15 g ⋅ cm^-3]": (np.min(filtered_dataframe.loc[:, "rho_center_canonical [10^15 g ⋅ cm^-3]"]), np.max(filtered_dataframe.loc[:, "rho_center_canonical [10^15 g ⋅ cm^-3]"])),
+        "R_canonical [km]": (np.min(filtered_dataframe.loc[:, "R_canonical [km]"]), np.max(filtered_dataframe.loc[:, "R_canonical [km]"])),
+        "Lambda_canonical [dimensionless]": (np.min(filtered_dataframe.loc[:, "Lambda_canonical [dimensionless]"]), np.max(filtered_dataframe.loc[:, "Lambda_canonical [dimensionless]"])),
+        "rho_center_k2_max [10^15 g ⋅ cm^-3]": (np.min(filtered_dataframe.loc[:, "rho_center_k2_max [10^15 g ⋅ cm^-3]"]), np.max(filtered_dataframe.loc[:, "rho_center_k2_max [10^15 g ⋅ cm^-3]"])),
+        "k2_max [dimensionless]": (np.min(filtered_dataframe.loc[:, "k2_max [dimensionless]"]), np.max(filtered_dataframe.loc[:, "k2_max [dimensionless]"])),
+    }
+
+    # Print the parameter dataframe, parameters limits, and properties limits
     print(parameter_dataframe)
     pprint.pp(parameters_limits)
+    pprint.pp(properties_limits)
 
-    # Return the parameter dataframe, the filtered dataframe, and the parameters limits
-    return (parameter_dataframe, filtered_dataframe, parameters_limits)
+    # Return the parameter dataframe, the filtered dataframe, the parameters limits, and the properties limits
+    return (parameter_dataframe, filtered_dataframe, parameters_limits, properties_limits)
 
 
 def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"):
@@ -468,14 +484,15 @@ def main():
     """
 
     # Constants
-    figures_path = "figures/app_quark_eos/analysis"                     # Path of the figures folder
-    dataframe_csv_path = "results"                                      # Path of the results folder
-    dataframe_csv_name = "quark_eos_analysis.csv"                       # Name of the csv file with the results
-    filtered_dataframe_csv_name = "quark_eos_analysis_filtered.csv"     # Name of the csv file with the results after filtering with observation data restrictions
-    dictionary_json_path = "results"                                    # Path of the results folder
-    dictionary_json_name = "quark_eos_parameters_limits.json"           # Name of the json file with the parameters limits
-    parameter_space_mesh_size = 1001                                    # Number of points used in the meshgrid for the parameter space plot
-    scatter_plot_mesh_size = 51                                         # Number of points used in the meshgrid for the scatter plot
+    figures_path = "figures/app_quark_eos/analysis"                             # Path of the figures folder
+    dataframe_csv_path = "results"                                              # Path of the results folder
+    dataframe_csv_name = "quark_eos_analysis.csv"                               # Name of the csv file with the results
+    filtered_dataframe_csv_name = "quark_eos_analysis_filtered.csv"             # Name of the csv file with the results after filtering with observation data restrictions
+    dictionary_json_path = "results"                                            # Path of the results folder
+    dictionary_json_name = "quark_eos_parameters_limits.json"                   # Name of the json file with the parameters limits
+    properties_dictionary_json_name = "quark_eos_properties_limits.json"        # Name of the json file with the properties limits
+    parameter_space_mesh_size = 1001                                            # Number of points used in the meshgrid for the parameter space plot
+    scatter_plot_mesh_size = 51                                                 # Number of points used in the meshgrid for the scatter plot
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figures_path)
@@ -487,7 +504,7 @@ def main():
     plot_parameter_points_scatter(a2_masked, a4_masked, B_masked, figures_path)
 
     # Analize the strange stars generated
-    (parameter_dataframe, filtered_dataframe, parameters_limits) = analyze_strange_stars(parameter_dataframe)
+    (parameter_dataframe, filtered_dataframe, parameters_limits, properties_limits) = analyze_strange_stars(parameter_dataframe)
 
     # Create all the analysis graphs
     plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path)
@@ -496,8 +513,9 @@ def main():
     dataframe_to_csv(dataframe=parameter_dataframe, file_path=dataframe_csv_path, file_name=dataframe_csv_name)
     dataframe_to_csv(dataframe=filtered_dataframe, file_path=dataframe_csv_path, file_name=filtered_dataframe_csv_name)
 
-    # Save the dictionary to a json file
+    # Save the dictionaries to json files
     dict_to_json(dictionary=parameters_limits, file_path=dictionary_json_path, file_name=dictionary_json_name)
+    dict_to_json(dictionary=properties_limits, file_path=dictionary_json_path, file_name=properties_dictionary_json_name)
 
 
 # This logic is only executed when this file is run directly in the command prompt

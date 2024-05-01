@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from tqdm.contrib.concurrent import process_map
 from constants import UnitConversion as uconv
-from data_handling import dataframe_to_csv
+from data_handling import dataframe_to_csv, dict_to_json
 from eos_library import QuarkEOS
 from star_family_tides import DeformedStarFamily
 
@@ -472,6 +472,8 @@ def main():
     dataframe_csv_path = "results"                                      # Path of the results folder
     dataframe_csv_name = "quark_eos_analysis.csv"                       # Name of the csv file with the results
     filtered_dataframe_csv_name = "quark_eos_analysis_filtered.csv"     # Name of the csv file with the results after filtering with observation data restrictions
+    dictionary_json_path = "results"                                    # Path of the results folder
+    dictionary_json_name = "quark_eos_parameters_limits.json"           # Name of the json file with the parameters limits
     parameter_space_mesh_size = 1001                                    # Number of points used in the meshgrid for the parameter space plot
     scatter_plot_mesh_size = 51                                         # Number of points used in the meshgrid for the scatter plot
 
@@ -493,6 +495,9 @@ def main():
     # Save the dataframes to csv files
     dataframe_to_csv(dataframe=parameter_dataframe, file_path=dataframe_csv_path, file_name=dataframe_csv_name)
     dataframe_to_csv(dataframe=filtered_dataframe, file_path=dataframe_csv_path, file_name=filtered_dataframe_csv_name)
+
+    # Save the dictionary to a json file
+    dict_to_json(dictionary=parameters_limits, file_path=dictionary_json_path, file_name=dictionary_json_name)
 
 
 # This logic is only executed when this file is run directly in the command prompt

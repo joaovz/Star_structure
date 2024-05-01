@@ -1,4 +1,5 @@
 import os
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -33,6 +34,21 @@ def dataframe_to_csv(dataframe, file_path="results", file_name="dataframe.csv"):
     os.makedirs(file_path, exist_ok=True)
     complete_path = os.path.join(file_path, file_name)
     dataframe.to_csv(complete_path, index=False)
+
+
+def dict_to_json(dictionary, file_path="results", file_name="dictionary.json"):
+    """Saves a dictionary to a json file
+
+    Args:
+        dictionary (dict): Dictionary to be saved
+        file_path (str, optional): Path of the file to be created. Defaults to "results"
+        file_name (str, optional): Name of the file to be created. Defaults to "dictionary.json".
+    """
+
+    os.makedirs(file_path, exist_ok=True)
+    complete_path = os.path.join(file_path, file_name)
+    with open(complete_path, "w") as outfile:
+        json.dump(dictionary, outfile, indent=4)
 
 
 def main():

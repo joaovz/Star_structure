@@ -108,9 +108,8 @@ class DeformedStar(Star):
 
         # Calculate the compactness C and perturbation at the surface y_s
         c = self.star_mass / self.star_radius
-        rho_avg = self.star_mass / ((4 / 3) * np.pi * self.star_radius**3)
-        delta_y_s = 3 * self.rho_ode_solution[-1] / rho_avg
-        y_s = self.y_ode_solution[-1] - delta_y_s
+        delta_y_s = - 4 * np.pi * self.star_radius**3 * self.rho_ode_solution[-1] / self.star_mass
+        y_s = self.y_ode_solution[-1] + delta_y_s
 
         # Calculate the tidal Love number k2 and the tidal deformability Lambda
         if c <= const.C_SMALL:

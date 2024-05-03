@@ -276,7 +276,7 @@ class StarFamily:
         y_axis_name = self.plot_dict[y_axis]["name"].lower().replace(" ", "_")
         figure_name = f"{y_axis_name}_vs_{x_axis_name}_curve.pdf"
         complete_path = os.path.join(figure_path, figure_name)
-        plt.savefig(complete_path)
+        plt.savefig(complete_path, bbox_inches="tight")
 
     def plot_all_curves(self, figures_path=FIGURES_PATH):
         """Method that plots all curves specified by the self.curves_list

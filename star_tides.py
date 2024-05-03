@@ -193,7 +193,7 @@ class DeformedStar(Star):
         os.makedirs(figure_path, exist_ok=True)
         figure_name = "star_perturbation_graph.pdf"
         complete_path = os.path.join(figure_path, figure_name)
-        plt.savefig(complete_path)
+        plt.savefig(complete_path, bbox_inches="tight")
 
         # Show graph
         plt.show()

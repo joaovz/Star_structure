@@ -295,7 +295,7 @@ def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"
 
     # Create the folder if necessary and save the figure
     os.makedirs(figure_path, exist_ok=True)
-    figure_name = "quark_eos_parameter_points.svg"
+    figure_name = "quark_eos_parameter_points.pdf"
     complete_path = os.path.join(figure_path, figure_name)
     plt.savefig(complete_path)
 
@@ -354,7 +354,7 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
 
     # Create the folder if necessary and save the figure
     os.makedirs(figure_path, exist_ok=True)
-    figure_name = "quark_eos_parameter_space.svg"
+    figure_name = "quark_eos_parameter_space.pdf"
     complete_path = os.path.join(figure_path, figure_name)
     plt.savefig(complete_path)
 
@@ -471,7 +471,7 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
         os.makedirs(figures_path, exist_ok=True)
         x_axis_name = plot_dict[x_axis]["name"].lower().replace(" ", "_").replace("/", "_")
         y_axis_name = plot_dict[y_axis]["name"].lower().replace(" ", "_").replace("/", "_")
-        figure_name = f"{y_axis_name}_vs_{x_axis_name}_graph.svg"
+        figure_name = f"{y_axis_name}_vs_{x_axis_name}_graph.pdf"
         complete_path = os.path.join(figures_path, figure_name)
         plt.savefig(complete_path)
 

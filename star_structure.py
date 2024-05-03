@@ -224,7 +224,7 @@ class Star:
 
         # Create the folder if necessary and save the figure
         os.makedirs(figure_path, exist_ok=True)
-        figure_name = "star_structure_graph.svg"
+        figure_name = "star_structure_graph.pdf"
         complete_path = os.path.join(figure_path, figure_name)
         plt.savefig(complete_path)
 

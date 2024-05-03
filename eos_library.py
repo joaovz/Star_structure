@@ -37,7 +37,7 @@ class EOS:
         cs_minus_1_roots = cs_minus_1_spline.roots()
         if cs_minus_1_roots.size > 0:
             self.maximum_stable_rho = cs_minus_1_roots[0]
-            print(f"{self.eos_name} maximum stable rho = {(self.maximum_stable_rho * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
+            print(f"{self.eos_name} maximum stable rho = {(self.maximum_stable_rho * uconv.MASS_DENSITY_GU_TO_CGS):e} [g cm^-3]")
 
     def _config_plot(self):
         """Method that configures the plotting
@@ -47,12 +47,12 @@ class EOS:
         self.plot_dict = {
             "rho": {
                 "name": "Density",
-                "label": "$\\rho ~ [g \\cdot cm^{-3}]$",
+                "label": "$\\rho ~ [g ~ cm^{-3}]$",
                 "value": self.rho_space * uconv.MASS_DENSITY_GU_TO_CGS,
             },
             "p": {
                 "name": "Pressure",
-                "label": "$\\log_{10} \\left( p ~ [dyn \\cdot cm^{-2}] \\right)$",
+                "label": "$\\log_{10} \\left( p ~ [dyn ~ cm^{-2}] \\right)$",
                 "value": np.log10(self.p_space * uconv.PRESSURE_GU_TO_CGS),
             },
             "drho_dp": {
@@ -197,7 +197,6 @@ class EOS:
         # Create a simple plot
         plt.figure(figsize=(6.0, 4.5))
         plt.plot(self.plot_dict[x_axis]["value"], self.plot_dict[y_axis]["value"], linewidth=1)
-        plt.title(f"{self.plot_dict[y_axis]["name"]} vs {self.plot_dict[x_axis]["name"]} curve of the {self.eos_name.replace("EOS", " EOS")}", y=1.05, fontsize=11)
         plt.xlabel(self.plot_dict[x_axis]["label"], fontsize=10)
         plt.ylabel(self.plot_dict[y_axis]["label"], fontsize=10)
 
@@ -515,8 +514,8 @@ def main():
     max_p = polytropic_eos.p(max_rho)                       # Maximum pressure [m^-2]
     p_space = max_p * np.logspace(-16.0, 0.0, 1000)
 
-    # Print the minimum pressure calculated. Should be less than 10**21 [dyn ⋅ cm^-2]
-    print(f"PolytropicEOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
+    # Print the minimum pressure calculated. Should be less than 10**21 [dyn cm^-2]
+    print(f"PolytropicEOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
 
     # Check the EOS
     polytropic_eos.check_eos(p_space)
@@ -537,8 +536,8 @@ def main():
     max_p = quark_eos.p(max_rho)                            # Maximum pressure [m^-2]
     p_space = max_p * np.logspace(-15.0, 0.0, 1000)
 
-    # Print the minimum pressure calculated. Should be less than 10**21 [dyn ⋅ cm^-2]
-    print(f"QuarkEOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
+    # Print the minimum pressure calculated. Should be less than 10**21 [dyn cm^-2]
+    print(f"QuarkEOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
 
     # Check the EOS
     quark_eos.check_eos(p_space)
@@ -558,8 +557,8 @@ def main():
     # Set the p_space
     p_space = bsk20_eos.p(rho_space)
 
-    # Print the minimum pressure calculated. Should be less than 10**21 [dyn ⋅ cm^-2]
-    print(f"BSk20EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
+    # Print the minimum pressure calculated. Should be less than 10**21 [dyn cm^-2]
+    print(f"BSk20EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
 
     # Check the EOS
     bsk20_eos.check_eos(p_space)
@@ -579,8 +578,8 @@ def main():
     # Set the p_space
     p_space = sly4_eos.p(rho_space)
 
-    # Print the minimum pressure calculated. Should be less than 10**21 [dyn ⋅ cm^-2]
-    print(f"SLy4EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn ⋅ cm^-2]")
+    # Print the minimum pressure calculated. Should be less than 10**21 [dyn cm^-2]
+    print(f"SLy4EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
 
     # Check the EOS
     sly4_eos.check_eos(p_space)

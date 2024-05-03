@@ -61,7 +61,6 @@ def main():
     # Plot the curve given in the example .csv file
     plt.figure(figsize=(6.0, 4.5))
     plt.plot(radius, mass, linewidth=1, marker=".")
-    plt.title("BSk20 EOS M vs R from .csv file", y=1.05, fontsize=11)
     plt.xlabel("$R ~ [km]$", fontsize=10)
     plt.ylabel("$M ~ [M_{\\odot}]$", fontsize=10)
     plt.show()

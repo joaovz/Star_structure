@@ -194,15 +194,15 @@ def analyze_strange_stars(parameter_dataframe):
 
     # Update the dataframe with the results
     for index, rho_surface, minimum_cs, maximum_stable_rho_center, maximum_mass, maximum_cs, canonical_rho_center, canonical_radius, canonical_lambda, maximum_k2_star_rho_center, maximum_k2 in results:
-        parameter_dataframe.at[index, "rho_surface [10^15 g ⋅ cm^-3]"] = rho_surface * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
+        parameter_dataframe.at[index, "rho_surface [10^15 g cm^-3]"] = rho_surface * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
         parameter_dataframe.at[index, "cs_min [dimensionless]"] = minimum_cs
-        parameter_dataframe.at[index, "rho_center_max [10^15 g ⋅ cm^-3]"] = maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
+        parameter_dataframe.at[index, "rho_center_max [10^15 g cm^-3]"] = maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
         parameter_dataframe.at[index, "M_max [solar mass]"] = maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS
         parameter_dataframe.at[index, "cs_max [dimensionless]"] = maximum_cs
-        parameter_dataframe.at[index, "rho_center_canonical [10^15 g ⋅ cm^-3]"] = canonical_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
+        parameter_dataframe.at[index, "rho_center_canonical [10^15 g cm^-3]"] = canonical_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
         parameter_dataframe.at[index, "R_canonical [km]"] = canonical_radius / 10**3
         parameter_dataframe.at[index, "Lambda_canonical [dimensionless]"] = canonical_lambda
-        parameter_dataframe.at[index, "rho_center_k2_max [10^15 g ⋅ cm^-3]"] = maximum_k2_star_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
+        parameter_dataframe.at[index, "rho_center_k2_max [10^15 g cm^-3]"] = maximum_k2_star_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
         parameter_dataframe.at[index, "k2_max [dimensionless]"] = maximum_k2
 
     # Determine the EOS parameters limits based on observation data and create filtered dataframes
@@ -247,15 +247,15 @@ def analyze_strange_stars(parameter_dataframe):
 
     # Create a dictionary with the minimum and maximum values of the properties of strange stars
     properties_limits = {
-        "rho_surface [10^15 g ⋅ cm^-3]": (np.min(filtered_dataframe.loc[:, "rho_surface [10^15 g ⋅ cm^-3]"]), np.max(filtered_dataframe.loc[:, "rho_surface [10^15 g ⋅ cm^-3]"])),
+        "rho_surface [10^15 g cm^-3]": (np.min(filtered_dataframe.loc[:, "rho_surface [10^15 g cm^-3]"]), np.max(filtered_dataframe.loc[:, "rho_surface [10^15 g cm^-3]"])),
         "cs_min [dimensionless]": (np.min(filtered_dataframe.loc[:, "cs_min [dimensionless]"]), np.max(filtered_dataframe.loc[:, "cs_min [dimensionless]"])),
-        "rho_center_max [10^15 g ⋅ cm^-3]": (np.min(filtered_dataframe.loc[:, "rho_center_max [10^15 g ⋅ cm^-3]"]), np.max(filtered_dataframe.loc[:, "rho_center_max [10^15 g ⋅ cm^-3]"])),
+        "rho_center_max [10^15 g cm^-3]": (np.min(filtered_dataframe.loc[:, "rho_center_max [10^15 g cm^-3]"]), np.max(filtered_dataframe.loc[:, "rho_center_max [10^15 g cm^-3]"])),
         "M_max [solar mass]": (np.min(filtered_dataframe.loc[:, "M_max [solar mass]"]), np.max(filtered_dataframe.loc[:, "M_max [solar mass]"])),
         "cs_max [dimensionless]": (np.min(filtered_dataframe.loc[:, "cs_max [dimensionless]"]), np.max(filtered_dataframe.loc[:, "cs_max [dimensionless]"])),
-        "rho_center_canonical [10^15 g ⋅ cm^-3]": (np.min(filtered_dataframe.loc[:, "rho_center_canonical [10^15 g ⋅ cm^-3]"]), np.max(filtered_dataframe.loc[:, "rho_center_canonical [10^15 g ⋅ cm^-3]"])),
+        "rho_center_canonical [10^15 g cm^-3]": (np.min(filtered_dataframe.loc[:, "rho_center_canonical [10^15 g cm^-3]"]), np.max(filtered_dataframe.loc[:, "rho_center_canonical [10^15 g cm^-3]"])),
         "R_canonical [km]": (np.min(filtered_dataframe.loc[:, "R_canonical [km]"]), np.max(filtered_dataframe.loc[:, "R_canonical [km]"])),
         "Lambda_canonical [dimensionless]": (np.min(filtered_dataframe.loc[:, "Lambda_canonical [dimensionless]"]), np.max(filtered_dataframe.loc[:, "Lambda_canonical [dimensionless]"])),
-        "rho_center_k2_max [10^15 g ⋅ cm^-3]": (np.min(filtered_dataframe.loc[:, "rho_center_k2_max [10^15 g ⋅ cm^-3]"]), np.max(filtered_dataframe.loc[:, "rho_center_k2_max [10^15 g ⋅ cm^-3]"])),
+        "rho_center_k2_max [10^15 g cm^-3]": (np.min(filtered_dataframe.loc[:, "rho_center_k2_max [10^15 g cm^-3]"]), np.max(filtered_dataframe.loc[:, "rho_center_k2_max [10^15 g cm^-3]"])),
         "k2_max [dimensionless]": (np.min(filtered_dataframe.loc[:, "k2_max [dimensionless]"]), np.max(filtered_dataframe.loc[:, "k2_max [dimensionless]"])),
     }
 
@@ -280,7 +280,6 @@ def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"
 
     # Create figure and change properties
     (fig, ax) = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.5), constrained_layout=True)
-    ax.set_title("Quark EOS parameter points", y=1.0, fontsize=11)
     ax.view_init(elev=15, azim=-115, roll=0)
     ax.set_xlim3d(a2_min**(1 / 2), a2_max**(1 / 2))
     ax.set_ylim3d(a4_min, a4_max)
@@ -329,7 +328,6 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
 
     # Create figure and change properties
     (fig, ax) = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(6.0, 4.5), constrained_layout=True)
-    ax.set_title("Quark EOS parameter space for stable strange stars", y=1.0, fontsize=11)
     ax.view_init(elev=15, azim=-115, roll=0)
     ax.set_xlim3d(a2_min**(1 / 2), a2_max**(1 / 2))
     ax.set_ylim3d(a4_min, a4_max)
@@ -430,7 +428,6 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
         # Create the plot
         plt.figure(figsize=(6.0, 4.5))
         plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"], s=3**2, zorder=4)
-        plt.title(f"{plot_dict[y_axis]["name"]} vs {plot_dict[x_axis]["name"]} graph of the Quark EOS", y=1.08, fontsize=11)
         plt.xlabel(plot_dict[x_axis]["label"], fontsize=10)
         plt.ylabel(plot_dict[y_axis]["label"], fontsize=10)
 

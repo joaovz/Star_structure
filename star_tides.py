@@ -186,7 +186,6 @@ class DeformedStar(Star):
         # Show a simple plot of the solution
         plt.figure(figsize=(6.0, 4.5))
         plt.plot(self.r_ode_solution / 10**3, self.y_ode_solution, linewidth=1)
-        plt.title(f"Perturbation solution for the {self.eos.eos_name.replace("EOS", " EOS")} star", y=1.05, fontsize=11)
         plt.xlabel("$r ~ [km]$", fontsize=10)
         plt.ylabel("$y ~ [dimensionless]$", fontsize=10)
 

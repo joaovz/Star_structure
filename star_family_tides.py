@@ -186,7 +186,7 @@ class DeformedStarFamily(StarFamily):
 
         # Print the results
         print(f"Tidal deformability of the canonical star (Lambda_canonical) = {(self.canonical_lambda):e} [dimensionless]")
-        print(f"Maximum k2 star central density (rho_center_k2_max) = {(self.maximum_k2_star_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
+        print(f"Maximum k2 star central density (rho_center_k2_max) = {(self.maximum_k2_star_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g cm^-3]")
         print(f"Maximum k2 (k2_max) = {(self.maximum_k2):e} [dimensionless]")
 
 

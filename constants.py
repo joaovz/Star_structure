@@ -20,7 +20,7 @@ class DefaultValues:
     ATOL_TOV = (1e-26, 1e-21, 1e-7)     # Absolute tolerances for the TOV system solution (ATOL = y_min * RTOL * 0.1, except pressure, with a larger tolerance)
     ATOL_TIDAL = 1e-7                   # Absolute tolerance for the tidal system solution (ATOL = y_min * RTOL * 0.1)
     RTOL = 1e-6                         # Relative tolerance of numerical values
-    P_SURFACE = 1e-24                   # Surface pressure [m^-2] (Around 1.21e21 dyn ⋅ cm^-2)
+    P_SURFACE = 1e-24                   # Surface pressure [m^-2] (Around 1.21e21 dyn cm^-2)
 
 
 class UnitConversion:
@@ -39,9 +39,9 @@ class UnitConversion:
 
     # Universal constants in SI
     MeV = 10**6 * const.e.si.value      # [J]
-    hbar = const.hbar.si.value          # [J ⋅ s]
-    c = const.c.si.value                # [m ⋅ s^-1]
-    G = const.G.si.value                # [m^3 ⋅ kg^-1 ⋅ s^-2]
+    hbar = const.hbar.si.value          # [J s]
+    c = const.c.si.value                # [m s^-1]
+    G = const.G.si.value                # [m^3 kg^-1 s^-2]
     M_sun = const.M_sun.si.value        # [kg]
 
     # Conversion between SI and CGS

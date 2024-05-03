@@ -69,7 +69,7 @@ class StarFamily:
         self.plot_dict = {
             "rho_c": {
                 "name": "Central density",
-                "label": "$\\rho_{c} ~ [g \\cdot cm^{-3}]$",
+                "label": "$\\rho_{c} ~ [g ~ cm^{-3}]$",
                 "value": self.rho_center_space * uconv.MASS_DENSITY_GU_TO_CGS,
             },
             "R": {
@@ -243,9 +243,9 @@ class StarFamily:
         # Print the results
         print(f"\n##########    Star family solve results    ##########")
         print(f"Executed the solution in: {(self.execution_time):.3f} [s]")
-        print(f"Maximum stable central density (rho_center_max) = {(self.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
+        print(f"Maximum stable central density (rho_center_max) = {(self.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g cm^-3]")
         print(f"Maximum mass (M_max) = {(self.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
-        print(f"Central density of the canonical star (rho_center_canonical) = {(self.canonical_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g ⋅ cm^-3]")
+        print(f"Central density of the canonical star (rho_center_canonical) = {(self.canonical_rho_center * uconv.MASS_DENSITY_GU_TO_CGS):e} [g cm^-3]")
         print(f"Radius of the canonical star (R_canonical) = {(self.canonical_radius / 10**3):e} [km]")
 
     def plot_curve(self, x_axis="R", y_axis="M", figure_path=FIGURES_PATH, expected_x=None, expected_y=None):
@@ -262,8 +262,6 @@ class StarFamily:
         # Create a simple plot
         plt.figure(figsize=(6.0, 4.5))
         plt.plot(self.plot_dict[x_axis]["value"], self.plot_dict[y_axis]["value"], linewidth=1, label="Calculated curve", marker=".")
-        eos_name = self.eos.eos_name.replace("EOS", " EOS")
-        plt.title(f"{self.plot_dict[y_axis]["name"]} vs {self.plot_dict[x_axis]["name"]} curve of the {eos_name} star family", y=1.05, fontsize=11)
         plt.xlabel(self.plot_dict[x_axis]["label"], fontsize=10)
         plt.ylabel(self.plot_dict[y_axis]["label"], fontsize=10)
 

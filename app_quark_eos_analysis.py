@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
 import pandas as pd
+from scipy.stats import qmc
 from tqdm.contrib.concurrent import process_map
 from constants import UnitConversion as uconv
 from data_handling import dataframe_to_csv, dict_to_json
@@ -68,13 +69,14 @@ def generate_strange_stars(mesh_size=21):
         Pandas dataframe of float: Dataframe with the parameters of strange stars
     """
 
-    # Define the (a2, a4, B) rectangular meshgrid
-    a2_1_2_range = np.linspace(a2_min**(1 / 2), a2_max**(1 / 2), mesh_size)
-    a2_range = a2_1_2_range**2
-    a4_range = np.linspace(a4_min, a4_max, mesh_size)
-    B_1_4_range = np.linspace(B_min**(1 / 4), B_max**(1 / 4), mesh_size)
-    B_range = B_1_4_range**4
-    (a2, a4, B) = np.meshgrid(a2_range, a4_range, B_range)
+    # Define the (a2, a4, B) rectangular random meshgrid using Latin Hypercube sampler
+    seed_value = 123                                            # Fix the seed value to generate the same pseudo-random values each time
+    sampler = qmc.LatinHypercube(d=3, seed=seed_value)          # Set the sampler
+    samples = sampler.random(n=mesh_size**3)                    # Create the samples
+    l_bounds = [a2_min**(1 / 2), a4_min, B_min**(1 / 4)]
+    u_bounds = [a2_max**(1 / 2), a4_max, B_max**(1 / 4)]
+    scaled_samples = qmc.scale(samples, l_bounds, u_bounds)     # Scale the samples
+    (a2, a4, B) = (scaled_samples[:, 0]**2, scaled_samples[:, 1], scaled_samples[:, 2]**4)
 
     # Create the mesh masks according to each parameter minimum and maximum allowed values
     a2_max_mesh_mask = (a2 >= alpha * a4)
@@ -291,7 +293,7 @@ def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"
     ax.set_position([0.0, -0.05, 1.05, 1.2])        # Adjust plot position and size inside image to remove excessive whitespaces
 
     # Add each scatter point
-    ax.scatter(a2**(1 / 2), a4, B**(1 / 4))
+    ax.scatter(a2**(1 / 2), a4, B**(1 / 4), s=2.5**2)
 
     # Create the folder if necessary and save the figure
     os.makedirs(figure_path, exist_ok=True)
@@ -429,7 +431,7 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
 
         # Create the plot
         plt.figure(figsize=(6.0, 4.5))
-        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"], s=3**2, zorder=4)
+        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"], s=2.5**2, zorder=2)
         plt.xlabel(plot_dict[x_axis]["label"], fontsize=10)
         plt.ylabel(plot_dict[y_axis]["label"], fontsize=10)
 
@@ -452,17 +454,17 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
             span_min = ylim0
         if span_max is None:
             span_max = ylim1
-        plt.axhspan(span_min, span_max, facecolor="#2ca02c", alpha=0.25, zorder=2)
+        plt.axhspan(span_min, span_max, facecolor="#2ca02c", alpha=0.25, zorder=1)
         plt.ylim(ylim0, ylim1)          # Set original y limits after creating the shaded region
 
         # Add the x axis limit lines and text
         (x_inf_limit, x_sup_limit) = parameters_limits[x_axis][y_axis]
         # Superior limit
-        plt.axvline(x=x_sup_limit, linewidth=1, color="#d62728", zorder=1)
+        plt.axvline(x=x_sup_limit, linewidth=1, color="#d62728", zorder=4)
         text = f" {x_sup_limit:.2f} "
         plt.text(x_sup_limit, ylim1, text, horizontalalignment="center", verticalalignment="bottom", color="#d62728")
         # Inferior limit
-        plt.axvline(x=x_inf_limit, linewidth=1, color="#2ca02c", zorder=1)
+        plt.axvline(x=x_inf_limit, linewidth=1, color="#2ca02c", zorder=4)
         text = f" {x_inf_limit:.2f} "
         plt.text(x_inf_limit, ylim1, text, horizontalalignment="center", verticalalignment="bottom", color="#2ca02c")
 

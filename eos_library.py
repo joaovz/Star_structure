@@ -264,11 +264,11 @@ class TableEOS(EOS):
     """Class with the functions of the EOS given by a table in a file, with density and pressure columns in CGS
     """
 
-    def __init__(self, fname, eos_name="TableEOS"):
+    def __init__(self, file_name, eos_name="TableEOS"):
         """Initialization method
 
         Args:
-            fname (string): File name of the table with the EOS (density and pressure columns)
+            file_name (string): File name of the table with the EOS (density and pressure columns)
             eos_name (string, optional): Name of the EOS. Defaults to "TableEOS"
         """
 
@@ -280,7 +280,7 @@ class TableEOS(EOS):
 
         # Open the .csv file with the EOS
         (rho, p) = csv_to_arrays(
-            fname=fname,
+            file_name=file_name,
             unit_conversion=(uconv.MASS_DENSITY_CGS_TO_GU, uconv.PRESSURE_CGS_TO_GU))
 
         # Convert the EOS to spline functions
@@ -586,6 +586,25 @@ def main():
 
     # Create the EOS graphs
     sly4_eos.plot_all_curves(p_space)
+
+    # Table SLy4 EOS test
+
+    # Create the EOS object
+    table_sly4_eos = TableEOS(file_name="data/SLy4_EOS.csv", eos_name="TableSLy4EOS")
+
+    # Set the p_space
+    max_rho = 2.864e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    max_p = table_sly4_eos.p(max_rho)                       # Maximum pressure [m^-2]
+    p_space = max_p * np.logspace(-11.0, 0.0, 1000)
+
+    # Print the minimum pressure calculated. Should be less than 10**21 [dyn cm^-2]
+    print(f"TableSLy4EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
+
+    # Check the EOS
+    table_sly4_eos.check_eos(p_space)
+
+    # Create the EOS graphs
+    table_sly4_eos.plot_all_curves(p_space)
 
 
 # This logic is only executed when this file is run directly in the command prompt

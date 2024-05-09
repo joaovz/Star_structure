@@ -16,10 +16,10 @@ def csv_to_arrays(file_name="file_name.csv", usecols=(0, 1), unit_conversion=(1.
         tuple of arrays: Numpy arrays with the data read from the .csv file
     """
 
-    (x, y) = np.loadtxt(fname=file_name, delimiter=",", skiprows=1, usecols=usecols, unpack=True)
-    (x_converted, y_converted) = (x * unit_conversion[0], y * unit_conversion[1])
+    data = np.loadtxt(fname=file_name, delimiter=",", skiprows=1, usecols=usecols, unpack=True)
+    converted_data = data * np.array(unit_conversion)[:, np.newaxis]        # Apply the conversion transforming unit_conversion to a column matrix
 
-    return (x_converted, y_converted)
+    return tuple(converted_data)
 
 
 def dataframe_to_csv(dataframe, file_path="results", file_name="dataframe.csv"):

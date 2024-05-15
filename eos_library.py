@@ -44,38 +44,39 @@ class EOS:
         """
 
         # Create a dictionary with all the functions used in plotting, with each name and label description
-        self.plot_dict = {
-            "rho": {
-                "name": "Density",
-                "label": "$\\rho ~ [g ~ cm^{-3}]$",
-                "value": self.rho_space * uconv.MASS_DENSITY_GU_TO_CGS,
-            },
-            "p": {
-                "name": "Pressure",
-                "label": "$\\log_{10} \\left( p ~ [dyn ~ cm^{-2}] \\right)$",
-                "value": np.log10(self.p_space * uconv.PRESSURE_GU_TO_CGS),
-            },
-            "drho_dp": {
-                "name": "Density derivative",
-                "label": "$\\partial_{p}{\\rho} ~ [dimensionless]$",
-                "value": self.drho_dp(self.p_space),
-            },
-            "dp_drho": {
-                "name": "Pressure derivative",
-                "label": "$\\partial_{\\rho}{p} ~ [dimensionless]$",
-                "value": self.dp_drho(self.rho_space),
-            },
-            "gamma": {
-                "name": "Adiabatic index",
-                "label": "$\\log_{10} \\left( \\Gamma ~ [dimensionless] \\right)$",
-                "value": np.log10(self.gamma(self.p_space)),
-            },
-            "c_s": {
-                "name": "Speed of sound",
-                "label": "$c_s ~ [dimensionless]$",
-                "value": self.c_s(self.rho_space),
-            },
-        }
+        with np.errstate(divide='ignore'):      # Ignore warnings due to log scales
+            self.plot_dict = {
+                "rho": {
+                    "name": "Density",
+                    "label": "$\\rho ~ [g ~ cm^{-3}]$",
+                    "value": self.rho_space * uconv.MASS_DENSITY_GU_TO_CGS,
+                },
+                "p": {
+                    "name": "Pressure",
+                    "label": "$\\log_{10} \\left( p ~ [dyn ~ cm^{-2}] \\right)$",
+                    "value": np.log10(self.p_space * uconv.PRESSURE_GU_TO_CGS),
+                },
+                "drho_dp": {
+                    "name": "Density derivative",
+                    "label": "$\\partial_{p}{\\rho} ~ [dimensionless]$",
+                    "value": self.drho_dp(self.p_space),
+                },
+                "dp_drho": {
+                    "name": "Pressure derivative",
+                    "label": "$\\partial_{\\rho}{p} ~ [dimensionless]$",
+                    "value": self.dp_drho(self.rho_space),
+                },
+                "gamma": {
+                    "name": "Adiabatic index",
+                    "label": "$\\log_{10} \\left( \\Gamma ~ [dimensionless] \\right)$",
+                    "value": np.log10(self.gamma(self.p_space)),
+                },
+                "c_s": {
+                    "name": "Speed of sound",
+                    "label": "$c_s ~ [dimensionless]$",
+                    "value": self.c_s(self.rho_space),
+                },
+            }
 
         # Create a list with all the curves to be plotted
         self.curves_list = [
@@ -209,17 +210,27 @@ class EOS:
         complete_path = os.path.join(complete_figure_path, figure_name)
         plt.savefig(complete_path, bbox_inches="tight")
 
-    def plot_all_curves(self, p_space, figures_path=FIGURES_PATH):
+    def plot_all_curves(self, p_space=None, rho_space=None, figures_path=FIGURES_PATH):
         """Method that plots all curves specified by the self.curves_list
 
         Args:
-            p_space (array of float): Array that defines the pressure interval [m^-2]
+            p_space (array of float, optional): Array that defines the pressure interval [m^-2]. Defaults to None
+            rho_space (array of float, optional): Array that defines the density interval [m^-2]. Defaults to None
             figures_path (str, optional): Path used to save the figures. Defaults to FIGURES_PATH
+
+        Raises:
+            RuntimeError: Exception in case pressure and density spaces are not informed
         """
 
         # Set p_space and rho_space, and configure plot
-        self.p_space = p_space
-        self.rho_space = self.rho(p_space)
+        if p_space is not None:
+            self.p_space = p_space
+            self.rho_space = self.rho(p_space)
+        elif rho_space is not None:
+            self.p_space = self.p(rho_space)
+            self.rho_space = rho_space
+        else:
+            raise RuntimeError("Pressure or density space must be informed to create the curves, but none were passed.")
         self._config_plot()
 
         # Plot all curves
@@ -366,8 +377,10 @@ class InterpolatedEOS(EOS):
 
 
 class QuarkEOS(EOS):
-    """Class with the functions of the Quark EOS, defined by the grand thermodynamic potential given by:
-    Omega = (3 / (4 * pi**2)) * (-a4 * mu**4 + a2 * mu**2) + B
+    """Class with the functions of the Quark EOS, defined by the grand thermodynamic potential density given by:
+    omega = (3 / (4 * pi**2)) * (-a4 * mu**4 + a2 * mu**2) + B
+    Every calculation is done internally using Natural Units (NU) with energy in MeV.
+    Commom EOS functions have inputs and outputs in Geometrical Units (GU).
     """
 
     def __init__(self, a2, a4, B):
@@ -382,62 +395,291 @@ class QuarkEOS(EOS):
         # Execute parent class' __init__ method
         super().__init__()
 
-        # Set the parameters, converting from NU to GU
-        self.a2 = a2 * (uconv.ENERGY_DENSITY_NU_TO_GU)**(1 / 2)
+        # Set the parameters
+        self.a2 = a2
         self.a4 = a4
-        self.B = B * uconv.ENERGY_DENSITY_NU_TO_GU
+        self.B = B
 
-    def rho(self, p):
+    def p_of_mu(self, mu):
+        """Function of the pressure in terms of the chemical potential
 
-        a2 = self.a2
-        a4 = self.a4
-        B = self.B
+        Args:
+            mu (float): Chemical potential [MeV]
 
-        rho = (
-            3 * p + 4 * B + ((3 * a2**2) / (4 * np.pi**2 * a4)) * (
-                1 + (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p + B))**(1 / 2)
-            )
-        )
-
-        return rho
-
-    def p(self, rho):
+        Returns:
+            float: Pressure [MeV^4]
+        """
 
         a2 = self.a2
         a4 = self.a4
         B = self.B
 
-        p = (
-            (1 / 3) * (rho - 4 * B) - (a2**2 / (12 * np.pi**2 * a4)) * (
-                1 + (1 + ((16 * np.pi**2 * a4) / a2**2) * (rho - B))**(1 / 2)
-            )
-        )
+        alpha = 3 / (4 * np.pi**2)
+        p = alpha * a4 * mu**4 - alpha * a2 * mu**2 - B
 
         return p
 
+    def mu_of_p(self, p):
+        """Function of the chemical potential in terms of the pressure
+
+        Args:
+            p (float): Pressure [MeV^4]
+
+        Returns:
+            float: Chemical potential [MeV]
+        """
+
+        a2 = self.a2
+        a4 = self.a4
+        B = self.B
+
+        mu = (a2 / (2 * a4))**(1 / 2) * (1 + (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p + B))**(1 / 2))**(1 / 2)
+
+        return mu
+
+    def rho(self, p):
+
+        p_nu = p * uconv.ENERGY_DENSITY_GU_TO_NU            # Convert to NU
+
+        a2 = self.a2
+        a4 = self.a4
+        B = self.B
+
+        rho_nu = (
+            3 * p_nu + 4 * B + ((3 * a2**2) / (4 * np.pi**2 * a4)) * (
+                1 + (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p_nu + B))**(1 / 2)
+            )
+        )
+
+        return rho_nu * uconv.ENERGY_DENSITY_NU_TO_GU       # Return result converted to GU
+
+    def p(self, rho):
+
+        rho_nu = rho * uconv.ENERGY_DENSITY_GU_TO_NU        # Convert to NU
+
+        a2 = self.a2
+        a4 = self.a4
+        B = self.B
+
+        p_nu = (
+            (1 / 3) * (rho_nu - 4 * B) - (a2**2 / (12 * np.pi**2 * a4)) * (
+                1 + (1 + ((16 * np.pi**2 * a4) / a2**2) * (rho_nu - B))**(1 / 2)
+            )
+        )
+
+        return p_nu * uconv.ENERGY_DENSITY_NU_TO_GU         # Return result converted to GU
+
     def drho_dp(self, p):
+
+        p_nu = p * uconv.ENERGY_DENSITY_GU_TO_NU            # Convert to NU
 
         a2 = self.a2
         a4 = self.a4
         B = self.B
 
         drho_dp = (
-            3 + 2 * (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p + B))**(-1 / 2)
+            3 + 2 * (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p_nu + B))**(-1 / 2)
         )
 
-        return drho_dp
+        return drho_dp      # Return result (dimensionless, so NU and GU are the same)
 
     def dp_drho(self, rho):
+
+        rho_nu = rho * uconv.ENERGY_DENSITY_GU_TO_NU        # Convert to NU
 
         a2 = self.a2
         a4 = self.a4
         B = self.B
 
         dp_drho = (
-            (1 / 3) - (2 / 3) * (1 + ((16 * np.pi**2 * a4) / a2**2) * (rho - B))**(-1 / 2)
+            (1 / 3) - (2 / 3) * (1 + ((16 * np.pi**2 * a4) / a2**2) * (rho_nu - B))**(-1 / 2)
         )
 
-        return dp_drho
+        return dp_drho      # Return result (dimensionless, so NU and GU are the same)
+
+
+class HybridEOS(EOS):
+    """Class with the functions of the Hybrid EOS, defined by the a Quark EOS and some Hadron EOS.
+    """
+
+    def __init__(self, quark_eos, hadron_eos, hadron_eos_table_file_name):
+        """Initialization method
+
+        Args:
+            quark_eos (EOS object): Object of the class QuarkEOS
+            hadron_eos (EOS object): Object of the class EOS, or a class inherited from EOS
+            hadron_eos_table_file_name (string): File name of the Hadron EOS table with (rho, p, nb) columns
+        """
+
+        # Execute parent class' __init__ method
+        super().__init__()
+
+        # Store the input parameters
+        self.quark_eos = quark_eos
+        self.hadron_eos = hadron_eos
+        self.hadron_eos_table_file_name = hadron_eos_table_file_name
+
+        # Initialize variables
+        self.p_trans = None
+
+        # Calculate the transition pressure
+        self._calc_p_trans()
+
+    def _calc_p_trans(self):
+        """Method that calculates the pressure at the quark-hadron phase transition
+
+        Raises:
+            RuntimeError: Exception in case the solver fails to find the transition pressure
+            RuntimeError: Exception in case the solver finds more than one transition pressure
+        """
+
+        # Open the HadronEOS table file, using Natural Units (NU)
+        nb_fm_3_to_si = (10**-15)**(-3)     # Conversion factor from fm^-3 to m^-3 (SI)
+        nb_fm_3_to_nu = nb_fm_3_to_si * uconv.NUMBER_DENSITY_SI_TO_NU
+        (rho_hadron, self.p_hadron, nb_hadron) = csv_to_arrays(
+            file_name=self.hadron_eos_table_file_name,
+            usecols=(0, 1, 2),
+            unit_conversion=(uconv.MASS_DENSITY_CGS_TO_GU * uconv.ENERGY_DENSITY_GU_TO_NU,
+                             uconv.PRESSURE_CGS_TO_GU * uconv.ENERGY_DENSITY_GU_TO_NU,
+                             nb_fm_3_to_nu))
+
+        # Calculate the HadronEOS Gibbs free energy per particle g = (rho + p) / nb
+        self.g_hadron = (rho_hadron + self.p_hadron) / nb_hadron
+
+        # Calculate the QuarkEOS Gibbs free energy per particle g = 3 mu
+        self.g_quark = 3 * self.quark_eos.mu_of_p(self.p_hadron)
+
+        # Create the (g_hadron - g_quark) vs p_hadron interpolated function
+        g_hadron_minus_g_quark_spline = CubicSpline(self.p_hadron, self.g_hadron - self.g_quark, extrapolate=False)
+
+        # Calculate the transition pressure
+        g_hadron_minus_g_quark_roots = g_hadron_minus_g_quark_spline.roots()
+        if g_hadron_minus_g_quark_roots.size == 1:
+            self.p_trans_nu = g_hadron_minus_g_quark_roots[0]
+            self.p_trans = self.p_trans_nu * uconv.ENERGY_DENSITY_NU_TO_GU
+            self.g_trans_nu = 3 * self.quark_eos.mu_of_p(self.p_trans_nu)
+        else:
+            self.plot_transition_graph()
+            if g_hadron_minus_g_quark_roots.size == 0:
+                raise RuntimeError("The solver did not find the transition pressure of the Hybrid EOS")
+            else:
+                raise RuntimeError("The solver found more than one transition pressure of the Hybrid EOS")
+
+        # Calculate the minimum and maximum transition densities
+        self.rho_trans_min = self.hadron_eos.rho(self.p_trans)
+        self.rho_trans_max = self.quark_eos.rho(self.p_trans)
+
+    def plot_transition_graph(self):
+        """Method that plots the curves g vs p for the Quark and Hadron EOSs
+        """
+
+        plt.figure(figsize=(6.0, 4.5))
+        plt.plot(self.p_hadron, self.g_hadron, linewidth=1, marker=".", label="Hadron EOS")
+        plt.plot(self.p_hadron, self.g_quark, linewidth=1, marker=".", label="Quark EOS")
+        if self.p_trans is not None:
+            plt.plot(self.p_trans_nu, self.g_trans_nu, linewidth=1, marker=".", markersize=4**2, label="Transition")
+        plt.xlabel("$p ~ [MeV^4]$", fontsize=10)
+        plt.ylabel("$g ~ [MeV]$", fontsize=10)
+        plt.legend()
+        plt.show()
+
+    def rho(self, p):
+
+        if np.isscalar(p):      # Execute this logic if p is a scalar
+            if p < self.p_trans:
+                return self.hadron_eos.rho(p)           # Use the Hadron EOS if p < p_trans
+            return self.quark_eos.rho(p)                # Use the Quark EOS if p >= p_trans
+
+        else:                   # Execute this logic if p is an array
+
+            # Use the Hadron EOS if p < p_trans
+            rho_hadron = self.hadron_eos.rho(p[p < self.p_trans])
+
+            # Use the Quark EOS if p >= p_trans
+            rho_quark = self.quark_eos.rho(p[p >= self.p_trans])
+
+            # Combine the results
+            rho_combined = np.zeros(p.size)
+            rho_combined[p < self.p_trans] = rho_hadron
+            rho_combined[p >= self.p_trans] = rho_quark
+
+            # Return the array created
+            return rho_combined
+
+    def p(self, rho):
+
+        if np.isscalar(rho):        # Execute this logic if rho is a scalar
+            if rho < self.rho_trans_min:
+                return self.hadron_eos.p(rho)           # Use the Hadron EOS if rho < rho_trans_min
+            if rho > self.rho_trans_max:
+                return self.quark_eos.p(rho)            # Use the Quark EOS if rho > rho_trans_max
+            return self.p_trans                         # Return p_trans if rho_trans_min < rho < rho_trans_max
+
+        else:                       # Execute this logic if p is an array
+
+            # Use the Hadron EOS if rho < rho_trans_min
+            p_hadron = self.hadron_eos.p(rho[rho < self.rho_trans_min])
+
+            # Use the Quark EOS if rho > rho_trans_max
+            p_quark = self.quark_eos.p(rho[rho > self.rho_trans_max])
+
+            # Combine the results
+            p_combined = np.zeros(rho.size)
+            p_combined[rho < self.rho_trans_min] = p_hadron
+            p_combined[(rho >= self.rho_trans_min) & (rho <= self.rho_trans_max)] = self.p_trans
+            p_combined[rho > self.rho_trans_max] = p_quark
+
+            # Return the array created
+            return p_combined
+
+    def drho_dp(self, p):
+
+        if np.isscalar(p):      # Execute this logic if p is a scalar
+            if p < self.p_trans:
+                return self.hadron_eos.drho_dp(p)       # Use the Hadron EOS if p < p_trans
+            return self.quark_eos.drho_dp(p)            # Use the Quark EOS if p >= p_trans
+
+        else:                   # Execute this logic if p is an array
+
+            # Use the Hadron EOS if p < p_trans
+            drho_dp_hadron = self.hadron_eos.drho_dp(p[p < self.p_trans])
+
+            # Use the Quark EOS if p >= p_trans
+            drho_dp_quark = self.quark_eos.drho_dp(p[p >= self.p_trans])
+
+            # Combine the results
+            drho_dp_combined = np.zeros(p.size)
+            drho_dp_combined[p < self.p_trans] = drho_dp_hadron
+            drho_dp_combined[p >= self.p_trans] = drho_dp_quark
+
+            # Return the array created
+            return drho_dp_combined
+
+    def dp_drho(self, rho):
+
+        if np.isscalar(rho):        # Execute this logic if rho is a scalar
+            if rho < self.rho_trans_min:
+                return self.hadron_eos.dp_drho(rho)     # Use the Hadron EOS if rho < rho_trans_min
+            if rho > self.rho_trans_max:
+                return self.quark_eos.dp_drho(rho)      # Use the Quark EOS if rho > rho_trans_max
+            return 0.0                                  # Return zero if rho_trans_min < rho < rho_trans_max
+
+        else:                       # Execute this logic if p is an array
+
+            # Use the Hadron EOS if rho < rho_trans_min
+            dp_drho_hadron = self.hadron_eos.dp_drho(rho[rho < self.rho_trans_min])
+
+            # Use the Quark EOS if rho > rho_trans_max
+            dp_drho_quark = self.quark_eos.dp_drho(rho[rho > self.rho_trans_max])
+
+            # Combine the results
+            dp_drho_combined = np.zeros(rho.size)
+            dp_drho_combined[rho < self.rho_trans_min] = dp_drho_hadron
+            dp_drho_combined[(rho >= self.rho_trans_min) & (rho <= self.rho_trans_max)] = 0.0
+            dp_drho_combined[rho > self.rho_trans_max] = dp_drho_quark
+
+            # Return the array created
+            return dp_drho_combined
 
 
 class BSk20EOS(InterpolatedEOS):
@@ -605,6 +847,37 @@ def main():
 
     # Create the EOS graphs
     table_sly4_eos.plot_all_curves(p_space)
+
+    # Hybrid EOS test
+
+    # Create the QuarkEOS object (values chosen to build a hybrid star)
+    a2 = 150**2     # [MeV^2]
+    a4 = 0.7        # [dimensionless]
+    B = 160**4      # [MeV^4]
+    quark_eos = QuarkEOS(a2, a4, B)
+
+    # Set the p_space
+    max_rho = 4e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    max_p = quark_eos.p(max_rho)                        # Maximum pressure [m^-2]
+    p_space = max_p * np.logspace(-15.0, 0.0, 5000)
+
+    # Set the rho_space
+    rho_space = max_rho * np.logspace(-15.0, 0.0, 5000)
+
+    # Create the SLy4EOS object
+    sly4_eos = SLy4EOS(rho_space)
+
+    # Create the HybridEOS object
+    hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv")
+
+    # Print the minimum pressure calculated. Should be less than 10**21 [dyn cm^-2]
+    print(f"HybridEOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
+
+    # Check the EOS
+    hybrid_eos.check_eos(p_space)
+
+    # Create the EOS graphs
+    hybrid_eos.plot_all_curves(rho_space=rho_space)
 
 
 # This logic is only executed when this file is run directly in the command prompt

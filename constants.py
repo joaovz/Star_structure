@@ -47,10 +47,14 @@ class UnitConversion:
     # Conversion between SI and CGS
     PRESSURE_SI_TO_CGS = 10
     MASS_DENSITY_SI_TO_CGS = 10**(-3)
+    PRESSURE_CGS_TO_SI = PRESSURE_SI_TO_CGS**(-1)
+    MASS_DENSITY_CGS_TO_SI = MASS_DENSITY_SI_TO_CGS**(-1)
 
     # Conversion between NU (with E = MeV) and SI
     ENERGY_DENSITY_NU_TO_SI = MeV**4 * hbar**(-3) * c**(-3)
+    NUMBER_DENSITY_NU_TO_SI = MeV**3 * hbar**(-3) * c**(-3)
     ENERGY_DENSITY_SI_TO_NU = ENERGY_DENSITY_NU_TO_SI**(-1)
+    NUMBER_DENSITY_SI_TO_NU = NUMBER_DENSITY_NU_TO_SI**(-1)
 
     # Conversion between GU and SI
     ENERGY_DENSITY_GU_TO_SI = c**4 * G**(-1)

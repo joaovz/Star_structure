@@ -439,7 +439,7 @@ class QuarkEOS(EOS):
 
     def rho(self, p):
 
-        p_nu = p * uconv.ENERGY_DENSITY_GU_TO_NU            # Convert to NU
+        p_nu = p * uconv.PRESSURE_GU_TO_NU                  # Convert to NU
 
         a2 = self.a2
         a4 = self.a4
@@ -467,11 +467,11 @@ class QuarkEOS(EOS):
             )
         )
 
-        return p_nu * uconv.ENERGY_DENSITY_NU_TO_GU         # Return result converted to GU
+        return p_nu * uconv.PRESSURE_NU_TO_GU               # Return result converted to GU
 
     def drho_dp(self, p):
 
-        p_nu = p * uconv.ENERGY_DENSITY_GU_TO_NU            # Convert to NU
+        p_nu = p * uconv.PRESSURE_GU_TO_NU                  # Convert to NU
 
         a2 = self.a2
         a4 = self.a4
@@ -540,7 +540,7 @@ class HybridEOS(EOS):
             file_name=self.hadron_eos_table_file_name,
             usecols=(0, 1, 2),
             unit_conversion=(uconv.MASS_DENSITY_CGS_TO_GU * uconv.ENERGY_DENSITY_GU_TO_NU,
-                             uconv.PRESSURE_CGS_TO_GU * uconv.ENERGY_DENSITY_GU_TO_NU,
+                             uconv.PRESSURE_CGS_TO_GU * uconv.PRESSURE_GU_TO_NU,
                              nb_fm_3_to_nu))
 
         # Calculate the HadronEOS Gibbs free energy per particle g = (rho + p) / nb
@@ -556,7 +556,7 @@ class HybridEOS(EOS):
         g_hadron_minus_g_quark_roots = g_hadron_minus_g_quark_spline.roots()
         if g_hadron_minus_g_quark_roots.size == 1:
             self.p_trans_nu = g_hadron_minus_g_quark_roots[0]
-            self.p_trans = self.p_trans_nu * uconv.ENERGY_DENSITY_NU_TO_GU
+            self.p_trans = self.p_trans_nu * uconv.PRESSURE_NU_TO_GU
             self.g_trans_nu = 3 * self.quark_eos.mu_of_p(self.p_trans_nu)
         else:
             self.plot_transition_graph()

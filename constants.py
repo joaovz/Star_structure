@@ -52,8 +52,10 @@ class UnitConversion:
 
     # Conversion between NU (with E = MeV) and SI
     ENERGY_DENSITY_NU_TO_SI = MeV**4 * hbar**(-3) * c**(-3)
+    PRESSURE_NU_TO_SI = MeV**4 * hbar**(-3) * c**(-3)
     NUMBER_DENSITY_NU_TO_SI = MeV**3 * hbar**(-3) * c**(-3)
     ENERGY_DENSITY_SI_TO_NU = ENERGY_DENSITY_NU_TO_SI**(-1)
+    PRESSURE_SI_TO_NU = PRESSURE_NU_TO_SI**(-1)
     NUMBER_DENSITY_SI_TO_NU = NUMBER_DENSITY_NU_TO_SI**(-1)
 
     # Conversion between GU and SI
@@ -74,7 +76,9 @@ class UnitConversion:
 
     # Conversion between GU and NU
     ENERGY_DENSITY_GU_TO_NU = ENERGY_DENSITY_GU_TO_SI * ENERGY_DENSITY_SI_TO_NU
+    PRESSURE_GU_TO_NU = PRESSURE_GU_TO_SI * PRESSURE_SI_TO_NU
     ENERGY_DENSITY_NU_TO_GU = ENERGY_DENSITY_GU_TO_NU**(-1)
+    PRESSURE_NU_TO_GU = PRESSURE_GU_TO_NU**(-1)
 
     # Conversion between astronomical units and GU
     MASS_SOLAR_MASS_TO_GU = M_sun * MASS_SI_TO_GU

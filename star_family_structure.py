@@ -117,8 +117,10 @@ class StarFamily:
         # Calculate the maximum stable rho_center and maximum mass
         dm_drho_center_roots = dm_drho_center_spline.roots()
         if dm_drho_center_roots.size > 0:
-            self.maximum_stable_rho_center = dm_drho_center_roots[0]
-            self.maximum_mass = mass_rho_center_spline(self.maximum_stable_rho_center)
+            possible_maximum_masses = mass_rho_center_spline(dm_drho_center_roots)
+            maximum_mass_index = np.argmax(possible_maximum_masses)
+            self.maximum_stable_rho_center = dm_drho_center_roots[maximum_mass_index]
+            self.maximum_mass = possible_maximum_masses[maximum_mass_index]
 
         # Return the calculated rho_center
         return self.maximum_stable_rho_center

@@ -279,8 +279,8 @@ class TableEOS(EOS):
         """Initialization method
 
         Args:
-            file_name (string): File name of the table with the EOS (density and pressure columns)
-            eos_name (string, optional): Name of the EOS. Defaults to "TableEOS"
+            file_name (str): File name of the table with the EOS (density and pressure columns)
+            eos_name (str, optional): Name of the EOS. Defaults to "TableEOS"
         """
 
         # Execute parent class' __init__ method
@@ -508,7 +508,7 @@ class HybridEOS(EOS):
         Args:
             quark_eos (EOS object): Object of the class QuarkEOS
             hadron_eos (EOS object): Object of the class EOS, or a class inherited from EOS
-            hadron_eos_table_file_name (string): File name of the Hadron EOS table with (rho, p, nb) columns
+            hadron_eos_table_file_name (str): File name of the Hadron EOS table with (rho, p, nb) columns
         """
 
         # Execute parent class' __init__ method

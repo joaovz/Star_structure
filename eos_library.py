@@ -569,19 +569,31 @@ class HybridEOS(EOS):
         self.rho_trans_min = self.hadron_eos.rho(self.p_trans)
         self.rho_trans_max = self.quark_eos.rho(self.p_trans)
 
-    def plot_transition_graph(self):
+    def plot_transition_graph(self, figure_path=EOS.FIGURES_PATH):
         """Method that plots the curves g vs p for the Quark and Hadron EOSs
+
+        Args:
+            figure_path (str, optional): Path used to save the figure. Defaults to FIGURES_PATH
         """
 
+        # Create the graph
         plt.figure(figsize=(6.0, 4.5))
-        plt.plot(self.p_hadron, self.g_hadron, linewidth=1, marker=".", label="Hadron EOS")
-        plt.plot(self.p_hadron, self.g_quark, linewidth=1, marker=".", label="Quark EOS")
+        plt.plot(self.p_hadron, self.g_hadron, linewidth=1, label="Hadron EOS")
+        plt.plot(self.p_hadron, self.g_quark, linewidth=1, label="Quark EOS")
         if self.p_trans is not None:
             plt.plot(self.p_trans_nu, self.g_trans_nu, linewidth=1, marker=".", markersize=4**2, label="Transition")
         plt.xlabel("$p ~ [MeV^4]$", fontsize=10)
         plt.ylabel("$g ~ [MeV]$", fontsize=10)
         plt.legend()
-        plt.show()
+
+        # Create the folder if necessary and save the figure
+        complete_figure_path = os.path.join(figure_path, self.eos_name.lower().replace("eos", "_eos"))
+        os.makedirs(complete_figure_path, exist_ok=True)
+        x_axis_name = "pressure"
+        y_axis_name = "gibbs_free_energy"
+        figure_name = f"{y_axis_name}_vs_{x_axis_name}_curve.pdf"
+        complete_path = os.path.join(complete_figure_path, figure_name)
+        plt.savefig(complete_path, bbox_inches="tight")
 
     def rho(self, p):
 
@@ -851,8 +863,8 @@ def main():
     # Hybrid EOS test
 
     # Create the QuarkEOS object (values chosen to build a hybrid star)
-    a2 = 150**2     # [MeV^2]
-    a4 = 0.7        # [dimensionless]
+    a2 = 100**2     # [MeV^2]
+    a4 = 0.8        # [dimensionless]
     B = 160**4      # [MeV^4]
     quark_eos = QuarkEOS(a2, a4, B)
 
@@ -870,11 +882,17 @@ def main():
     # Create the HybridEOS object
     hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv")
 
+    # Print the transition pressure calculated
+    print(f"HybridEOS transition pressure calculated = {(hybrid_eos.p_trans * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
+
     # Print the minimum pressure calculated. Should be less than 10**21 [dyn cm^-2]
     print(f"HybridEOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
 
     # Check the EOS
     hybrid_eos.check_eos(p_space)
+
+    # Plot the transition graph
+    hybrid_eos.plot_transition_graph()
 
     # Create the EOS graphs
     hybrid_eos.plot_all_curves(rho_space=rho_space)

@@ -509,6 +509,9 @@ class HybridEOS(EOS):
             quark_eos (EOS object): Object of the class QuarkEOS
             hadron_eos (EOS object): Object of the class EOS, or a class inherited from EOS
             hadron_eos_table_file_name (str): File name of the Hadron EOS table with (rho, p, nb) columns
+
+        Raises:
+            RuntimeError: Exception in case the solver fails to find the transition pressure
         """
 
         # Execute parent class' __init__ method
@@ -530,7 +533,6 @@ class HybridEOS(EOS):
 
         Raises:
             RuntimeError: Exception in case the solver fails to find the transition pressure
-            RuntimeError: Exception in case the solver finds more than one transition pressure
         """
 
         # Open the HadronEOS table file, using Natural Units (NU)
@@ -554,16 +556,13 @@ class HybridEOS(EOS):
 
         # Calculate the transition pressure
         g_hadron_minus_g_quark_roots = g_hadron_minus_g_quark_spline.roots()
-        if g_hadron_minus_g_quark_roots.size == 1:
-            self.p_trans_nu = g_hadron_minus_g_quark_roots[0]
+        if g_hadron_minus_g_quark_roots.size > 0:
+            self.p_trans_nu = np.max(g_hadron_minus_g_quark_roots)      # Use only the high pressure transition
             self.p_trans = self.p_trans_nu * uconv.PRESSURE_NU_TO_GU
             self.g_trans_nu = 3 * self.quark_eos.mu_of_p(self.p_trans_nu)
         else:
             self.plot_transition_graph()
-            if g_hadron_minus_g_quark_roots.size == 0:
-                raise RuntimeError("The solver did not find the transition pressure of the Hybrid EOS")
-            else:
-                raise RuntimeError("The solver found more than one transition pressure of the Hybrid EOS")
+            raise RuntimeError("The solver did not find the transition pressure of the Hybrid EOS")
 
         # Calculate the minimum and maximum transition densities
         self.rho_trans_min = self.hadron_eos.rho(self.p_trans)

@@ -370,7 +370,7 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
     Args:
         parameter_dataframe (Pandas dataframe of float): Dataframe with the parameters of strange stars
         parameters_limits (dict): Dictionary with the minimum and maximum values of the parameters for each observation data restrictions
-        figures_path (str, optional): Path used to save the figures. Defaults to "figures/app_quark_eos/analysis".
+        figures_path (str, optional): Path used to save the figures. Defaults to "figures/app_quark_eos/analysis"
     """
 
     # Create a dictionary with all the functions used in plotting, with each name and label description

@@ -42,7 +42,7 @@ def dict_to_json(dictionary, file_path="results", file_name="dictionary.json"):
     Args:
         dictionary (dict): Dictionary to be saved
         file_path (str, optional): Path of the file to be created. Defaults to "results"
-        file_name (str, optional): Name of the file to be created. Defaults to "dictionary.json".
+        file_name (str, optional): Name of the file to be created. Defaults to "dictionary.json"
     """
 
     os.makedirs(file_path, exist_ok=True)

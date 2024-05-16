@@ -499,7 +499,7 @@ class QuarkEOS(EOS):
 
 
 class HybridEOS(EOS):
-    """Class with the functions of the Hybrid EOS, defined by the a Quark EOS and some Hadron EOS.
+    """Class with the functions of the Hybrid EOS, defined by the a Quark EOS and some Hadron EOS
     """
 
     def __init__(self, quark_eos, hadron_eos, hadron_eos_table_file_name):

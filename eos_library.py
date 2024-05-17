@@ -17,8 +17,11 @@ class EOS:
     def __init__(self):
         """Initialization method
         """
-        self.eos_name = self.__class__.__name__
-        self.maximum_stable_rho = None
+
+        # Initialize EOS properties
+        self.eos_name = self.__class__.__name__     # EOS name, given by the class name
+        self.maximum_stable_rho = None              # Maximum stable density [m^-2]
+        self.p_trans = None                         # Phase transition pressure [m^-2]. It is default None to characterize no transition
 
     def _check_stability(self, p_space):
         """Method that checks the stability criterion for the EOS (c_s < 1)

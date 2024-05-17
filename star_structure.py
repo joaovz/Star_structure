@@ -14,14 +14,13 @@ class Star:
     # Class constants
     FIGURES_PATH = "figures/star"       # Path of the figures folder
 
-    def __init__(self, eos, p_center, p_trans=None, p_surface=dval.P_SURFACE, r_init=dval.R_INIT, r_final=dval.R_FINAL,
+    def __init__(self, eos, p_center, p_surface=dval.P_SURFACE, r_init=dval.R_INIT, r_final=dval.R_FINAL,
                  method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol_tov=dval.ATOL_TOV, rtol=dval.RTOL):
         """Initialization method
 
         Args:
             eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the star
             p_center (float): Central pressure of the star [m^-2]
-            p_trans (float, optional): Transition pressure of a phase transition [m^-2]. Defaults to None
             p_surface (float, optional): Surface pressure of the star [m^-2]. Defaults to P_SURFACE
             r_init (float, optional): Initial radial coordinate r of the IVP solve [m]. Defaults to R_INIT
             r_final (float, optional): Final radial coordinate r of the IVP solve [m]. Defaults to R_FINAL
@@ -34,7 +33,6 @@ class Star:
         # Store the input parameters
         self.eos = eos
         self.p_center = p_center
-        self.p_trans = p_trans
         self.p_surface = p_surface
         self.r_init = r_init
         self.r_final = r_final
@@ -42,6 +40,9 @@ class Star:
         self.max_step = max_step
         self.atol_tov = atol_tov
         self.rtol = rtol
+
+        # Configure the phase transition pressure [m^-2]. It is default None when there is no transition
+        self.p_trans = self.eos.p_trans
 
         # Set the initial values: pressure, mass, and metric function at r = r_init
         self.p_init = p_center                  # Initial pressure [m^-2]

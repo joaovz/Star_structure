@@ -20,14 +20,13 @@ class StarFamily:
     WIDE_LOGSPACE = np.logspace(-3.0, 0.0, 10)          # Wide logspace used in values search
     NARROW_LOGSPACE = np.logspace(-0.1, 0.1, 10)        # Narrow logspace used in values search
 
-    def __init__(self, eos, p_center_space, p_trans=None, p_surface=dval.P_SURFACE, r_init=dval.R_INIT, r_final=dval.R_FINAL,
+    def __init__(self, eos, p_center_space, p_surface=dval.P_SURFACE, r_init=dval.R_INIT, r_final=dval.R_FINAL,
                  method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol_tov=dval.ATOL_TOV, rtol=dval.RTOL):
         """Initialization method
 
         Args:
             eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the stars
             p_center_space (array of float): Array with the central pressure of each star in the family [m^-2]
-            p_trans (float, optional): Transition pressure of a phase transition [m^-2]. Defaults to None
             p_surface (float, optional): Surface pressure of the stars [m^-2]. Defaults to P_SURFACE
             r_init (float, optional): Initial radial coordinate r of the IVP solve [m]. Defaults to R_INIT
             r_final (float, optional): Final radial coordinate r of the IVP solve [m]. Defaults to R_FINAL
@@ -40,7 +39,6 @@ class StarFamily:
         # Store the input parameters
         self.eos = eos
         self.p_center_space = p_center_space
-        self.p_trans = p_trans
         self.p_surface = p_surface
         self.r_init = r_init
         self.r_final = r_final
@@ -49,8 +47,11 @@ class StarFamily:
         self.atol_tov = atol_tov
         self.rtol = rtol
 
+        # Configure the phase transition pressure [m^-2]. It is default None when there is no transition
+        self.p_trans = self.eos.p_trans
+
         # Create a star object with the first p_center value
-        self.star_object = Star(eos, self.p_center_space[0], p_trans, p_surface, r_init, r_final, method, max_step, atol_tov, rtol)
+        self.star_object = Star(eos, self.p_center_space[0], p_surface, r_init, r_final, method, max_step, atol_tov, rtol)
 
         # Calculate the rho_center_space
         self.rho_center_space = self.eos.rho(self.p_center_space)

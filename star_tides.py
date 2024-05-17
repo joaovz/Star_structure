@@ -142,14 +142,21 @@ class DeformedStar(Star):
         # Calculate the TOV ODE system initial values
         self._calc_tov_init_values(p_center)
 
-        # Solve the combined TOV+tidal ODE system
+        # Configure the solver events
+        events = [self._tov_ode_termination_event]
+        if self.p_trans is not None:
+            events += [self._tov_ode_phase_transition_event]
+
+        # Configure the absolute tolerances
         atol = list(self.atol_tov) + [self.atol_tidal]
+
+        # Solve the combined TOV+tidal ODE system
         ode_solution = solve_ivp(
             self._combined_tov_tidal_ode_system,
             (self.r_init, self.r_final),
             (self.p_init, self.m_init, self.nu_init, self.y_init),
             self.method,
-            events=self._tov_ode_termination_event,
+            events=events,
             max_step=self.max_step,
             atol=atol,
             rtol=self.rtol)

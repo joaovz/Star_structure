@@ -202,10 +202,9 @@ class Star:
         self._calc_tov_init_values(p_center)
 
         # Configure the solver events
-        if self.p_trans is None:
-            events = self._tov_ode_termination_event
-        else:
-            events = [self._tov_ode_termination_event, self._tov_ode_phase_transition_event]
+        events = [self._tov_ode_termination_event]
+        if self.p_trans is not None:
+            events += [self._tov_ode_phase_transition_event]
 
         # Solve the TOV ODE system
         ode_solution = solve_ivp(

@@ -66,7 +66,7 @@ class DeformedStarFamily(StarFamily):
         }
 
         # Add new curves to be plotted on the list
-        extra_curves_list = [
+        self.curves_list += [
             ["rho_c", "k2"],
             ["R", "k2"],
             ["M", "k2"],
@@ -76,7 +76,6 @@ class DeformedStarFamily(StarFamily):
             ["M", "Lambda"],
             ["C", "Lambda"],
         ]
-        self.curves_list += extra_curves_list
 
     def _calc_maximum_k2_star(self, solve_first=False):
         """Method that calculates the maximum k2 star properties
@@ -151,7 +150,11 @@ class DeformedStarFamily(StarFamily):
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
 
-        # Reinitialize the k2 and Lambda arrays with the right size
+        # Reinitialize the arrays with the right size
+        self.radius_array = np.zeros(self.p_center_space.size)
+        self.mass_array = np.zeros(self.p_center_space.size)
+        self.phase_trans_radius_array = np.zeros(self.p_center_space.size)
+        self.phase_trans_mass_array = np.zeros(self.p_center_space.size)
         self.k2_array = np.zeros(self.p_center_space.size)
         self.lambda_array = np.zeros(self.p_center_space.size)
 
@@ -161,6 +164,8 @@ class DeformedStarFamily(StarFamily):
             self.star_object.solve_combined_tov_tidal(p_center, False)
             self.radius_array[k] = self.star_object.star_radius
             self.mass_array[k] = self.star_object.star_mass
+            self.phase_trans_radius_array[k] = self.star_object.star_phase_trans_radius
+            self.phase_trans_mass_array[k] = self.star_object.star_phase_trans_mass
             self.k2_array[k] = self.star_object.k2
             self.lambda_array[k] = self.star_object.lambda_tidal
         self.execution_time = perf_counter() - start_time

@@ -14,13 +14,14 @@ class Star:
     # Class constants
     FIGURES_PATH = "figures/star"       # Path of the figures folder
 
-    def __init__(self, eos, p_center, p_surface=dval.P_SURFACE, r_init=dval.R_INIT, r_final=dval.R_FINAL,
+    def __init__(self, eos, p_center, p_trans=None, p_surface=dval.P_SURFACE, r_init=dval.R_INIT, r_final=dval.R_FINAL,
                  method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol_tov=dval.ATOL_TOV, rtol=dval.RTOL):
         """Initialization method
 
         Args:
             eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the star
             p_center (float): Central pressure of the star [m^-2]
+            p_trans (float, optional): Transition pressure of a phase transition [m^-2]. Defaults to None
             p_surface (float, optional): Surface pressure of the star [m^-2]. Defaults to P_SURFACE
             r_init (float, optional): Initial radial coordinate r of the IVP solve [m]. Defaults to R_INIT
             r_final (float, optional): Final radial coordinate r of the IVP solve [m]. Defaults to R_FINAL
@@ -33,6 +34,7 @@ class Star:
         # Store the input parameters
         self.eos = eos
         self.p_center = p_center
+        self.p_trans = p_trans
         self.p_surface = p_surface
         self.r_init = r_init
         self.r_final = r_final
@@ -42,13 +44,15 @@ class Star:
         self.rtol = rtol
 
         # Set the initial values: pressure, mass, and metric function at r = r_init
-        self.p_init = p_center          # Initial pressure [m^-2]
-        self.m_init = 0.0               # Initial mass [m]
-        self.nu_init = 1.0              # Initial metric function (g_tt = -e^nu) [dimensionless]
+        self.p_init = p_center                  # Initial pressure [m^-2]
+        self.m_init = 0.0                       # Initial mass [m]
+        self.nu_init = 1.0                      # Initial metric function (g_tt = -e^nu) [dimensionless]
 
         # Initialize star properties
-        self.star_radius = 0.0          # Star radius (R) [m]
-        self.star_mass = 0.0            # Star mass (M) [m]
+        self.star_radius = 0.0                  # Star radius (R) [m]
+        self.star_mass = 0.0                    # Star mass (M) [m]
+        self.star_phase_trans_radius = 0.0      # Star radius at the phase transition (R_trans) [m]
+        self.star_phase_trans_mass = 0.0        # Star mass at the phase transition (M_trans) [m]
 
     def _tov_ode_system(self, r, s):
         """Method that implements the TOV ODE system in the form ``ds/dr = f(r, s)``, used by the IVP solver
@@ -78,9 +82,24 @@ class Star:
 
         return (dp_dr, dm_dr, dnu_dr)
 
+    def _tov_ode_phase_transition_event(self, r, s):
+        """Event method used by the IVP solver to find the phase transition, if present.
+        The solver will find an accurate value of r at which ``event(r, s(r)) = 0`` using a root-finding algorithm
+
+        Args:
+            r (float): Independent variable of the ODE system (radial coordinate r)
+            s (array of float): Array with the dependent variables of the ODE system (p, m, nu)
+
+        Returns:
+            float: ``p - p_trans``
+        """
+        return s[0] - self.p_trans
+
+    _tov_ode_phase_transition_event.terminal = False        # Set the event as not a terminal event, not terminating the integration of the ODE
+
     def _tov_ode_termination_event(self, r, s):
-        """Event method used by the IVP solver. The solver will find an accurate value of r at which
-        ``event(r, s(r)) = 0`` using a root-finding algorithm
+        """Event method used by the IVP solver to find the star surface.
+        The solver will find an accurate value of r at which ``event(r, s(r)) = 0`` using a root-finding algorithm
 
         Args:
             r (float): Independent variable of the ODE system (radial coordinate r)
@@ -91,7 +110,7 @@ class Star:
         """
         return s[0] - self.p_surface
 
-    _tov_ode_termination_event.terminal = True      # Set the event as a terminal event, terminating the integration of the ODE
+    _tov_ode_termination_event.terminal = True              # Set the event as a terminal event, terminating the integration of the ODE
 
     def _calc_tov_init_values(self, p_center=None):
         """Method that calculates the initial values used by the TOV solver
@@ -157,6 +176,11 @@ class Star:
         self.star_mass = ode_solution.y_events[0][0][1]
         nu_surface = ode_solution.y_events[0][0][2]
 
+        # Get the star radius and mass at the phase transition, if present
+        if (self.p_trans is not None) and (ode_solution.t_events[1].size > 0):
+            self.star_phase_trans_radius = ode_solution.t_events[1][0]
+            self.star_phase_trans_mass = ode_solution.y_events[1][0][1]
+
         # Adjust metric function with the correct boundary condition (nu(R) = ln(1 - 2M/R))
         self.nu_ode_solution += - nu_surface + np.log(1 - 2 * self.star_mass / self.star_radius)
 
@@ -176,13 +200,19 @@ class Star:
         # Calculate the TOV ODE system initial values
         self._calc_tov_init_values(p_center)
 
+        # Configure the solver events
+        if self.p_trans is None:
+            events = self._tov_ode_termination_event
+        else:
+            events = [self._tov_ode_termination_event, self._tov_ode_phase_transition_event]
+
         # Solve the TOV ODE system
         ode_solution = solve_ivp(
             self._tov_ode_system,
             (self.r_init, self.r_final),
             (self.p_init, self.m_init, self.nu_init),
             self.method,
-            events=self._tov_ode_termination_event,
+            events=events,
             max_step=self.max_step,
             atol=self.atol_tov,
             rtol=self.rtol)
@@ -203,6 +233,9 @@ class Star:
         print(f"Star radius (R) = {(self.star_radius / 10**3):e} [km]")
         print(f"Star mass (M) = {(self.star_mass * uconv.MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
         print(f"Compactness (C = M/R) = {(self.star_mass / self.star_radius):e} [dimensionless]")
+        if self.p_trans is not None:
+            print(f"Star phase transition radius (R_trans) = {(self.star_phase_trans_radius / 10**3):e} [km]")
+            print(f"Star phase transition mass (M_trans) = {(self.star_phase_trans_mass * uconv.MASS_GU_TO_SOLAR_MASS):e} [solar mass]")
 
     def plot_all_curves(self, figure_path=FIGURES_PATH):
         """Method that plots the solution found

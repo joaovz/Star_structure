@@ -20,13 +20,14 @@ class StarFamily:
     WIDE_LOGSPACE = np.logspace(-3.0, 0.0, 10)          # Wide logspace used in values search
     NARROW_LOGSPACE = np.logspace(-0.1, 0.1, 10)        # Narrow logspace used in values search
 
-    def __init__(self, eos, p_center_space, p_surface=dval.P_SURFACE, r_init=dval.R_INIT, r_final=dval.R_FINAL,
+    def __init__(self, eos, p_center_space, p_trans=None, p_surface=dval.P_SURFACE, r_init=dval.R_INIT, r_final=dval.R_FINAL,
                  method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol_tov=dval.ATOL_TOV, rtol=dval.RTOL):
         """Initialization method
 
         Args:
             eos (object): Python object with methods rho, p, drho_dp, and dp_drho that describes the EOS of the stars
             p_center_space (array of float): Array with the central pressure of each star in the family [m^-2]
+            p_trans (float, optional): Transition pressure of a phase transition [m^-2]. Defaults to None
             p_surface (float, optional): Surface pressure of the stars [m^-2]. Defaults to P_SURFACE
             r_init (float, optional): Initial radial coordinate r of the IVP solve [m]. Defaults to R_INIT
             r_final (float, optional): Final radial coordinate r of the IVP solve [m]. Defaults to R_FINAL
@@ -39,6 +40,7 @@ class StarFamily:
         # Store the input parameters
         self.eos = eos
         self.p_center_space = p_center_space
+        self.p_trans = p_trans
         self.p_surface = p_surface
         self.r_init = r_init
         self.r_final = r_final
@@ -48,18 +50,20 @@ class StarFamily:
         self.rtol = rtol
 
         # Create a star object with the first p_center value
-        self.star_object = Star(eos, self.p_center_space[0], p_surface, r_init, r_final, method, max_step, atol_tov, rtol)
+        self.star_object = Star(eos, self.p_center_space[0], p_trans, p_surface, r_init, r_final, method, max_step, atol_tov, rtol)
 
         # Calculate the rho_center_space
         self.rho_center_space = self.eos.rho(self.p_center_space)
 
         # Initialize star family properties
-        self.radius_array = np.zeros(self.p_center_space.size)      # Array with the radii of the stars [m]
-        self.mass_array = np.zeros(self.p_center_space.size)        # Array with the masses of the stars [m]
-        self.maximum_mass = np.inf                                  # Maximum mass of the star family [m]
-        self.maximum_stable_rho_center = self.MAX_RHO               # Maximum stable central density of the star family [m^-2]
-        self.canonical_rho_center = self.MAX_RHO                    # Central density of the canonical star (M = 1.4 M_sun) [m^-2]
-        self.canonical_radius = np.inf                              # Radius of the canonical star (M = 1.4 M_sun) [m]
+        self.radius_array = np.zeros(self.p_center_space.size)                  # Array with the radii of the stars [m]
+        self.mass_array = np.zeros(self.p_center_space.size)                    # Array with the masses of the stars [m]
+        self.phase_trans_radius_array = np.zeros(self.p_center_space.size)      # Array with the radii at the phase transitions of the stars [m]
+        self.phase_trans_mass_array = np.zeros(self.p_center_space.size)        # Array with the masses at the phase transitions of the stars [m]
+        self.maximum_mass = np.inf                                              # Maximum mass of the star family [m]
+        self.maximum_stable_rho_center = self.MAX_RHO                           # Maximum stable central density of the star family [m^-2]
+        self.canonical_rho_center = self.MAX_RHO                                # Central density of the canonical star (M = 1.4 M_sun) [m^-2]
+        self.canonical_radius = np.inf                                          # Radius of the canonical star (M = 1.4 M_sun) [m]
 
     def _config_plot(self):
         """Method that configures the plotting
@@ -87,6 +91,16 @@ class StarFamily:
                 "label": "$C ~ [dimensionless]$",
                 "value": self.mass_array / self.radius_array,
             },
+            "R_trans": {
+                "name": "Radius at phase transition",
+                "label": "$R_{trans} ~ [km]$",
+                "value": self.phase_trans_radius_array / 10**3,
+            },
+            "M_trans": {
+                "name": "Mass at phase transition",
+                "label": "$M_{trans} ~ [M_{\\odot}]$",
+                "value": self.phase_trans_mass_array * uconv.MASS_GU_TO_SOLAR_MASS,
+            },
         }
 
         # Create a list with all the curves to be plotted
@@ -98,6 +112,15 @@ class StarFamily:
             ["C", "R"],
             ["C", "M"],
         ]
+
+        # Add the curves for the transition when it is present
+        if self.p_trans is not None:
+            self.curves_list += [
+                ["rho_c", "R_trans"],
+                ["rho_c", "M_trans"],
+                ["R", "R_trans"],
+                ["M", "M_trans"],
+            ]
 
     def _calc_maximum_mass_star(self, solve_first=False):
         """Method that calculates the maximum mass star properties
@@ -218,6 +241,8 @@ class StarFamily:
         # Reinitialize the radius and mass arrays with the right size
         self.radius_array = np.zeros(self.p_center_space.size)
         self.mass_array = np.zeros(self.p_center_space.size)
+        self.phase_trans_radius_array = np.zeros(self.p_center_space.size)
+        self.phase_trans_mass_array = np.zeros(self.p_center_space.size)
 
         # Solve the TOV system for each star in the family
         start_time = perf_counter()
@@ -225,6 +250,8 @@ class StarFamily:
             self.star_object.solve_tov(p_center, False)
             self.radius_array[k] = self.star_object.star_radius
             self.mass_array[k] = self.star_object.star_mass
+            self.phase_trans_radius_array[k] = self.star_object.star_phase_trans_radius
+            self.phase_trans_mass_array[k] = self.star_object.star_phase_trans_mass
         self.execution_time = perf_counter() - start_time
 
         # Configure the plot

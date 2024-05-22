@@ -46,6 +46,14 @@ class DeformedStar(Star):
         self.k2 = 0.0               # Tidal Love number [dimensionless]
         self.lambda_tidal = 0.0     # Tidal deformability [dimensionless]
 
+        # Initialize the star structure and perturbation arrays of the ODE solution. Necessary to append the solutions
+        self.r_ode_solution = np.array([])
+        self.p_ode_solution = np.array([])
+        self.m_ode_solution = np.array([])
+        self.nu_ode_solution = np.array([])
+        self.y_ode_solution = np.array([])
+        self.rho_ode_solution = np.array([])
+
     def _combined_tov_tidal_ode_system(self, r, s):
         """Method that implements the combined TOV+tidal ODE system in the form ``ds/dr = f(r, s)``, used by the IVP solver
 
@@ -100,11 +108,27 @@ class DeformedStar(Star):
             RuntimeError: Exception in case the IVP fails to find the ODE termination event
         """
 
-        # Process the TOV ODE solution
-        self._process_tov_ode_solution(ode_solution)
+        # Check the ODE solution status and treat each case
+        if ode_solution.status == -1:
+            raise RuntimeError(ode_solution.message)
+        elif ode_solution.status != 1:
+            raise RuntimeError("The solver did not find the ODE termination event")
 
-        # Unpack the tidal variables
-        self.y_ode_solution = ode_solution.y[3]
+        # Unpack the variables
+        self.r_ode_solution = np.append(self.r_ode_solution, ode_solution.t)
+        self.p_ode_solution = np.append(self.p_ode_solution, ode_solution.y[0])
+        self.m_ode_solution = np.append(self.m_ode_solution, ode_solution.y[1])
+        self.nu_ode_solution = np.append(self.nu_ode_solution, ode_solution.y[2])
+        self.y_ode_solution = np.append(self.y_ode_solution, ode_solution.y[3])
+        self.rho_ode_solution = np.append(self.rho_ode_solution, self.eos.rho(ode_solution.y[0]))
+
+        # Get the star radius, star mass, and surface nu from the ODE termination event
+        self.star_radius = ode_solution.t_events[0][0]
+        self.star_mass = ode_solution.y_events[0][0][1]
+        nu_surface = ode_solution.y_events[0][0][2]
+
+        # Adjust metric function with the correct boundary condition (nu(R) = ln(1 - 2M/R))
+        self.nu_ode_solution += - nu_surface + np.log(1 - 2 * self.star_mass / self.star_radius)
 
         # Calculate the compactness C and perturbation at the surface y_s
         c = self.star_mass / self.star_radius
@@ -125,6 +149,42 @@ class DeformedStar(Star):
                 )
             )
         self.lambda_tidal = (2 / 3) * self.k2 * c**(-5)
+
+    def _calc_phase_trans_correction(self, ode_solution):
+        """Method that calculates the correction in y due to the phase transition, and reconfigures the init values of the ODE
+
+        Args:
+            ode_solution (Object returned by solve_ivp): Object that contains all information about the ODE solution
+        """
+
+        # Unpack the variables
+        self.r_ode_solution = ode_solution.t
+        self.p_ode_solution = ode_solution.y[0]
+        self.m_ode_solution = ode_solution.y[1]
+        self.nu_ode_solution = ode_solution.y[2]
+        self.y_ode_solution = ode_solution.y[3]
+        self.rho_ode_solution = self.eos.rho(ode_solution.y[0])
+
+        # Get the star radius and mass at the phase transition
+        self.star_phase_trans_radius = ode_solution.t_events[1][0]
+        self.star_phase_trans_mass = ode_solution.y_events[1][0][1]
+
+        # Calculate the Delta_y correction
+        delta_rho = self.eos.rho_trans_min - self.eos.rho_trans_max     # delta_rho = rho(r_d + e) - rho(r_d - e)
+        denominator = (self.star_phase_trans_mass / (4 * np.pi * self.star_phase_trans_radius**3)) + self.eos.p_trans
+        delta_y = delta_rho / denominator
+
+        # Reconfigure the init values to continue the integration after the phase transition
+        self.r_init_trans = self.r_ode_solution[-1] * (1 + dval.RTOL)
+        self.p_init_trans = self.p_ode_solution[-1]
+        self.m_init_trans = self.m_ode_solution[-1]
+        self.nu_init_trans = self.nu_ode_solution[-1]
+        self.y_init_trans = self.y_ode_solution[-1] + delta_y
+
+    def _tov_ode_phase_transition_event(self, r, s):
+        return super()._tov_ode_phase_transition_event(r, s)
+
+    _tov_ode_phase_transition_event.terminal = True     # Set the event as a terminal event, terminating the integration of the ODE
 
     def solve_combined_tov_tidal(self, p_center=None, show_results=True):
         """Method that solves the combined TOV+tidal system for the star, finding p, m, nu, and y
@@ -160,6 +220,23 @@ class DeformedStar(Star):
             max_step=self.max_step,
             atol=atol,
             rtol=self.rtol)
+
+        # Check if the phase transition is detected
+        if (self.p_trans is not None) and (ode_solution.t_events[1].size > 0):
+
+            # Calculate the phase transition correction
+            self._calc_phase_trans_correction(ode_solution)
+
+            # Continue the integration
+            ode_solution = solve_ivp(
+                self._combined_tov_tidal_ode_system,
+                (self.r_init_trans, self.r_final),
+                (self.p_init_trans, self.m_init_trans, self.nu_init_trans, self.y_init_trans),
+                self.method,
+                events=self._tov_ode_termination_event,
+                max_step=self.max_step,
+                atol=atol,
+                rtol=self.rtol)
 
         # Process the TOV+tidal ODE solution
         self._process_tov_tidal_ode_solution(ode_solution)

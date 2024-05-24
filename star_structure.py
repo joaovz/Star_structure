@@ -55,6 +55,13 @@ class Star:
         self.star_phase_trans_radius = 0.0      # Star radius at the phase transition (R_trans) [m]
         self.star_phase_trans_mass = 0.0        # Star mass at the phase transition (M_trans) [m]
 
+        # Initialize the star structure arrays of the ODE solution. Necessary to append the solutions
+        self.r_ode_solution = np.array([])
+        self.p_ode_solution = np.array([])
+        self.m_ode_solution = np.array([])
+        self.nu_ode_solution = np.array([])
+        self.rho_ode_solution = np.array([])
+
     def _tov_ode_system(self, r, s):
         """Method that implements the TOV ODE system in the form ``ds/dr = f(r, s)``, used by the IVP solver
 
@@ -166,24 +173,29 @@ class Star:
             raise RuntimeError("The solver did not find the ODE termination event")
 
         # Unpack the variables. Not using tuple unpack to allow reuse of this code
-        self.r_ode_solution = ode_solution.t
-        self.p_ode_solution = ode_solution.y[0]
-        self.m_ode_solution = ode_solution.y[1]
-        self.nu_ode_solution = ode_solution.y[2]
-        self.rho_ode_solution = self.eos.rho(self.p_ode_solution)
+        self.r_ode_solution = np.append(self.r_ode_solution, ode_solution.t)
+        self.p_ode_solution = np.append(self.p_ode_solution, ode_solution.y[0])
+        self.m_ode_solution = np.append(self.m_ode_solution, ode_solution.y[1])
+        self.nu_ode_solution = np.append(self.nu_ode_solution, ode_solution.y[2])
+        self.rho_ode_solution = np.append(self.rho_ode_solution, self.eos.rho(ode_solution.y[0]))
 
-        # Get the star radius, star mass, and surface nu from the ODE termination event
-        self.star_radius = ode_solution.t_events[0][0]
-        self.star_mass = ode_solution.y_events[0][0][1]
-        nu_surface = ode_solution.y_events[0][0][2]
+        # Check if the star surface event occured
+        if ode_solution.t_events[0].size > 0:
 
-        # Get the star radius and mass at the phase transition, if present
-        if (self.p_trans is not None) and (ode_solution.t_events[1].size > 0):
+            # Get the star radius, star mass, and surface nu from the ODE termination event
+            self.star_radius = ode_solution.t_events[0][0]
+            self.star_mass = ode_solution.y_events[0][0][1]
+            nu_surface = ode_solution.y_events[0][0][2]
+
+            # Adjust metric function with the correct boundary condition (nu(R) = ln(1 - 2M/R))
+            self.nu_ode_solution += - nu_surface + np.log(1 - 2 * self.star_mass / self.star_radius)
+
+        # Check if the phase transition event is configured and occured
+        if (self.p_trans is not None) and (len(ode_solution.t_events) == 2) and (ode_solution.t_events[1].size > 0):
+
+            # Get the star radius and mass at the phase transition from the event
             self.star_phase_trans_radius = ode_solution.t_events[1][0]
             self.star_phase_trans_mass = ode_solution.y_events[1][0][1]
-
-        # Adjust metric function with the correct boundary condition (nu(R) = ln(1 - 2M/R))
-        self.nu_ode_solution += - nu_surface + np.log(1 - 2 * self.star_mass / self.star_radius)
 
     def solve_tov(self, p_center=None, show_results=True):
         """Method that solves the TOV system for the star, finding the functions p(r), m(r), nu(r), and rho(r)

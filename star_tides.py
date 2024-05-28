@@ -154,10 +154,20 @@ class DeformedStar(Star):
         self.nu_init_trans = self.nu_ode_solution[-1]
         self.y_init_trans = self.y_ode_solution[-1] + delta_y
 
-    def _tov_ode_phase_transition_event(self, r, s):
-        return super()._tov_ode_phase_transition_event(r, s)
+    def _tov_tidal_ode_phase_transition_event(self, r, s):
+        """Event method used by the IVP solver to find the phase transition, if present.
+        The solver will find an accurate value of r at which ``event(r, s(r)) = 0`` using a root-finding algorithm
 
-    _tov_ode_phase_transition_event.terminal = True     # Set the event as a terminal event, terminating the integration of the ODE
+        Args:
+            r (float): Independent variable of the ODE system (radial coordinate r)
+            s (array of float): Array with the dependent variables of the ODE system (p, m, nu, y)
+
+        Returns:
+            float: ``p - p_trans``
+        """
+        return s[0] - self.p_trans
+
+    _tov_tidal_ode_phase_transition_event.terminal = True       # Set the event as a terminal event, terminating the integration of the ODE
 
     def solve_combined_tov_tidal(self, p_center=None, show_results=True):
         """Method that solves the combined TOV+tidal system for the star, finding p, m, nu, and y
@@ -178,7 +188,7 @@ class DeformedStar(Star):
         # Configure the solver events
         events = [self._tov_ode_termination_event]
         if self.p_trans is not None:
-            events += [self._tov_ode_phase_transition_event]
+            events += [self._tov_tidal_ode_phase_transition_event]
 
         # Configure the absolute tolerances
         atol = list(self.atol_tov) + [self.atol_tidal]

@@ -527,9 +527,25 @@ class HybridEOS(EOS):
 
         # Initialize variables
         self.p_trans = None
+        self.is_quark_eos = False
+        self.is_hadron_eos = False
+        self.is_hybrid_eos = False
 
         # Calculate the transition pressure
         self._calc_p_trans()
+
+        # Save the maximum and minimum density and pressure
+        if self.is_hadron_eos:
+            self.rho_max = self.hadron_eos.rho_max
+            self.p_max = self.hadron_eos.p_max
+            self.rho_min = self.hadron_eos.rho_min
+            self.p_min = self.hadron_eos.p_min
+        elif self.is_quark_eos:
+            self.rho_min = self.quark_eos.rho(0.0)
+            self.p_min = 0.0
+        else:
+            self.rho_min = self.hadron_eos.rho_min
+            self.p_min = self.hadron_eos.p_min
 
     def _calc_p_trans(self):
         """Method that calculates the pressure at the quark-hadron phase transition
@@ -563,13 +579,24 @@ class HybridEOS(EOS):
             self.p_trans_nu = np.max(g_hadron_minus_g_quark_roots)      # Use only the high pressure transition
             self.p_trans = self.p_trans_nu * uconv.PRESSURE_NU_TO_GU
             self.g_trans_nu = 3 * self.quark_eos.mu_of_p(self.p_trans_nu)
+            self.is_hybrid_eos = True       # Indicate that this is indeed a hybrid EOS
         else:
-            self.plot_transition_graph()
-            raise RuntimeError("The solver did not find the transition pressure of the Hybrid EOS")
+            # Check if the EOS is a quark EOS or a hadron EOS
+            if self.g_hadron[0] < self.g_quark[0]:
+                self.is_hadron_eos = True
+            else:
+                self.is_quark_eos = True
 
         # Calculate the minimum and maximum transition densities
-        self.rho_trans_min = self.hadron_eos.rho(self.p_trans)
-        self.rho_trans_max = self.quark_eos.rho(self.p_trans)
+        if self.is_hybrid_eos is True:
+            self.rho_trans_min = self.hadron_eos.rho(self.p_trans)
+            self.rho_trans_max = self.quark_eos.rho(self.p_trans)
+
+        # Set the EOS as a hadron EOS if the phase transition occurs only at a density greater than the maximum stable density
+        self._check_stability(self.p_hadron * uconv.PRESSURE_NU_TO_GU)
+        if self.is_hybrid_eos and (self.maximum_stable_rho is not None) and (self.rho_trans_min >= self.maximum_stable_rho):
+            self.is_hybrid_eos = False
+            self.is_hadron_eos = True
 
     def plot_transition_graph(self, figure_path=EOS.FIGURES_PATH):
         """Method that plots the curves g vs p for the Quark and Hadron EOSs
@@ -599,101 +626,145 @@ class HybridEOS(EOS):
 
     def rho(self, p):
 
-        if np.isscalar(p):      # Execute this logic if p is a scalar
-            if p < self.p_trans:
+        if np.ndim(p) == 0:     # Execute this logic if p is a scalar
+
+            if self.is_hadron_eos or (self.is_hybrid_eos and (p < self.p_trans)):
                 return self.hadron_eos.rho(p)           # Use the Hadron EOS if p < p_trans
             return self.quark_eos.rho(p)                # Use the Quark EOS if p >= p_trans
 
         else:                   # Execute this logic if p is an array
 
-            # Use the Hadron EOS if p < p_trans
-            rho_hadron = self.hadron_eos.rho(p[p < self.p_trans])
+            # Check if the EOS is a Hybrid EOS
+            if self.is_hybrid_eos is True:
 
-            # Use the Quark EOS if p >= p_trans
-            rho_quark = self.quark_eos.rho(p[p >= self.p_trans])
+                # Use the Hadron EOS if p < p_trans
+                rho_hadron = self.hadron_eos.rho(p[p < self.p_trans])
 
-            # Combine the results
-            rho_combined = np.zeros(p.size)
-            rho_combined[p < self.p_trans] = rho_hadron
-            rho_combined[p >= self.p_trans] = rho_quark
+                # Use the Quark EOS if p >= p_trans
+                rho_quark = self.quark_eos.rho(p[p >= self.p_trans])
 
-            # Return the array created
-            return rho_combined
+                # Combine the results
+                rho_combined = np.zeros(p.size)
+                rho_combined[p < self.p_trans] = rho_hadron
+                rho_combined[p >= self.p_trans] = rho_quark
+
+                # Return the array created
+                return rho_combined
+
+            # Return the value given by the Hadron EOS if the EOS is a Hadron EOS
+            if self.is_hadron_eos is True:
+                return self.hadron_eos.rho(p)
+
+            # Return the value given by the Quark EOS if the EOS is a Quark EOS
+            return self.quark_eos.rho(p)
 
     def p(self, rho):
 
-        if np.isscalar(rho):        # Execute this logic if rho is a scalar
-            if rho < self.rho_trans_min:
+        if np.ndim(rho) == 0:       # Execute this logic if rho is a scalar
+
+            if self.is_hadron_eos or (self.is_hybrid_eos and (rho < self.rho_trans_min)):
                 return self.hadron_eos.p(rho)           # Use the Hadron EOS if rho < rho_trans_min
-            if rho > self.rho_trans_max:
+            if self.is_quark_eos or (self.is_hybrid_eos and (rho > self.rho_trans_max)):
                 return self.quark_eos.p(rho)            # Use the Quark EOS if rho > rho_trans_max
             return self.p_trans                         # Return p_trans if rho_trans_min < rho < rho_trans_max
 
         else:                       # Execute this logic if p is an array
 
-            # Use the Hadron EOS if rho < rho_trans_min
-            p_hadron = self.hadron_eos.p(rho[rho < self.rho_trans_min])
+            # Check if the EOS is a Hybrid EOS
+            if self.is_hybrid_eos is True:
 
-            # Use the Quark EOS if rho > rho_trans_max
-            p_quark = self.quark_eos.p(rho[rho > self.rho_trans_max])
+                # Use the Hadron EOS if rho < rho_trans_min
+                p_hadron = self.hadron_eos.p(rho[rho < self.rho_trans_min])
 
-            # Combine the results
-            p_combined = np.zeros(rho.size)
-            p_combined[rho < self.rho_trans_min] = p_hadron
-            p_combined[(rho >= self.rho_trans_min) & (rho <= self.rho_trans_max)] = self.p_trans
-            p_combined[rho > self.rho_trans_max] = p_quark
+                # Use the Quark EOS if rho > rho_trans_max
+                p_quark = self.quark_eos.p(rho[rho > self.rho_trans_max])
 
-            # Return the array created
-            return p_combined
+                # Combine the results
+                p_combined = np.zeros(rho.size)
+                p_combined[rho < self.rho_trans_min] = p_hadron
+                p_combined[(rho >= self.rho_trans_min) & (rho <= self.rho_trans_max)] = self.p_trans
+                p_combined[rho > self.rho_trans_max] = p_quark
+
+                # Return the array created
+                return p_combined
+
+            # Return the value given by the Hadron EOS if the EOS is a Hadron EOS
+            elif self.is_hadron_eos is True:
+                return self.hadron_eos.p(rho)
+
+            # Return the value given by the Quark EOS if the EOS is a Quark EOS
+            return self.quark_eos.p(rho)
 
     def drho_dp(self, p):
 
-        if np.isscalar(p):      # Execute this logic if p is a scalar
-            if p < self.p_trans:
+        if np.ndim(p) == 0:     # Execute this logic if p is a scalar
+
+            if self.is_hadron_eos or (self.is_hybrid_eos and (p < self.p_trans)):
                 return self.hadron_eos.drho_dp(p)       # Use the Hadron EOS if p < p_trans
             return self.quark_eos.drho_dp(p)            # Use the Quark EOS if p >= p_trans
 
         else:                   # Execute this logic if p is an array
 
-            # Use the Hadron EOS if p < p_trans
-            drho_dp_hadron = self.hadron_eos.drho_dp(p[p < self.p_trans])
+            # Check if the EOS is a Hybrid EOS
+            if self.is_hybrid_eos is True:
 
-            # Use the Quark EOS if p >= p_trans
-            drho_dp_quark = self.quark_eos.drho_dp(p[p >= self.p_trans])
+                # Use the Hadron EOS if p < p_trans
+                drho_dp_hadron = self.hadron_eos.drho_dp(p[p < self.p_trans])
 
-            # Combine the results
-            drho_dp_combined = np.zeros(p.size)
-            drho_dp_combined[p < self.p_trans] = drho_dp_hadron
-            drho_dp_combined[p >= self.p_trans] = drho_dp_quark
+                # Use the Quark EOS if p >= p_trans
+                drho_dp_quark = self.quark_eos.drho_dp(p[p >= self.p_trans])
 
-            # Return the array created
-            return drho_dp_combined
+                # Combine the results
+                drho_dp_combined = np.zeros(p.size)
+                drho_dp_combined[p < self.p_trans] = drho_dp_hadron
+                drho_dp_combined[p >= self.p_trans] = drho_dp_quark
+
+                # Return the array created
+                return drho_dp_combined
+
+            # Return the value given by the Hadron EOS if the EOS is a Hadron EOS
+            if self.is_hadron_eos is True:
+                return self.hadron_eos.drho_dp(p)
+
+            # Return the value given by the Quark EOS if the EOS is a Quark EOS
+            return self.quark_eos.drho_dp(p)
 
     def dp_drho(self, rho):
 
-        if np.isscalar(rho):        # Execute this logic if rho is a scalar
-            if rho < self.rho_trans_min:
+        if np.ndim(rho) == 0:       # Execute this logic if rho is a scalar
+
+            if self.is_hadron_eos or (self.is_hybrid_eos and (rho < self.rho_trans_min)):
                 return self.hadron_eos.dp_drho(rho)     # Use the Hadron EOS if rho < rho_trans_min
-            if rho > self.rho_trans_max:
+            if self.is_quark_eos or (self.is_hybrid_eos and (rho > self.rho_trans_max)):
                 return self.quark_eos.dp_drho(rho)      # Use the Quark EOS if rho > rho_trans_max
             return 0.0                                  # Return zero if rho_trans_min < rho < rho_trans_max
 
         else:                       # Execute this logic if p is an array
 
-            # Use the Hadron EOS if rho < rho_trans_min
-            dp_drho_hadron = self.hadron_eos.dp_drho(rho[rho < self.rho_trans_min])
+            # Check if the EOS is a Hybrid EOS
+            if self.is_hybrid_eos is True:
 
-            # Use the Quark EOS if rho > rho_trans_max
-            dp_drho_quark = self.quark_eos.dp_drho(rho[rho > self.rho_trans_max])
+                # Use the Hadron EOS if rho < rho_trans_min
+                dp_drho_hadron = self.hadron_eos.dp_drho(rho[rho < self.rho_trans_min])
 
-            # Combine the results
-            dp_drho_combined = np.zeros(rho.size)
-            dp_drho_combined[rho < self.rho_trans_min] = dp_drho_hadron
-            dp_drho_combined[(rho >= self.rho_trans_min) & (rho <= self.rho_trans_max)] = 0.0
-            dp_drho_combined[rho > self.rho_trans_max] = dp_drho_quark
+                # Use the Quark EOS if rho > rho_trans_max
+                dp_drho_quark = self.quark_eos.dp_drho(rho[rho > self.rho_trans_max])
 
-            # Return the array created
-            return dp_drho_combined
+                # Combine the results
+                dp_drho_combined = np.zeros(rho.size)
+                dp_drho_combined[rho < self.rho_trans_min] = dp_drho_hadron
+                dp_drho_combined[(rho >= self.rho_trans_min) & (rho <= self.rho_trans_max)] = 0.0
+                dp_drho_combined[rho > self.rho_trans_max] = dp_drho_quark
+
+                # Return the array created
+                return dp_drho_combined
+
+            # Return the value given by the Hadron EOS if the EOS is a Hadron EOS
+            elif self.is_hadron_eos is True:
+                return self.hadron_eos.dp_drho(rho)
+
+            # Return the value given by the Quark EOS if the EOS is a Quark EOS
+            return self.quark_eos.dp_drho(rho)
 
 
 class BSk20EOS(InterpolatedEOS):
@@ -885,7 +956,8 @@ def main():
     hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv")
 
     # Print the transition pressure calculated
-    print(f"HybridEOS transition pressure calculated = {(hybrid_eos.p_trans * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
+    if hybrid_eos.p_trans is not None:
+        print(f"HybridEOS transition pressure calculated = {(hybrid_eos.p_trans * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
 
     # Print the minimum pressure calculated. Should be less than 10**21 [dyn cm^-2]
     print(f"HybridEOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")

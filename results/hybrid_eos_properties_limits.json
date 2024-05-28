@@ -1,0 +1,42 @@
+{
+    "rho_surface [10^15 g cm^-3]": [
+        NaN,
+        NaN
+    ],
+    "cs_min [dimensionless]": [
+        NaN,
+        NaN
+    ],
+    "rho_center_max [10^15 g cm^-3]": [
+        NaN,
+        NaN
+    ],
+    "M_max [solar mass]": [
+        NaN,
+        NaN
+    ],
+    "cs_max [dimensionless]": [
+        NaN,
+        NaN
+    ],
+    "rho_center_canonical [10^15 g cm^-3]": [
+        NaN,
+        NaN
+    ],
+    "R_canonical [km]": [
+        NaN,
+        NaN
+    ],
+    "Lambda_canonical [dimensionless]": [
+        NaN,
+        NaN
+    ],
+    "rho_center_k2_max [10^15 g cm^-3]": [
+        NaN,
+        NaN
+    ],
+    "k2_max [dimensionless]": [
+        NaN,
+        NaN
+    ]
+}

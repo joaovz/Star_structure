@@ -6,6 +6,7 @@ class Constants:
     """Class with general purpose constants
     """
 
+    DEBUG = True                        # Flag that activates the debug logic
     C_SMALL = 0.005                     # Small compactness value, used to switch calculations to Taylor expansions for C -> 0
 
 

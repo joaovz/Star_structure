@@ -1,6 +1,8 @@
 from time import perf_counter
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import CubicSpline
+from constants import Constants as const
 from constants import DefaultValues as dval
 from constants import UnitConversion as uconv
 from eos_library import PolytropicEOS
@@ -104,6 +106,15 @@ class DeformedStarFamily(StarFamily):
             if possible_maximum_k2 > self.maximum_k2:
                 self.maximum_k2_star_rho_center = dk2_drho_center_root
                 self.maximum_k2 = k2_rho_center_spline(self.maximum_k2_star_rho_center)
+
+        # Debug graph
+        if const.DEBUG is True:
+            self._config_plot()
+            self._config_tidal_plot()
+            self.plot_curve(x_axis="rho_c", y_axis="k2")
+            plt.plot(self.maximum_k2_star_rho_center * uconv.MASS_DENSITY_GU_TO_CGS, self.maximum_k2, linewidth=1, marker=".", markersize=4**2, label="$k2_{max}$")
+            plt.legend()
+            plt.show()
 
         # Return the calculated rho_center
         return self.maximum_k2_star_rho_center

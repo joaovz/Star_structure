@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import qmc
 from tqdm.contrib.concurrent import process_map
+from constants import Constants as const
 from constants import UnitConversion as uconv
 from data_handling import dataframe_to_csv, dict_to_json
 from eos_library import QuarkEOS
@@ -191,8 +192,13 @@ def analyze_strange_stars(parameter_dataframe):
     # Create a list with the rows of the dataframe
     rows_list = [list(row) for row in parameter_dataframe.itertuples()]
 
-    # Execute the analysis for each row in parallel processes, using a progress bar from tqdm
-    results = process_map(analyze_strange_star_family, rows_list, max_workers=processes, chunksize=chunksize)
+    # Check if DEBUG is activated
+    if const.DEBUG is True:
+        # Execute the analysis for each row sequentially
+        results = [analyze_strange_star_family(row) for row in rows_list]
+    else:
+        # Execute the analysis for each row in parallel processes, using a progress bar from tqdm
+        results = process_map(analyze_strange_star_family, rows_list, max_workers=processes, chunksize=chunksize)
 
     # Update the dataframe with the results
     for index, rho_surface, minimum_cs, maximum_stable_rho_center, maximum_mass, maximum_cs, canonical_rho_center, canonical_radius, canonical_lambda, maximum_k2_star_rho_center, maximum_k2 in results:

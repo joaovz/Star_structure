@@ -3,6 +3,7 @@ from time import perf_counter
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import CubicSpline
+from constants import Constants as const
 from constants import DefaultValues as dval
 from constants import UnitConversion as uconv
 from eos_library import PolytropicEOS
@@ -146,6 +147,14 @@ class StarFamily:
             self.maximum_stable_rho_center = dm_drho_center_roots[maximum_mass_index]
             self.maximum_mass = possible_maximum_masses[maximum_mass_index]
 
+        # Debug graph
+        if const.DEBUG is True:
+            self._config_plot()
+            self.plot_curve(x_axis="rho_c", y_axis="M")
+            plt.plot(self.maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS, self.maximum_mass * uconv.MASS_GU_TO_SOLAR_MASS, linewidth=1, marker=".", markersize=4**2, label="$M_{max}$")
+            plt.legend()
+            plt.show()
+
         # Return the calculated rho_center
         return self.maximum_stable_rho_center
 
@@ -172,6 +181,14 @@ class StarFamily:
         if mass_minus_canonical_rho_center_roots.size > 0:
             self.canonical_rho_center = mass_minus_canonical_rho_center_roots[0]
             self.canonical_radius = radius_rho_center_spline(self.canonical_rho_center)
+
+        # Debug graph
+        if const.DEBUG is True:
+            self._config_plot()
+            self.plot_curve(x_axis="R", y_axis="M")
+            plt.plot(self.canonical_radius / 10**3, 1.4, linewidth=1, marker=".", markersize=4**2, label="$R_{canonical}$")
+            plt.legend()
+            plt.show()
 
         # Return the calculated rho_center
         return self.canonical_rho_center

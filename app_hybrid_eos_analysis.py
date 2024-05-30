@@ -133,7 +133,8 @@ def analyze_hybrid_star_family(dataframe_row):
     sly4_eos = SLy4EOS(sly4_eos_rho_space)
 
     # Create the HybridEOS object
-    hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv")
+    sly4_maximum_stable_rho_center = 2.865e15 * uconv.MASS_DENSITY_CGS_TO_GU
+    hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv", sly4_maximum_stable_rho_center)
 
     # EOS analysis
 

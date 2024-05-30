@@ -10,10 +10,11 @@ def main():
     """
 
     # Constants
-    FIGURES_PATH = "figures/app_hybrid_eos"             # Path of the figures folder
-    MAX_RHO = 3e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
-    EOS_LOGSPACE = np.logspace(-11.0, 0.0, 10000)       # Logspace used to create the EOS
-    STARS_LOGSPACE = np.logspace(-2.0, 0.0, 50)         # Logspace used to create the star family
+    FIGURES_PATH = "figures/app_hybrid_eos"                     # Path of the figures folder
+    EOS_MAX_RHO = 3.00e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density used to create the EOS [m^-2]
+    STARS_MAX_RHO = 2.92e15 * uconv.MASS_DENSITY_CGS_TO_GU      # Maximum density used to create the star family [m^-2]
+    EOS_LOGSPACE = np.logspace(-11.0, 0.0, 10000)               # Logspace used to create the EOS
+    STARS_LOGSPACE = np.logspace(-2.0, 0.0, 50)                 # Logspace used to create the star family
 
     # Create the QuarkEOS object (values chosen to build a hybrid star)
     a2 = 100**2     # Model free parameter [MeV^2]
@@ -22,14 +23,15 @@ def main():
     quark_eos = QuarkEOS(a2, a4, B)
 
     # Create the EOS object
-    sly4_eos_rho_space = MAX_RHO * EOS_LOGSPACE
+    sly4_eos_rho_space = EOS_MAX_RHO * EOS_LOGSPACE
     sly4_eos = SLy4EOS(sly4_eos_rho_space)
 
     # Create the HybridEOS object
-    hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv")
+    sly4_maximum_stable_rho_center = 2.865e15 * uconv.MASS_DENSITY_CGS_TO_GU
+    hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv", sly4_maximum_stable_rho_center)
 
     # Set the central pressure of the star and p_center space of the star family
-    rho_center = MAX_RHO                    # Central density [m^-2]
+    rho_center = STARS_MAX_RHO              # Central density [m^-2]
     p_center = hybrid_eos.p(rho_center)     # Central pressure [m^-2]
     p_center_space = p_center * STARS_LOGSPACE
 

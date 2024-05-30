@@ -13,7 +13,7 @@ def main():
     # Constants
     FIGURES_PATH = "figures/app_polytropic_eos"                     # Path of the figures folder
     EXPECTED_K2_VS_C_FILE = "data/Polytropic_n_1_k2_vs_C.csv"       # File with the expected Love number vs Compactness curve
-    MAX_RHO = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU               # Maximum density [m^-2]
+    STARS_MAX_RHO = 5.80e15 * uconv.MASS_DENSITY_CGS_TO_GU          # Maximum density used to create the star family [m^-2]
     STARS_LOGSPACE = np.logspace(-5.0, 0.0, 50)                     # Logspace used to create the star family
 
     # EOS parameters
@@ -27,7 +27,7 @@ def main():
     eos = PolytropicEOS(k, n)
 
     # Set the central pressure of the star and p_center space of the star family
-    rho_center = MAX_RHO                # Central density [m^-2]
+    rho_center = STARS_MAX_RHO          # Central density [m^-2]
     p_center = eos.p(rho_center)        # Central pressure [m^-2]
     p_center_space = p_center * STARS_LOGSPACE
 

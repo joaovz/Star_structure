@@ -505,13 +505,14 @@ class HybridEOS(EOS):
     """Class with the functions of the Hybrid EOS, defined by the a Quark EOS and some Hadron EOS
     """
 
-    def __init__(self, quark_eos, hadron_eos, hadron_eos_table_file_name):
+    def __init__(self, quark_eos, hadron_eos, hadron_eos_table_file_name, hadron_eos_maximum_stable_rho_center):
         """Initialization method
 
         Args:
             quark_eos (EOS object): Object of the class QuarkEOS
             hadron_eos (EOS object): Object of the class EOS, or a class inherited from EOS
             hadron_eos_table_file_name (str): File name of the Hadron EOS table with (rho, p, nb) columns
+            hadron_eos_maximum_stable_rho_center (float): Maximum stable central density of the Hadron EOS star family [m^-2]
 
         Raises:
             RuntimeError: Exception in case the solver fails to find the transition pressure
@@ -524,6 +525,7 @@ class HybridEOS(EOS):
         self.quark_eos = quark_eos
         self.hadron_eos = hadron_eos
         self.hadron_eos_table_file_name = hadron_eos_table_file_name
+        self.hadron_eos_maximum_stable_rho_center = hadron_eos_maximum_stable_rho_center
 
         # Initialize variables
         self.p_trans = None
@@ -557,7 +559,7 @@ class HybridEOS(EOS):
         # Open the HadronEOS table file, using Natural Units (NU)
         nb_fm_3_to_si = (10**-15)**(-3)     # Conversion factor from fm^-3 to m^-3 (SI)
         nb_fm_3_to_nu = nb_fm_3_to_si * uconv.NUMBER_DENSITY_SI_TO_NU
-        (rho_hadron, self.p_hadron, nb_hadron) = csv_to_arrays(
+        (rho_hadron_nu, self.p_hadron_nu, nb_hadron_nu) = csv_to_arrays(
             file_name=self.hadron_eos_table_file_name,
             usecols=(0, 1, 2),
             unit_conversion=(uconv.MASS_DENSITY_CGS_TO_GU * uconv.ENERGY_DENSITY_GU_TO_NU,
@@ -565,13 +567,13 @@ class HybridEOS(EOS):
                              nb_fm_3_to_nu))
 
         # Calculate the HadronEOS Gibbs free energy per particle g = (rho + p) / nb
-        self.g_hadron = (rho_hadron + self.p_hadron) / nb_hadron
+        self.g_hadron_nu = (rho_hadron_nu + self.p_hadron_nu) / nb_hadron_nu
 
         # Calculate the QuarkEOS Gibbs free energy per particle g = 3 mu
-        self.g_quark = 3 * self.quark_eos.mu_of_p(self.p_hadron)
+        self.g_quark_nu = 3 * self.quark_eos.mu_of_p(self.p_hadron_nu)
 
-        # Create the (g_hadron - g_quark) vs p_hadron interpolated function
-        g_hadron_minus_g_quark_spline = CubicSpline(self.p_hadron, self.g_hadron - self.g_quark, extrapolate=False)
+        # Create the (g_hadron_nu - g_quark_nu) vs p_hadron_nu interpolated function
+        g_hadron_minus_g_quark_spline = CubicSpline(self.p_hadron_nu, self.g_hadron_nu - self.g_quark_nu, extrapolate=False)
 
         # Calculate the transition pressure
         g_hadron_minus_g_quark_roots = g_hadron_minus_g_quark_spline.roots()
@@ -582,7 +584,7 @@ class HybridEOS(EOS):
             self.is_hybrid_eos = True       # Indicate that this is indeed a hybrid EOS
         else:
             # Check if the EOS is a quark EOS or a hadron EOS
-            if self.g_hadron[0] < self.g_quark[0]:
+            if self.g_hadron_nu[0] < self.g_quark_nu[0]:
                 self.is_hadron_eos = True
             else:
                 self.is_quark_eos = True
@@ -593,8 +595,7 @@ class HybridEOS(EOS):
             self.rho_trans_max = self.quark_eos.rho(self.p_trans)
 
         # Set the EOS as a hadron EOS if the phase transition occurs only at a density greater than the maximum stable density
-        self._check_stability(self.p_hadron * uconv.PRESSURE_NU_TO_GU)
-        if self.is_hybrid_eos and (self.maximum_stable_rho is not None) and (self.rho_trans_min >= self.maximum_stable_rho):
+        if (self.is_hybrid_eos is True) and (self.rho_trans_min >= self.hadron_eos_maximum_stable_rho_center):
             self.is_hybrid_eos = False
             self.is_hadron_eos = True
 
@@ -607,8 +608,8 @@ class HybridEOS(EOS):
 
         # Create the graph
         plt.figure(figsize=(6.0, 4.5))
-        plt.plot(self.p_hadron, self.g_hadron, linewidth=1, label="Hadron EOS")
-        plt.plot(self.p_hadron, self.g_quark, linewidth=1, label="Quark EOS")
+        plt.plot(self.p_hadron_nu, self.g_hadron_nu, linewidth=1, label="Hadron EOS")
+        plt.plot(self.p_hadron_nu, self.g_quark_nu, linewidth=1, label="Quark EOS")
         if self.p_trans is not None:
             plt.plot(self.p_trans_nu, self.g_trans_nu, linewidth=1, marker=".", markersize=4**2, label="Transition")
         plt.xlabel("$p ~ [MeV^4]$", fontsize=10)
@@ -837,7 +838,7 @@ def main():
     polytropic_eos = PolytropicEOS(k=1.0e8, n=1)
 
     # Set the p_space
-    max_rho = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    max_rho = 5.80e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
     max_p = polytropic_eos.p(max_rho)                       # Maximum pressure [m^-2]
     p_space = max_p * np.logspace(-16.0, 0.0, 1000)
 
@@ -859,7 +860,7 @@ def main():
     quark_eos = QuarkEOS(a2, a4, B)
 
     # Set the p_space
-    max_rho = 1.502e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    max_rho = 1.51e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
     max_p = quark_eos.p(max_rho)                            # Maximum pressure [m^-2]
     p_space = max_p * np.logspace(-15.0, 0.0, 1000)
 
@@ -875,7 +876,7 @@ def main():
     # BSk20 EOS test
 
     # Set the rho_space
-    max_rho = 2.181e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    max_rho = 2.19e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
     rho_space = max_rho * np.logspace(-11.0, 0.0, 10000)
 
     # Create the EOS object
@@ -896,7 +897,7 @@ def main():
     # SLy4 EOS test
 
     # Set the rho_space
-    max_rho = 2.864e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    max_rho = 2.87e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
     rho_space = max_rho * np.logspace(-11.0, 0.0, 10000)
 
     # Create the EOS object
@@ -920,7 +921,7 @@ def main():
     table_sly4_eos = TableEOS(file_name="data/SLy4_EOS.csv", eos_name="TableSLy4EOS")
 
     # Set the p_space
-    max_rho = 2.864e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    max_rho = 2.87e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
     max_p = table_sly4_eos.p(max_rho)                       # Maximum pressure [m^-2]
     p_space = max_p * np.logspace(-11.0, 0.0, 1000)
 
@@ -942,8 +943,8 @@ def main():
     quark_eos = QuarkEOS(a2, a4, B)
 
     # Set the p_space
-    max_rho = 4e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
-    max_p = quark_eos.p(max_rho)                        # Maximum pressure [m^-2]
+    max_rho = 2.92e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
+    max_p = quark_eos.p(max_rho)                            # Maximum pressure [m^-2]
     p_space = max_p * np.logspace(-15.0, 0.0, 5000)
 
     # Set the rho_space
@@ -953,7 +954,8 @@ def main():
     sly4_eos = SLy4EOS(rho_space)
 
     # Create the HybridEOS object
-    hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv")
+    sly4_maximum_stable_rho_center = 2.865e15 * uconv.MASS_DENSITY_CGS_TO_GU
+    hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv", sly4_maximum_stable_rho_center)
 
     # Print the transition pressure calculated
     if hybrid_eos.p_trans is not None:

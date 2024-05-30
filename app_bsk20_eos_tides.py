@@ -14,7 +14,8 @@ def main():
     FIGURES_PATH = "figures/app_bsk20_eos"                          # Path of the figures folder
     EXPECTED_M_VS_R_FILE = "data/BSk20_M_vs_R.csv"                  # File with the expected Mass vs Radius curve
     EXPECTED_LAMBDA_VS_C_FILE = "data/BSk20_Lambda_vs_C.csv"        # File with the expected Lambda vs Compactness curve
-    MAX_RHO = 2.181e15 * uconv.MASS_DENSITY_CGS_TO_GU               # Maximum density [m^-2]
+    EOS_MAX_RHO = 2.20e15 * uconv.MASS_DENSITY_CGS_TO_GU            # Maximum density used to create the EOS [m^-2]
+    STARS_MAX_RHO = 2.19e15 * uconv.MASS_DENSITY_CGS_TO_GU          # Maximum density used to create the star family [m^-2]
     EOS_LOGSPACE = np.logspace(-11.0, 0.0, 10000)                   # Logspace used to create the EOS
     STARS_LOGSPACE = np.logspace(-2.2, 0.0, 50)                     # Logspace used to create the star family
 
@@ -26,11 +27,11 @@ def main():
     expected_k2 = (3 / 2) * expected_C**5 * expected_Lambda
 
     # Create the EOS object
-    eos_rho_space = MAX_RHO * EOS_LOGSPACE
+    eos_rho_space = EOS_MAX_RHO * EOS_LOGSPACE
     eos = BSk20EOS(eos_rho_space)
 
     # Set the central pressure of the star and p_center space of the star family
-    rho_center = MAX_RHO                # Central density [m^-2]
+    rho_center = STARS_MAX_RHO          # Central density [m^-2]
     p_center = eos.p(rho_center)        # Central pressure [m^-2]
     p_center_space = p_center * STARS_LOGSPACE
 

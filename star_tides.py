@@ -271,7 +271,7 @@ def main():
     """
 
     # Constants
-    MAX_RHO = 5.691e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density [m^-2]
+    STAR_MAX_RHO = 5.80e15 * uconv.MASS_DENSITY_CGS_TO_GU       # Maximum density used to create the star [m^-2]
 
     # EOS parameters
     k = 1.0e8       # Proportional constant [dimensionless]
@@ -281,7 +281,7 @@ def main():
     eos = PolytropicEOS(k, n)
 
     # Set the central pressure of the star
-    rho_center = MAX_RHO                # Central density [m^-2]
+    rho_center = STAR_MAX_RHO           # Central density [m^-2]
     p_center = eos.p(rho_center)        # Central pressure [m^-2]
 
     # Create the star object

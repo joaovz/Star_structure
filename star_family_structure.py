@@ -18,8 +18,8 @@ class StarFamily:
     # Class constants
     FIGURES_PATH = "figures/star_family"                # Path of the figures folder
     MAX_RHO = 1.0e16 * uconv.MASS_DENSITY_CGS_TO_GU     # Maximum density [m^-2]
-    WIDE_LOGSPACE = np.logspace(-3.0, 0.0, 10)          # Wide logspace used in values search
-    NARROW_LOGSPACE = np.logspace(-0.1, 0.1, 10)        # Narrow logspace used in values search
+    WIDE_LOGSPACE = np.logspace(-3.0, 0.0, 15)          # Wide logspace used in values search
+    NARROW_LOGSPACE = np.logspace(-0.2, 0.2, 15)        # Narrow logspace used in values search
 
     def __init__(self, eos, p_center_space, p_surface=dval.P_SURFACE, r_init=dval.R_INIT, r_final=dval.R_FINAL,
                  method=dval.IVP_METHOD, max_step=dval.MAX_STEP, atol_tov=dval.ATOL_TOV, rtol=dval.RTOL):
@@ -64,8 +64,10 @@ class StarFamily:
         self.phase_trans_mass_array = np.zeros(self.p_center_space.size)        # Array with the masses at the phase transitions of the stars [m]
         self.maximum_mass = np.inf                                              # Maximum mass of the star family [m]
         self.maximum_stable_rho_center = self.MAX_RHO                           # Maximum stable central density of the star family [m^-2]
-        self.canonical_rho_center = self.MAX_RHO                                # Central density of the canonical star (M = 1.4 M_sun) [m^-2]
+        self.maximum_stable_p_center = self.eos.p(self.MAX_RHO)                 # Maximum stable central pressure of the star family [m^-2]
         self.canonical_radius = np.inf                                          # Radius of the canonical star (M = 1.4 M_sun) [m]
+        self.canonical_rho_center = self.MAX_RHO                                # Central density of the canonical star (M = 1.4 M_sun) [m^-2]
+        self.canonical_p_center = self.eos.p(self.MAX_RHO)                      # Central pressure of the canonical star (M = 1.4 M_sun) [m^-2]
 
     def _config_plot(self):
         """Method that configures the plotting
@@ -135,16 +137,17 @@ class StarFamily:
         if solve_first is True:
             self.solve_tov(False)
 
-        # Create the mass vs rho_center interpolated function and calculate its derivative, used in the stability criterion
-        mass_rho_center_spline = CubicSpline(self.rho_center_space, self.mass_array, extrapolate=False)
-        dm_drho_center_spline = mass_rho_center_spline.derivative()
+        # Create the mass vs p_center interpolated function and calculate its derivative
+        mass_p_center_spline = CubicSpline(self.p_center_space, self.mass_array, extrapolate=False)
+        dm_dp_center_spline = mass_p_center_spline.derivative()
 
-        # Calculate the maximum stable rho_center and maximum mass
-        dm_drho_center_roots = dm_drho_center_spline.roots()
-        if dm_drho_center_roots.size > 0:
-            possible_maximum_masses = mass_rho_center_spline(dm_drho_center_roots)
+        # Calculate the maximum stable p_center, maximum stable rho_center, and maximum mass
+        dm_dp_center_roots = dm_dp_center_spline.roots()
+        if dm_dp_center_roots.size > 0:
+            possible_maximum_masses = mass_p_center_spline(dm_dp_center_roots)
             maximum_mass_index = np.argmax(possible_maximum_masses)
-            self.maximum_stable_rho_center = dm_drho_center_roots[maximum_mass_index]
+            self.maximum_stable_p_center = dm_dp_center_roots[maximum_mass_index]
+            self.maximum_stable_rho_center = self.eos.rho(self.maximum_stable_p_center)
             self.maximum_mass = possible_maximum_masses[maximum_mass_index]
 
         # Debug graph
@@ -169,18 +172,19 @@ class StarFamily:
         if solve_first is True:
             self.solve_tov(False)
 
-        # Create the (mass - canonical_mass) vs rho_center interpolated function
+        # Create the (mass - canonical_mass) vs p_center interpolated function
         mass_minus_canonical_array = self.mass_array - 1.4 * uconv.MASS_SOLAR_MASS_TO_GU
-        mass_minus_canonical_rho_center_spline = CubicSpline(self.rho_center_space, mass_minus_canonical_array, extrapolate=False)
+        mass_minus_canonical_p_center_spline = CubicSpline(self.p_center_space, mass_minus_canonical_array, extrapolate=False)
 
-        # Create the radius vs rho_center interpolated function
-        radius_rho_center_spline = CubicSpline(self.rho_center_space, self.radius_array, extrapolate=False)
+        # Create the radius vs p_center interpolated function
+        radius_p_center_spline = CubicSpline(self.p_center_space, self.radius_array, extrapolate=False)
 
-        # Calculate the canonical radius and rho_center
-        mass_minus_canonical_rho_center_roots = mass_minus_canonical_rho_center_spline.roots()
-        if mass_minus_canonical_rho_center_roots.size > 0:
-            self.canonical_rho_center = mass_minus_canonical_rho_center_roots[0]
-            self.canonical_radius = radius_rho_center_spline(self.canonical_rho_center)
+        # Calculate the canonical radius, p_center, and rho_center
+        mass_minus_canonical_p_center_roots = mass_minus_canonical_p_center_spline.roots()
+        if mass_minus_canonical_p_center_roots.size > 0:
+            self.canonical_p_center = mass_minus_canonical_p_center_roots[0]
+            self.canonical_rho_center = self.eos.rho(self.canonical_p_center)
+            self.canonical_radius = radius_p_center_spline(self.canonical_p_center)
 
         # Debug graph
         if const.DEBUG is True:

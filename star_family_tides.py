@@ -45,11 +45,12 @@ class DeformedStarFamily(StarFamily):
         self.star_object = DeformedStar(eos, self.p_center_space[0], p_surface, r_init, r_final, method, max_step, atol_tov, atol_tidal, rtol)
 
         # Initialize deformed star family properties
-        self.k2_array = np.zeros(self.p_center_space.size)          # Array with the tidal Love numbers of the stars [dimensionless]
-        self.lambda_array = np.zeros(self.p_center_space.size)      # Array with the tidal deformabilities of the stars [dimensionless]
-        self.canonical_lambda = np.inf                              # Tidal deformability of the canonical star (M = 1.4 M_sun) [dimensionless]
-        self.maximum_k2_star_rho_center = self.MAX_RHO              # Central density of the star with the maximum k2 [m^-2]
-        self.maximum_k2 = np.inf                                    # Maximum k2 of the star family [dimensionless]
+        self.k2_array = np.zeros(self.p_center_space.size)              # Array with the tidal Love numbers of the stars [dimensionless]
+        self.lambda_array = np.zeros(self.p_center_space.size)          # Array with the tidal deformabilities of the stars [dimensionless]
+        self.canonical_lambda = np.inf                                  # Tidal deformability of the canonical star (M = 1.4 M_sun) [dimensionless]
+        self.maximum_k2 = np.inf                                        # Maximum k2 of the star family [dimensionless]
+        self.maximum_k2_star_rho_center = self.MAX_RHO                  # Central density of the star with the maximum k2 [m^-2]
+        self.maximum_k2_star_p_center = self.eos.p(self.MAX_RHO)        # Central pressure of the star with the maximum k2 [m^-2]
 
     def _config_tidal_plot(self):
         """Method that configures the plotting of the tidal related curves
@@ -90,22 +91,24 @@ class DeformedStarFamily(StarFamily):
         if solve_first is True:
             self.solve_combined_tov_tidal(False)
 
-        # Calculate the maximum k2 star rho_center and k2 using the array directly
+        # Calculate the maximum k2 star p_center, rho_center, and k2 using the array directly
         k2_max_index = np.argmax(self.k2_array)
+        self.maximum_k2_star_p_center = self.p_center_space[k2_max_index]
         self.maximum_k2_star_rho_center = self.rho_center_space[k2_max_index]
         self.maximum_k2 = self.k2_array[k2_max_index]
 
-        # Create the k2 vs rho_center interpolated function and calculate its derivative
-        k2_rho_center_spline = CubicSpline(self.rho_center_space, self.k2_array, extrapolate=False)
-        dk2_drho_center_spline = k2_rho_center_spline.derivative()
+        # Create the k2 vs p_center interpolated function and calculate its derivative
+        k2_p_center_spline = CubicSpline(self.p_center_space, self.k2_array, extrapolate=False)
+        dk2_dp_center_spline = k2_p_center_spline.derivative()
 
-        # Calculate the maximum k2 star rho_center and k2
-        dk2_drho_center_roots = dk2_drho_center_spline.roots()
-        for dk2_drho_center_root in dk2_drho_center_roots:
-            possible_maximum_k2 = k2_rho_center_spline(dk2_drho_center_root)
+        # Calculate the maximum k2 star p_center, rho_center, and k2
+        dk2_dp_center_roots = dk2_dp_center_spline.roots()
+        for dk2_dp_center_root in dk2_dp_center_roots:
+            possible_maximum_k2 = k2_p_center_spline(dk2_dp_center_root)
             if possible_maximum_k2 > self.maximum_k2:
-                self.maximum_k2_star_rho_center = dk2_drho_center_root
-                self.maximum_k2 = k2_rho_center_spline(self.maximum_k2_star_rho_center)
+                self.maximum_k2_star_p_center = dk2_dp_center_root
+                self.maximum_k2_star_rho_center = self.eos.rho(self.maximum_k2_star_p_center)
+                self.maximum_k2 = k2_p_center_spline(self.maximum_k2_star_p_center)
 
         # Debug graph
         if const.DEBUG is True:

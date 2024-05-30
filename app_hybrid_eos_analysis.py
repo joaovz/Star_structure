@@ -150,7 +150,11 @@ def analyze_hybrid_star_family(dataframe_row):
 
     # Get the surface pressure and minimum sound speed
     rho_surface = hybrid_eos.rho_min
-    minimum_cs = hybrid_eos.c_s(rho_surface)
+    if hybrid_eos.is_hybrid_eos is True:
+        # Sound speed is zero at the phase transition
+        minimum_cs = 0.0
+    else:
+        minimum_cs = hybrid_eos.c_s(rho_surface)
 
     # TOV and tidal analysis
 

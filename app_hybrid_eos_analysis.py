@@ -71,9 +71,22 @@ def calc_B_2f_lim(a2, a4):
         a4 (array of float): a4 parameter of the EOS [dimensionless]
 
     Returns:
-        array of float: 3-flavor limit of B [MeV^4]
+        array of float: 2-flavor limit of B [MeV^4]
     """
     return (g0**2 / (54 * np.pi**2)) * ((4 * g0**2 * a4) / ((1 + 2**(1 / 3))**3) - 3 * a2)
+
+
+def calc_a4_2f_lim(a2, B):
+    """Function that calculates the 2-flavor limit of the a4 parameter
+
+    Args:
+        a2 (array of float): a2 parameter of the EOS [MeV^2]
+        B (array of float): B parameter of the EOS [MeV^4]
+
+    Returns:
+        array of float: 2-flavor limit of a4 [dimensionless]
+    """
+    return (((1 + 2**(1 / 3))**3) / (4 * g0**2)) * (((54 * np.pi**2) / g0**2) * B + 3 * a2)
 
 
 def generate_hybrid_stars(mesh_size=21):
@@ -381,24 +394,30 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_hybrid_eos"):
         figure_path (str, optional): Path used to save the figure. Defaults to "figures/app_hybrid_eos"
     """
 
-    # Define the (a2, a4) rectangular meshgrid
-    a2_range = np.linspace(a2_min, a2_max, mesh_size)
-    a4_range = np.linspace(a4_min, a4_max, mesh_size)
+    # Define the (a2, a4) and (a2, B) rectangular meshgrids, using nonlinear scales to make the graph look better
+    a2_1_2_range = np.linspace(a2_min**(1 / 2), a2_max**(1 / 2), mesh_size)
+    a2_range = a2_1_2_range**2
+    a4_1_2_range = np.linspace(a4_min**(1 / 2), a4_max**(1 / 2), mesh_size)
+    a4_range = a4_1_2_range**2
+    B_1_4_range = np.linspace(B_min**(1 / 4), B_max**(1 / 4), mesh_size)
+    B_range = B_1_4_range**4
     (a2, a4) = np.meshgrid(a2_range, a4_range)
+    (a2, B) = np.meshgrid(a2_range, B_range)
 
-    # Create the B_3f_lim and B_2f_lim surfaces
+    # Create the B_3f_lim and a4_2f_lim surfaces. Using a4 surface for the 2f limit to make the graph look better
     B_3f_lim_surface = calc_B_3f_lim(a2, a4)
-    B_2f_lim_surface = calc_B_2f_lim(a2, a4)
+    a4_2f_lim_surface = calc_a4_2f_lim(a2, B)
 
-    # Apply the mask to the meshgrid
+    # Apply the mask to the meshgrids
     mesh_mask_3f = (a2 > alpha * a4)
-    mesh_mask_2f = ((a2 < alpha * a4) | (a2 > beta * a4))
+    B_2f_3f_line = calc_B_3f_lim(a2, a2 / alpha)
+    mesh_mask_2f = ((B < B_min) | (B > B_2f_3f_line))
     a2_3f_masked = np.ma.masked_where(mesh_mask_3f, a2)
     a2_2f_masked = np.ma.masked_where(mesh_mask_2f, a2)
     a4_3f_masked = np.ma.masked_where(mesh_mask_3f, a4)
-    a4_2f_masked = np.ma.masked_where(mesh_mask_2f, a4)
+    a4_2f_lim_surface_masked = np.ma.masked_where(mesh_mask_2f, a4_2f_lim_surface)
     B_3f_lim_surface_masked = np.ma.masked_where(mesh_mask_3f, B_3f_lim_surface)
-    B_2f_lim_surface_masked = np.ma.masked_where(mesh_mask_2f, B_2f_lim_surface)
+    B_2f_masked = np.ma.masked_where(mesh_mask_2f, B)
 
     # Create figure and change properties
     (fig, ax) = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(5.0, 4.0), constrained_layout=True)
@@ -416,9 +435,9 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_hybrid_eos"):
     a2_1_2_3f_masked = a2_3f_masked**(1 / 2)
     a2_1_2_2f_masked = a2_2f_masked**(1 / 2)
     B_1_4_3f_lim_surface_masked = B_3f_lim_surface_masked**(1 / 4)
-    B_1_4_2f_lim_surface_masked = B_2f_lim_surface_masked**(1 / 4)
+    B_1_4_2f_masked = B_2f_masked**(1 / 4)
     ax.plot_surface(a2_1_2_3f_masked, a4_3f_masked, B_1_4_3f_lim_surface_masked, cmap=cm.Reds, rstride=10, cstride=10, alpha=0.8, label="$B_{3f}^{1/4}$")
-    ax.plot_surface(a2_1_2_2f_masked, a4_2f_masked, B_1_4_2f_lim_surface_masked, cmap=cm.Blues, rstride=10, cstride=10, alpha=0.8, label="$B_{2f}^{1/4}$")
+    ax.plot_surface(a2_1_2_2f_masked, a4_2f_lim_surface_masked, B_1_4_2f_masked, cmap=cm.Blues, rstride=10, cstride=10, alpha=0.8, label="$B_{2f}^{1/4}$")
     ax.legend(loc=(0.7, 0.25))
 
     # Add each contour plot (grey projections on each plane)
@@ -427,9 +446,9 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_hybrid_eos"):
     ax.contourf(a2_1_2_3f_masked, a4_3f_masked, B_1_4_3f_lim_surface_masked, levels=0, zdir="y", offset=a4_max, colors="gray", alpha=0.7, antialiased=True)
     ax.contourf(a2_1_2_3f_masked, a4_3f_masked, B_1_4_3f_lim_surface_masked, levels=0, zdir="z", offset=0, colors="gray", alpha=0.7, antialiased=True)
     # B_2f_lim surface
-    ax.contourf(a2_1_2_2f_masked, a4_2f_masked, B_1_4_2f_lim_surface_masked, levels=0, zdir="x", offset=a2_max**(1 / 2), colors="gray", alpha=0.7, antialiased=True)
-    ax.contourf(a2_1_2_2f_masked, a4_2f_masked, B_1_4_2f_lim_surface_masked, levels=0, zdir="y", offset=a4_max, colors="gray", alpha=0.7, antialiased=True)
-    ax.contourf(a2_1_2_2f_masked, a4_2f_masked, B_1_4_2f_lim_surface_masked, levels=0, zdir="z", offset=0, colors="gray", alpha=0.7, antialiased=True)
+    ax.contourf(a2_1_2_2f_masked, a4_2f_lim_surface_masked, B_1_4_2f_masked, levels=0, zdir="x", offset=a2_max**(1 / 2), colors="gray", alpha=0.7, antialiased=True)
+    ax.contourf(a2_1_2_2f_masked, a4_2f_lim_surface_masked, B_1_4_2f_masked, levels=0, zdir="y", offset=a4_max, colors="gray", alpha=0.7, antialiased=True)
+    ax.contourf(a2_1_2_2f_masked, a4_2f_lim_surface_masked, B_1_4_2f_masked, levels=0, zdir="z", offset=0, colors="gray", alpha=0.7, antialiased=True)
 
     # Create the folder if necessary and save the figure
     os.makedirs(figure_path, exist_ok=True)
@@ -579,7 +598,7 @@ def main():
     dictionary_json_path = "results"                                            # Path of the results folder
     dictionary_json_name = "hybrid_eos_parameters_limits.json"                  # Name of the json file with the parameters limits
     properties_dictionary_json_name = "hybrid_eos_properties_limits.json"       # Name of the json file with the properties limits
-    parameter_space_mesh_size = 1001                                            # Number of points used in the meshgrid for the parameter space plot
+    parameter_space_mesh_size = 2001                                            # Number of points used in the meshgrid for the parameter space plot
     scatter_plot_mesh_size = 11                                                 # Number of points used in the meshgrid for the scatter plot
 
     # Create the parameter space plot

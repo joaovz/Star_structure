@@ -28,6 +28,16 @@ B_max = 180**4                                                  # Maximum B para
 MAX_RHO = 1e16 * uconv.MASS_DENSITY_CGS_TO_GU                   # Maximum density [m^-2]
 EOS_LOGSPACE = np.logspace(-15.0, 0.0, 10000)                   # Logspace used to create the EOS
 STARS_LOGSPACE = np.logspace(-2.0, 0.0, 20)                     # Logspace used to create the star family
+HADRON_EOS_PROPERTIES = {                                       # Hadron EOS properties in GU, used to avoid calculations when the Hybrid EOS turns out to be a Hadron EOS
+    "maximum_stable_rho_center": 2.121779980021422e-09,
+    "maximum_mass": 3024.21699470999,
+    "maximum_cs": 0.9880562481221495,
+    "canonical_rho_center": 7.31938864684075e-10,
+    "canonical_radius": 11699.848065179254,
+    "canonical_lambda": 297.0426007982706,
+    "maximum_k2_star_rho_center": 4.673405942362452e-10,
+    "maximum_k2": 0.10564216488608084,
+}
 
 # Observation data
 M_max_inf_limit = 2.13                                          # Inferior limit of the maximum mass [solar mass] (Romani - 2 sigma)
@@ -159,31 +169,47 @@ def analyze_hybrid_star_family(dataframe_row):
 
     # TOV and tidal analysis
 
-    # Set the central pressure of the star
-    p_center = max_p        # Central pressure [m^-2]
+    # Check if the EOS is a Hadron EOS
+    if hybrid_eos.is_hadron_eos is True:
 
-    # Set the p_center space that characterizes the star family
-    p_center_space = p_center * STARS_LOGSPACE
+        # Get the EOS properties from the constant dict to avoid unnecessary calculations
+        maximum_stable_rho_center = HADRON_EOS_PROPERTIES["maximum_stable_rho_center"]
+        maximum_mass = HADRON_EOS_PROPERTIES["maximum_mass"]
+        maximum_cs = HADRON_EOS_PROPERTIES["maximum_cs"]
+        canonical_rho_center = HADRON_EOS_PROPERTIES["canonical_rho_center"]
+        canonical_radius = HADRON_EOS_PROPERTIES["canonical_radius"]
+        canonical_lambda = HADRON_EOS_PROPERTIES["canonical_lambda"]
+        maximum_k2_star_rho_center = HADRON_EOS_PROPERTIES["maximum_k2_star_rho_center"]
+        maximum_k2 = HADRON_EOS_PROPERTIES["maximum_k2"]
 
-    # Create the star family object
-    star_family_object = DeformedStarFamily(hybrid_eos, p_center_space)
+    # Calculate the EOS properties if it is a Hybrid EOS or a Quark EOS
+    else:
 
-    # Find the maximum mass star
-    star_family_object.find_maximum_mass_star()
-    maximum_stable_rho_center = star_family_object.maximum_stable_rho_center
-    maximum_mass = star_family_object.maximum_mass
-    maximum_cs = hybrid_eos.c_s(maximum_stable_rho_center)
+        # Set the central pressure of the star
+        p_center = max_p        # Central pressure [m^-2]
 
-    # Find the canonical star
-    star_family_object.find_canonical_star()
-    canonical_rho_center = star_family_object.canonical_rho_center
-    canonical_radius = star_family_object.canonical_radius
-    canonical_lambda = star_family_object.canonical_lambda
+        # Set the p_center space that characterizes the star family
+        p_center_space = p_center * STARS_LOGSPACE
 
-    # Find the maximum k2 star
-    star_family_object.find_maximum_k2_star()
-    maximum_k2_star_rho_center = star_family_object.maximum_k2_star_rho_center
-    maximum_k2 = star_family_object.maximum_k2
+        # Create the star family object
+        star_family_object = DeformedStarFamily(hybrid_eos, p_center_space)
+
+        # Find the maximum mass star
+        star_family_object.find_maximum_mass_star()
+        maximum_stable_rho_center = star_family_object.maximum_stable_rho_center
+        maximum_mass = star_family_object.maximum_mass
+        maximum_cs = hybrid_eos.c_s(maximum_stable_rho_center)
+
+        # Find the canonical star
+        star_family_object.find_canonical_star()
+        canonical_rho_center = star_family_object.canonical_rho_center
+        canonical_radius = star_family_object.canonical_radius
+        canonical_lambda = star_family_object.canonical_lambda
+
+        # Find the maximum k2 star
+        star_family_object.find_maximum_k2_star()
+        maximum_k2_star_rho_center = star_family_object.maximum_k2_star_rho_center
+        maximum_k2 = star_family_object.maximum_k2
 
     # Return the index and results
     return (index, rho_surface, minimum_cs, maximum_stable_rho_center, maximum_mass, maximum_cs, canonical_rho_center, canonical_radius, canonical_lambda, maximum_k2_star_rho_center, maximum_k2)

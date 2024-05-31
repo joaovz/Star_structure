@@ -45,6 +45,10 @@ R_canonical_inf_limit = 10.0                                    # Inferior limit
 R_canonical_sup_limit = 13.25                                   # Superior limit of the radius of the canonical star [km]
 Lambda_canonical_sup_limit = 970.0                              # Superior limit of the tidal deformability of the canonical star [dimensionless] (Abbott - 2 sigma)
 
+# EOS type limits (hadron = 0 / hybrid = 1 / quark = 2)
+eos_type_inf_limit = 0.5                                        # Inferior limit of the EOS type
+eos_type_sup_limit = 1.5                                        # Inferior limit of the EOS type
+
 
 def calc_B_3f_lim(a2, a4):
     """Function that calculates the 3-flavor limit of the B parameter
@@ -167,6 +171,14 @@ def analyze_hybrid_star_family(dataframe_row):
     else:
         minimum_cs = hybrid_eos.c_s(rho_surface)
 
+    # Get the EOS type (hadron = 0 / hybrid = 1 / quark = 2)
+    if hybrid_eos.is_hadron_eos is True:
+        eos_type = 0
+    elif hybrid_eos.is_hybrid_eos is True:
+        eos_type = 1
+    else:
+        eos_type = 2
+
     # TOV and tidal analysis
 
     # Check if the EOS is a Hadron EOS
@@ -212,7 +224,7 @@ def analyze_hybrid_star_family(dataframe_row):
         maximum_k2 = star_family_object.maximum_k2
 
     # Return the index and results
-    return (index, rho_surface, minimum_cs, maximum_stable_rho_center, maximum_mass, maximum_cs, canonical_rho_center, canonical_radius, canonical_lambda, maximum_k2_star_rho_center, maximum_k2)
+    return (index, eos_type, rho_surface, minimum_cs, maximum_stable_rho_center, maximum_mass, maximum_cs, canonical_rho_center, canonical_radius, canonical_lambda, maximum_k2_star_rho_center, maximum_k2)
 
 
 def analyze_hybrid_stars(parameter_dataframe):
@@ -245,7 +257,8 @@ def analyze_hybrid_stars(parameter_dataframe):
         results = process_map(analyze_hybrid_star_family, rows_list, max_workers=processes, chunksize=chunksize)
 
     # Update the dataframe with the results
-    for index, rho_surface, minimum_cs, maximum_stable_rho_center, maximum_mass, maximum_cs, canonical_rho_center, canonical_radius, canonical_lambda, maximum_k2_star_rho_center, maximum_k2 in results:
+    for index, eos_type, rho_surface, minimum_cs, maximum_stable_rho_center, maximum_mass, maximum_cs, canonical_rho_center, canonical_radius, canonical_lambda, maximum_k2_star_rho_center, maximum_k2 in results:
+        parameter_dataframe.at[index, "eos_type [0, 1, or 2]"] = eos_type
         parameter_dataframe.at[index, "rho_surface [10^15 g cm^-3]"] = rho_surface * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
         parameter_dataframe.at[index, "cs_min [dimensionless]"] = minimum_cs
         parameter_dataframe.at[index, "rho_center_max [10^15 g cm^-3]"] = maximum_stable_rho_center * uconv.MASS_DENSITY_GU_TO_CGS / 10**15
@@ -258,10 +271,12 @@ def analyze_hybrid_stars(parameter_dataframe):
         parameter_dataframe.at[index, "k2_max [dimensionless]"] = maximum_k2
 
     # Determine the EOS parameters limits based on observation data and create filtered dataframes
+    eos_type_query = f"`eos_type [0, 1, or 2]` > {eos_type_inf_limit} & `eos_type [0, 1, or 2]` < {eos_type_sup_limit}"
     M_max_query = f"`M_max [solar mass]` > {M_max_inf_limit}"
     R_canonical_query = f"`R_canonical [km]` > {R_canonical_inf_limit} & `R_canonical [km]` < {R_canonical_sup_limit}"
     Lambda_canonical_query = f"`Lambda_canonical [dimensionless]` < {Lambda_canonical_sup_limit}"
-    combined_query = f"{M_max_query} & {R_canonical_query} & {Lambda_canonical_query}"
+    combined_query = f"{eos_type_query} & {M_max_query} & {R_canonical_query} & {Lambda_canonical_query}"
+    filtered_eos_type_dataframe = parameter_dataframe.query(eos_type_query)
     filtered_M_max_dataframe = parameter_dataframe.query(M_max_query)
     filtered_R_canonical_dataframe = parameter_dataframe.query(R_canonical_query)
     filtered_Lambda_canonical_dataframe = parameter_dataframe.query(Lambda_canonical_query)
@@ -270,16 +285,19 @@ def analyze_hybrid_stars(parameter_dataframe):
     # Create a dictionary with the minimum and maximum values of the parameters for each observation data restrictions
     parameters_limits = {
         "a2^(1/2)": {
+            "eos_type": (np.min(filtered_eos_type_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_eos_type_dataframe.loc[:, "a2^(1/2) [MeV]"])),
             "M_max": (np.min(filtered_M_max_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_M_max_dataframe.loc[:, "a2^(1/2) [MeV]"])),
             "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_R_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"])),
             "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"])),
         },
         "a4": {
+            "eos_type": (np.min(filtered_eos_type_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_eos_type_dataframe.loc[:, "a4 [dimensionless]"])),
             "M_max": (np.min(filtered_M_max_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_M_max_dataframe.loc[:, "a4 [dimensionless]"])),
             "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_R_canonical_dataframe.loc[:, "a4 [dimensionless]"])),
             "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "a4 [dimensionless]"])),
         },
         "B^(1/4)": {
+            "eos_type": (np.min(filtered_eos_type_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_eos_type_dataframe.loc[:, "B^(1/4) [MeV]"])),
             "M_max": (np.min(filtered_M_max_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_M_max_dataframe.loc[:, "B^(1/4) [MeV]"])),
             "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_R_canonical_dataframe.loc[:, "B^(1/4) [MeV]"])),
             "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "B^(1/4) [MeV]"])),
@@ -287,12 +305,12 @@ def analyze_hybrid_stars(parameter_dataframe):
     }
 
     # Add the combined limits to the dictionary
-    a2_1_2_min = np.max([parameters_limits["a2^(1/2)"]["M_max"][0], parameters_limits["a2^(1/2)"]["R_canonical"][0], parameters_limits["a2^(1/2)"]["Lambda_canonical"][0]])
-    a2_1_2_max = np.min([parameters_limits["a2^(1/2)"]["M_max"][1], parameters_limits["a2^(1/2)"]["R_canonical"][1], parameters_limits["a2^(1/2)"]["Lambda_canonical"][1]])
-    a4_min = np.max([parameters_limits["a4"]["M_max"][0], parameters_limits["a4"]["R_canonical"][0], parameters_limits["a4"]["Lambda_canonical"][0]])
-    a4_max = np.min([parameters_limits["a4"]["M_max"][1], parameters_limits["a4"]["R_canonical"][1], parameters_limits["a4"]["Lambda_canonical"][1]])
-    B_1_4_min = np.max([parameters_limits["B^(1/4)"]["M_max"][0], parameters_limits["B^(1/4)"]["R_canonical"][0], parameters_limits["B^(1/4)"]["Lambda_canonical"][0]])
-    B_1_4_max = np.min([parameters_limits["B^(1/4)"]["M_max"][1], parameters_limits["B^(1/4)"]["R_canonical"][1], parameters_limits["B^(1/4)"]["Lambda_canonical"][1]])
+    a2_1_2_min = np.max([parameters_limits["a2^(1/2)"]["eos_type"][0], parameters_limits["a2^(1/2)"]["M_max"][0], parameters_limits["a2^(1/2)"]["R_canonical"][0], parameters_limits["a2^(1/2)"]["Lambda_canonical"][0]])
+    a2_1_2_max = np.min([parameters_limits["a2^(1/2)"]["eos_type"][1], parameters_limits["a2^(1/2)"]["M_max"][1], parameters_limits["a2^(1/2)"]["R_canonical"][1], parameters_limits["a2^(1/2)"]["Lambda_canonical"][1]])
+    a4_min = np.max([parameters_limits["a4"]["eos_type"][0], parameters_limits["a4"]["M_max"][0], parameters_limits["a4"]["R_canonical"][0], parameters_limits["a4"]["Lambda_canonical"][0]])
+    a4_max = np.min([parameters_limits["a4"]["eos_type"][1], parameters_limits["a4"]["M_max"][1], parameters_limits["a4"]["R_canonical"][1], parameters_limits["a4"]["Lambda_canonical"][1]])
+    B_1_4_min = np.max([parameters_limits["B^(1/4)"]["eos_type"][0], parameters_limits["B^(1/4)"]["M_max"][0], parameters_limits["B^(1/4)"]["R_canonical"][0], parameters_limits["B^(1/4)"]["Lambda_canonical"][0]])
+    B_1_4_max = np.min([parameters_limits["B^(1/4)"]["eos_type"][1], parameters_limits["B^(1/4)"]["M_max"][1], parameters_limits["B^(1/4)"]["R_canonical"][1], parameters_limits["B^(1/4)"]["Lambda_canonical"][1]])
     parameters_limits["a2^(1/2)"]["combined"] = (a2_1_2_min, a2_1_2_max)
     parameters_limits["a4"]["combined"] = (a4_min, a4_max)
     parameters_limits["B^(1/4)"]["combined"] = (B_1_4_min, B_1_4_max)
@@ -449,6 +467,13 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
             "label": "$B^{1/4} ~ [MeV]$",
             "value": parameter_dataframe.loc[:, "B^(1/4) [MeV]"],
         },
+        "eos_type": {
+            "name": "EOS type",
+            "label": "EOS type [0 (hadron), 1 (hybrid), or 2 (quark)]",
+            "value": parameter_dataframe.loc[:, "eos_type [0, 1, or 2]"],
+            "inf_limit": eos_type_inf_limit,
+            "sup_limit": eos_type_sup_limit,
+        },
         "M_max": {
             "name": "Maximum mass",
             "label": "$M_{max} ~ [M_{\\odot}]$",
@@ -474,6 +499,9 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
 
     # Create a list with all the graphs to be plotted
     graphs_list = [
+        ["a2^(1/2)", "eos_type"],
+        ["a4", "eos_type"],
+        ["B^(1/4)", "eos_type"],
         ["a2^(1/2)", "M_max"],
         ["a4", "M_max"],
         ["B^(1/4)", "M_max"],

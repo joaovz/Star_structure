@@ -1046,6 +1046,45 @@ def main():
     # Create the EOS graphs
     hybrid_sly4_eos.plot_all_curves(rho_space=rho_space)
 
+    # Hybrid BSk24 EOS test
+
+    # Create the QuarkEOS object (values chosen to build a hybrid star)
+    a2 = 100**2     # [MeV^2]
+    a4 = 0.8        # [dimensionless]
+    B = 160**4      # [MeV^4]
+    quark_eos = QuarkEOS(a2, a4, B)
+
+    # Set the p_space
+    max_rho = 2.30e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
+    max_p = quark_eos.p(max_rho)                            # Maximum pressure [m^-2]
+    p_space = max_p * np.logspace(-15.0, 0.0, 10000)
+
+    # Set the rho_space
+    rho_space = max_rho * np.logspace(-15.0, 0.0, 10000)
+
+    # Create the BSk24EOS object
+    bsk24_eos = BSk24EOS(rho_space)
+
+    # Create the HybridEOS object
+    bsk24_maximum_stable_rho_center = 2.29e15 * uconv.MASS_DENSITY_CGS_TO_GU
+    hybrid_bsk24_eos = HybridEOS(quark_eos, bsk24_eos, "data/BSk24_EOS.csv", bsk24_maximum_stable_rho_center, "HybridBSk24EOS")
+
+    # Print the transition pressure calculated
+    if hybrid_bsk24_eos.p_trans is not None:
+        print(f"HybridBSk24EOS transition pressure calculated = {(hybrid_bsk24_eos.p_trans * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
+
+    # Print the minimum pressure calculated. Should be less than 10**21 [dyn cm^-2]
+    print(f"HybridBSk24EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
+
+    # Check the EOS
+    hybrid_bsk24_eos.check_eos(p_space)
+
+    # Plot the transition graph
+    hybrid_bsk24_eos.plot_transition_graph()
+
+    # Create the EOS graphs
+    hybrid_bsk24_eos.plot_all_curves(rho_space=rho_space)
+
 
 # This logic is only executed when this file is run directly in the command prompt
 if __name__ == "__main__":

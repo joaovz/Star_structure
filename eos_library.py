@@ -24,11 +24,12 @@ class EOS:
         self.maximum_stable_rho = None              # Maximum stable density [m^-2]
         self.p_trans = None                         # Phase transition pressure [m^-2]. It is default None to characterize no transition
 
-    def _check_stability(self, p_space):
+    def _check_stability(self, p_space, debug_msg=True):
         """Method that checks the stability criterion for the EOS (c_s < 1)
 
         Args:
             p_space (array of float): Array that defines the pressure interval [m^-2]
+            debug_msg (bool, optional): Flag that enables the debug messages. Defaults to True
         """
 
         # Calculate the speed of sound minus 1 to get the root, where the EOS becomes superluminal
@@ -42,7 +43,8 @@ class EOS:
         if cs_minus_1_roots.size > 0:
             self.maximum_stable_p = cs_minus_1_roots[0]
             self.maximum_stable_rho = self.rho(self.maximum_stable_p)
-            print(f"{self.eos_name} maximum stable rho = {(self.maximum_stable_rho * uconv.MASS_DENSITY_GU_TO_CGS):e} [g cm^-3]")
+            if debug_msg is True:
+                print(f"{self.eos_name} maximum stable rho = {(self.maximum_stable_rho * uconv.MASS_DENSITY_GU_TO_CGS):e} [g cm^-3]")
 
     def _config_plot(self):
         """Method that configures the plotting
@@ -161,16 +163,17 @@ class EOS:
         """
         return np.sqrt(self.dp_drho(rho))
 
-    def check_eos(self, p_space, rtol=dval.RTOL):
+    def check_eos(self, p_space, rtol=dval.RTOL, debug_msg=True):
         """Check if EOS implementation is correct
 
         Args:
             p_space (array of float): Array that defines the pressure interval [m^-2]
             rtol (float, optional): Relative tolerance for the error. Defaults to RTOL
+            debug_msg (bool, optional): Flag that enables the debug messages. Defaults to True
         """
 
         # Check the EOS stability
-        self._check_stability(p_space)
+        self._check_stability(p_space, debug_msg)
 
         # Calculate rho_space and p_space using the EOS functions
         rho_space = self.rho(p_space)

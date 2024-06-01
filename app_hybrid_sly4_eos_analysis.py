@@ -174,7 +174,7 @@ def analyze_hybrid_star_family(dataframe_row):
     p_space = max_p * EOS_LOGSPACE
 
     # Check the EOS
-    hybrid_eos.check_eos(p_space)
+    hybrid_eos.check_eos(p_space, debug_msg=False)
 
     # Get the surface pressure and minimum sound speed
     rho_surface = hybrid_eos.rho_min

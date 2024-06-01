@@ -132,7 +132,7 @@ def analyze_strange_star_family(dataframe_row):
     p_space = max_p * np.logspace(-15.0, 0.0, 1000)
 
     # Check the EOS
-    quark_eos.check_eos(p_space)
+    quark_eos.check_eos(p_space, debug_msg=False)
 
     # Get the surface pressure and minimum sound speed
     rho_surface = quark_eos.rho(0.0)
@@ -498,7 +498,7 @@ def main():
     dictionary_json_path = "results"                                            # Path of the results folder
     dictionary_json_name = "quark_eos_parameters_limits.json"                   # Name of the json file with the parameters limits
     properties_dictionary_json_name = "quark_eos_properties_limits.json"        # Name of the json file with the properties limits
-    parameter_space_mesh_size = 1001                                            # Number of points used in the meshgrid for the parameter space plot
+    parameter_space_mesh_size = 2001                                            # Number of points used in the meshgrid for the parameter space plot
     scatter_plot_mesh_size = 41                                                 # Number of points used in the meshgrid for the scatter plot
 
     # Create the parameter space plot

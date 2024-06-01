@@ -599,7 +599,7 @@ def main():
     dictionary_json_name = "hybrid_bsk24_eos_parameters_limits.json"                # Name of the json file with the parameters limits
     properties_dictionary_json_name = "hybrid_bsk24_eos_properties_limits.json"     # Name of the json file with the properties limits
     parameter_space_mesh_size = 2001                                                # Number of points used in the meshgrid for the parameter space plot
-    scatter_plot_mesh_size = 11                                                     # Number of points used in the meshgrid for the scatter plot
+    scatter_plot_mesh_size = 19                                                     # Number of points used in the meshgrid for the scatter plot
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figures_path)

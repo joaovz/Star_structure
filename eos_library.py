@@ -20,6 +20,7 @@ class EOS:
 
         # Initialize EOS properties
         self.eos_name = self.__class__.__name__     # EOS name, given by the class name
+        self.maximum_stable_p = None                # Maximum stable pressure [m^-2]
         self.maximum_stable_rho = None              # Maximum stable density [m^-2]
         self.p_trans = None                         # Phase transition pressure [m^-2]. It is default None to characterize no transition
 
@@ -32,14 +33,15 @@ class EOS:
 
         # Calculate the speed of sound minus 1 to get the root, where the EOS becomes superluminal
         p_space_end = p_space[(p_space.size // 2):]
-        rho_space = self.rho(p_space_end)
-        cs_minus_1 = self.c_s(rho_space) - 1
-        cs_minus_1_spline = CubicSpline(rho_space, cs_minus_1, extrapolate=False)
+        rho_space_end = self.rho(p_space_end)
+        cs_minus_1 = self.c_s(rho_space_end) - 1
+        cs_minus_1_spline = CubicSpline(p_space_end, cs_minus_1, extrapolate=False)
 
         # Find the roots of (c_s - 1)
         cs_minus_1_roots = cs_minus_1_spline.roots()
         if cs_minus_1_roots.size > 0:
-            self.maximum_stable_rho = cs_minus_1_roots[0]
+            self.maximum_stable_p = cs_minus_1_roots[0]
+            self.maximum_stable_rho = self.rho(self.maximum_stable_p)
             print(f"{self.eos_name} maximum stable rho = {(self.maximum_stable_rho * uconv.MASS_DENSITY_GU_TO_CGS):e} [g cm^-3]")
 
     def _config_plot(self):
@@ -580,12 +582,16 @@ class HybridEOS(EOS):
         # Calculate the transition pressure
         g_hadron_minus_g_quark_roots = g_hadron_minus_g_quark_spline.roots()
         if g_hadron_minus_g_quark_roots.size > 0:
-            self.p_trans_nu = np.max(g_hadron_minus_g_quark_roots)      # Use only the high pressure transition
-            self.p_trans = self.p_trans_nu * uconv.PRESSURE_NU_TO_GU
-            self.g_trans_nu = 3 * self.quark_eos.mu_of_p(self.p_trans_nu)
-            self.is_hybrid_eos = True       # Indicate that this is indeed a hybrid EOS
+            # Check if the EOS is a hadron EOS or a hybrid EOS
+            if self.g_hadron_nu[-1] < self.g_quark_nu[-1]:
+                self.is_hadron_eos = True
+            else:
+                self.is_hybrid_eos = True       # Indicate that this is indeed a hybrid EOS
+                self.p_trans_nu = np.max(g_hadron_minus_g_quark_roots)      # Use only the high pressure transition
+                self.p_trans = self.p_trans_nu * uconv.PRESSURE_NU_TO_GU
+                self.g_trans_nu = 3 * self.quark_eos.mu_of_p(self.p_trans_nu)
         else:
-            # Check if the EOS is a quark EOS or a hadron EOS
+            # Check if the EOS is a hadron EOS or a quark EOS
             if self.g_hadron_nu[0] < self.g_quark_nu[0]:
                 self.is_hadron_eos = True
             else:
@@ -1055,7 +1061,7 @@ def main():
     quark_eos = QuarkEOS(a2, a4, B)
 
     # Set the p_space
-    max_rho = 2.95e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
+    max_rho = 3.20e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
     max_p = quark_eos.p(max_rho)                            # Maximum pressure [m^-2]
     p_space = max_p * np.logspace(-15.0, 0.0, 10000)
 

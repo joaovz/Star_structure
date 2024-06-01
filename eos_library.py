@@ -928,7 +928,7 @@ def main():
     # BSk24 EOS test
 
     # Set the rho_space
-    max_rho = 2.19e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
+    max_rho = 2.29e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
     rho_space = max_rho * np.logspace(-11.0, 0.0, 10000)
 
     # Create the EOS object
@@ -952,9 +952,9 @@ def main():
     table_bsk24_eos = TableEOS(file_name="data/BSk24_EOS.csv", eos_name="TableBSk24EOS")
 
     # Set the p_space
-    max_rho = 4.61e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
+    max_rho = 2.29e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
     max_p = table_bsk24_eos.p(max_rho)                      # Maximum pressure [m^-2]
-    p_space = max_p * np.logspace(-13.0, 0.0, 1000)
+    p_space = max_p * np.logspace(-11.0, 0.0, 1000)
 
     # Print the minimum pressure calculated. Should be less than 10**21 [dyn cm^-2]
     print(f"TableBSk24EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")

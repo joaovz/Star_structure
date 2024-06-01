@@ -799,6 +799,37 @@ class BSk20EOS(InterpolatedEOS):
         return p
 
 
+class BSk24EOS(InterpolatedEOS):
+    """Class with the functions of the BSk24 EOS
+    """
+
+    def _p_analytic(self, rho):
+
+        # Set the a_i parameters. Note that a19 and a20, and a22 and a23 are exchanged in the table, to be able to use the same formula as the BSk20 EOS
+        a = (
+            0.0, 6.795, 5.552, 0.00435, 0.13963, 3.636, 11.943, 13.848, 1.3031, 3.644, -30.840, 2.2322,
+            4.65, 14.290, 30.08, -2.080, 1.10, 14.71, 0.099, 5.00, 11.66, -0.095, 9.1, 14.15
+        )
+
+        # Calculating xi
+        xi = np.log10(rho * uconv.MASS_DENSITY_GU_TO_CGS)
+
+        # Calculating zeta
+        zeta = (
+            ((a[1] + a[2] * xi + a[3] * xi**3) / (1 + a[4] * xi)) * (np.exp(a[5] * (xi - a[6])) + 1)**(-1)
+            + (a[7] + a[8] * xi) * (np.exp(a[9] * (a[6] - xi)) + 1)**(-1)
+            + (a[10] + a[11] * xi) * (np.exp(a[12] * (a[13] - xi)) + 1)**(-1)
+            + (a[14] + a[15] * xi) * (np.exp(a[16] * (a[17] - xi)) + 1)**(-1)
+            + a[18] / (1 + (a[19] * (xi - a[20]))**2)
+            + a[21] / (1 + (a[22] * (xi - a[23]))**2)
+        )
+
+        # Calculating p
+        p = 10**(zeta) * uconv.PRESSURE_CGS_TO_GU
+
+        return p
+
+
 class SLy4EOS(InterpolatedEOS):
     """Class with the functions of the SLy4 EOS
     """
@@ -893,6 +924,27 @@ def main():
 
     # Create the EOS graphs
     bsk20_eos.plot_all_curves(p_space)
+
+    # BSk24 EOS test
+
+    # Set the rho_space
+    max_rho = 2.19e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
+    rho_space = max_rho * np.logspace(-11.0, 0.0, 10000)
+
+    # Create the EOS object
+    bsk24_eos = BSk24EOS(rho_space)
+
+    # Set the p_space
+    p_space = bsk24_eos.p(rho_space)
+
+    # Print the minimum pressure calculated. Should be less than 10**21 [dyn cm^-2]
+    print(f"BSk24EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
+
+    # Check the EOS
+    bsk24_eos.check_eos(p_space)
+
+    # Create the EOS graphs
+    bsk24_eos.plot_all_curves(p_space)
 
     # Table BSk24 EOS test
 

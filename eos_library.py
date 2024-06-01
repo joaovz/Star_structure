@@ -505,7 +505,7 @@ class HybridEOS(EOS):
     """Class with the functions of the Hybrid EOS, defined by the a Quark EOS and some Hadron EOS
     """
 
-    def __init__(self, quark_eos, hadron_eos, hadron_eos_table_file_name, hadron_eos_maximum_stable_rho_center):
+    def __init__(self, quark_eos, hadron_eos, hadron_eos_table_file_name, hadron_eos_maximum_stable_rho_center, eos_name="HybridEOS"):
         """Initialization method
 
         Args:
@@ -513,6 +513,7 @@ class HybridEOS(EOS):
             hadron_eos (EOS object): Object of the class EOS, or a class inherited from EOS
             hadron_eos_table_file_name (str): File name of the Hadron EOS table with (rho, p, nb) columns
             hadron_eos_maximum_stable_rho_center (float): Maximum stable central density of the Hadron EOS star family [m^-2]
+            eos_name (str, optional): Name of the EOS. Defaults to "HybridEOS"
 
         Raises:
             RuntimeError: Exception in case the solver fails to find the transition pressure
@@ -526,6 +527,7 @@ class HybridEOS(EOS):
         self.hadron_eos = hadron_eos
         self.hadron_eos_table_file_name = hadron_eos_table_file_name
         self.hadron_eos_maximum_stable_rho_center = hadron_eos_maximum_stable_rho_center
+        self.eos_name = eos_name
 
         # Initialize variables
         self.p_trans = None
@@ -1005,7 +1007,7 @@ def main():
     # Create the EOS graphs
     table_sly4_eos.plot_all_curves(p_space)
 
-    # Hybrid EOS test
+    # Hybrid SLy4 EOS test
 
     # Create the QuarkEOS object (values chosen to build a hybrid star)
     a2 = 100**2     # [MeV^2]
@@ -1026,23 +1028,23 @@ def main():
 
     # Create the HybridEOS object
     sly4_maximum_stable_rho_center = 2.865e15 * uconv.MASS_DENSITY_CGS_TO_GU
-    hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv", sly4_maximum_stable_rho_center)
+    hybrid_sly4_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv", sly4_maximum_stable_rho_center, "HybridSLy4EOS")
 
     # Print the transition pressure calculated
-    if hybrid_eos.p_trans is not None:
-        print(f"HybridEOS transition pressure calculated = {(hybrid_eos.p_trans * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
+    if hybrid_sly4_eos.p_trans is not None:
+        print(f"HybridSLy4EOS transition pressure calculated = {(hybrid_sly4_eos.p_trans * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
 
     # Print the minimum pressure calculated. Should be less than 10**21 [dyn cm^-2]
-    print(f"HybridEOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
+    print(f"HybridSLy4EOS minimum pressure calculated = {(p_space[0] * uconv.PRESSURE_GU_TO_CGS):e} [dyn cm^-2]")
 
     # Check the EOS
-    hybrid_eos.check_eos(p_space)
+    hybrid_sly4_eos.check_eos(p_space)
 
     # Plot the transition graph
-    hybrid_eos.plot_transition_graph()
+    hybrid_sly4_eos.plot_transition_graph()
 
     # Create the EOS graphs
-    hybrid_eos.plot_all_curves(rho_space=rho_space)
+    hybrid_sly4_eos.plot_all_curves(rho_space=rho_space)
 
 
 # This logic is only executed when this file is run directly in the command prompt

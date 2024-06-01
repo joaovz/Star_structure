@@ -1055,7 +1055,7 @@ def main():
     quark_eos = QuarkEOS(a2, a4, B)
 
     # Set the p_space
-    max_rho = 2.30e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
+    max_rho = 2.95e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density [m^-2]
     max_p = quark_eos.p(max_rho)                            # Maximum pressure [m^-2]
     p_space = max_p * np.logspace(-15.0, 0.0, 10000)
 

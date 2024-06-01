@@ -10,7 +10,7 @@ def main():
     """
 
     # Constants
-    FIGURES_PATH = "figures/app_hybrid_eos"                     # Path of the figures folder
+    FIGURES_PATH = "figures/app_hybrid_sly4_eos"                # Path of the figures folder
     EOS_MAX_RHO = 3.00e15 * uconv.MASS_DENSITY_CGS_TO_GU        # Maximum density used to create the EOS [m^-2]
     STARS_MAX_RHO = 2.92e15 * uconv.MASS_DENSITY_CGS_TO_GU      # Maximum density used to create the star family [m^-2]
     EOS_LOGSPACE = np.logspace(-11.0, 0.0, 10000)               # Logspace used to create the EOS
@@ -28,17 +28,17 @@ def main():
 
     # Create the HybridEOS object
     sly4_maximum_stable_rho_center = 2.865e15 * uconv.MASS_DENSITY_CGS_TO_GU
-    hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv", sly4_maximum_stable_rho_center)
+    hybrid_sly4_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv", sly4_maximum_stable_rho_center, "HybridSLy4EOS")
 
     # Set the central pressure of the star and p_center space of the star family
-    rho_center = STARS_MAX_RHO              # Central density [m^-2]
-    p_center = hybrid_eos.p(rho_center)     # Central pressure [m^-2]
+    rho_center = STARS_MAX_RHO                      # Central density [m^-2]
+    p_center = hybrid_sly4_eos.p(rho_center)        # Central pressure [m^-2]
     p_center_space = p_center * STARS_LOGSPACE
 
     # Single star
 
     # Create the star object
-    star_object = Star(hybrid_eos, p_center)
+    star_object = Star(hybrid_sly4_eos, p_center)
 
     # Solve the TOV system and plot all curves
     star_object.solve_tov()
@@ -47,7 +47,7 @@ def main():
     # Star Family
 
     # Create the star family object
-    star_family_object = StarFamily(hybrid_eos, p_center_space)
+    star_family_object = StarFamily(hybrid_sly4_eos, p_center_space)
 
     # Solve the TOV system and plot all curves
     star_family_object.solve_tov()

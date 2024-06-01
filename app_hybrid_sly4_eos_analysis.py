@@ -161,7 +161,7 @@ def analyze_hybrid_star_family(dataframe_row):
 
     # Create the HybridEOS object
     sly4_maximum_stable_rho_center = 2.865e15 * uconv.MASS_DENSITY_CGS_TO_GU
-    hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv", sly4_maximum_stable_rho_center)
+    hybrid_eos = HybridEOS(quark_eos, sly4_eos, "data/SLy4_EOS.csv", sly4_maximum_stable_rho_center, "HybridSLy4EOS")
 
     # EOS analysis
 
@@ -591,15 +591,15 @@ def main():
     """
 
     # Constants
-    figures_path = "figures/app_hybrid_eos/analysis"                            # Path of the figures folder
-    dataframe_csv_path = "results"                                              # Path of the results folder
-    dataframe_csv_name = "hybrid_eos_analysis.csv"                              # Name of the csv file with the results
-    filtered_dataframe_csv_name = "hybrid_eos_analysis_filtered.csv"            # Name of the csv file with the results after filtering with observation data restrictions
-    dictionary_json_path = "results"                                            # Path of the results folder
-    dictionary_json_name = "hybrid_eos_parameters_limits.json"                  # Name of the json file with the parameters limits
-    properties_dictionary_json_name = "hybrid_eos_properties_limits.json"       # Name of the json file with the properties limits
-    parameter_space_mesh_size = 2001                                            # Number of points used in the meshgrid for the parameter space plot
-    scatter_plot_mesh_size = 11                                                 # Number of points used in the meshgrid for the scatter plot
+    figures_path = "figures/app_hybrid_sly4_eos/analysis"                           # Path of the figures folder
+    dataframe_csv_path = "results"                                                  # Path of the results folder
+    dataframe_csv_name = "hybrid_sly4_eos_analysis.csv"                             # Name of the csv file with the results
+    filtered_dataframe_csv_name = "hybrid_sly4_eos_analysis_filtered.csv"           # Name of the csv file with the results after filtering with observation data restrictions
+    dictionary_json_path = "results"                                                # Path of the results folder
+    dictionary_json_name = "hybrid_sly4_eos_parameters_limits.json"                 # Name of the json file with the parameters limits
+    properties_dictionary_json_name = "hybrid_sly4_eos_properties_limits.json"      # Name of the json file with the properties limits
+    parameter_space_mesh_size = 2001                                                # Number of points used in the meshgrid for the parameter space plot
+    scatter_plot_mesh_size = 11                                                     # Number of points used in the meshgrid for the scatter plot
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figures_path)

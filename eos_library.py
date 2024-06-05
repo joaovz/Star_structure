@@ -58,8 +58,18 @@ class EOS:
                     "label": "$\\rho ~ [g ~ cm^{-3}]$",
                     "value": self.rho_space * uconv.MASS_DENSITY_GU_TO_CGS,
                 },
+                "log_rho": {
+                    "name": "Density logarithm",
+                    "label": "$\\log_{10} \\left( \\rho ~ [g ~ cm^{-3}] \\right)$",
+                    "value": np.log10(self.rho_space * uconv.MASS_DENSITY_GU_TO_CGS),
+                },
                 "p": {
                     "name": "Pressure",
+                    "label": "$p ~ [dyn ~ cm^{-2}]$",
+                    "value": self.p_space * uconv.PRESSURE_GU_TO_CGS,
+                },
+                "log_p": {
+                    "name": "Pressure logarithm",
                     "label": "$\\log_{10} \\left( p ~ [dyn ~ cm^{-2}] \\right)$",
                     "value": np.log10(self.p_space * uconv.PRESSURE_GU_TO_CGS),
                 },
@@ -75,6 +85,11 @@ class EOS:
                 },
                 "gamma": {
                     "name": "Adiabatic index",
+                    "label": "$\\Gamma ~ [dimensionless]$",
+                    "value": self.gamma(self.p_space),
+                },
+                "log_gamma": {
+                    "name": "Adiabatic index logarithm",
                     "label": "$\\log_{10} \\left( \\Gamma ~ [dimensionless] \\right)$",
                     "value": np.log10(self.gamma(self.p_space)),
                 },
@@ -88,9 +103,14 @@ class EOS:
         # Create a list with all the curves to be plotted
         self.curves_list = [
             ["rho", "p"],
+            ["log_rho", "log_p"],
             ["rho", "dp_drho"],
             ["rho", "gamma"],
+            ["rho", "log_gamma"],
+            ["log_rho", "gamma"],
+            ["log_rho", "log_gamma"],
             ["rho", "c_s"],
+            ["log_rho", "c_s"],
         ]
 
     def rho(self, p):

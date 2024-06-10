@@ -59,7 +59,7 @@ class DeformedStarFamily(StarFamily):
         # Add new functions to the plot dictionary
         self.plot_dict["k2"] = {
             "name": "Love number",
-            "label": "$k2 ~ [dimensionless]$",
+            "label": "$k_2 ~ [dimensionless]$",
             "value": self.k2_array,
         }
         self.plot_dict["Lambda"] = {
@@ -115,7 +115,7 @@ class DeformedStarFamily(StarFamily):
             self._config_plot()
             self._config_tidal_plot()
             self.plot_curve(x_axis="rho_c", y_axis="k2")
-            plt.plot(self.maximum_k2_star_rho_center * uconv.MASS_DENSITY_GU_TO_CGS, self.maximum_k2, linewidth=1, marker=".", markersize=4**2, label="$k2_{max}$")
+            plt.plot(self.maximum_k2_star_rho_center * uconv.MASS_DENSITY_GU_TO_CGS, self.maximum_k2, linewidth=1, marker=".", markersize=4**2, label="${k_2}_{max}$")
             plt.legend()
             plt.show()
 

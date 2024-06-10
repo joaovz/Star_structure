@@ -77,7 +77,7 @@ class StarFamily:
         self.plot_dict = {
             "rho_c": {
                 "name": "Central density",
-                "label": "$\\rho_{c} ~ [g ~ cm^{-3}]$",
+                "label": "$\\rho_c ~ [g ~ cm^{-3}]$",
                 "value": self.rho_center_space * uconv.MASS_DENSITY_GU_TO_CGS,
             },
             "R": {

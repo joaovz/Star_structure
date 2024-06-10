@@ -27,8 +27,9 @@ B_max = g0**4 / (108 * np.pi**2)                                # Maximum B para
 
 # Observation data
 M_max_inf_limit = 2.13                                          # Inferior limit of the maximum mass [solar mass] (Romani - 2 sigma)
-R_canonical_inf_limit = 10.0                                    # Inferior limit of the radius of the canonical star [km]
-R_canonical_sup_limit = 13.25                                   # Superior limit of the radius of the canonical star [km]
+M_max_sup_limit = 2.33                                          # Superior limit of the maximum mass [solar mass] (Rezzolla - 2 sigma)
+R_canonical_inf_limit = 10.0                                    # Inferior limit of the radius of the canonical star [km] (Pang)
+R_canonical_sup_limit = 13.25                                   # Superior limit of the radius of the canonical star [km] (Pang)
 Lambda_canonical_sup_limit = 970.0                              # Superior limit of the tidal deformability of the canonical star [dimensionless] (Abbott - 2 sigma)
 
 
@@ -214,7 +215,7 @@ def analyze_strange_stars(parameter_dataframe):
         parameter_dataframe.at[index, "k2_max [dimensionless]"] = maximum_k2
 
     # Determine the EOS parameters limits based on observation data and create filtered dataframes
-    M_max_query = f"`M_max [solar mass]` > {M_max_inf_limit}"
+    M_max_query = f"`M_max [solar mass]` > {M_max_inf_limit} & `M_max [solar mass]` < {M_max_sup_limit}"
     R_canonical_query = f"`R_canonical [km]` > {R_canonical_inf_limit} & `R_canonical [km]` < {R_canonical_sup_limit}"
     Lambda_canonical_query = f"`Lambda_canonical [dimensionless]` < {Lambda_canonical_sup_limit}"
     combined_query = f"{M_max_query} & {R_canonical_query} & {Lambda_canonical_query}"
@@ -401,7 +402,7 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
             "label": "$M_{max} ~ [M_{\\odot}]$",
             "value": parameter_dataframe.loc[:, "M_max [solar mass]"],
             "inf_limit": M_max_inf_limit,
-            "sup_limit": None,
+            "sup_limit": M_max_sup_limit,
         },
         "R_canonical": {
             "name": "Canonical radius",
@@ -446,11 +447,11 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
         if plot_dict[y_axis]["sup_limit"] is not None:
             plt.axhline(y=plot_dict[y_axis]["sup_limit"], linewidth=1, color="#d62728", zorder=3)
             text = f" {plot_dict[y_axis]["sup_limit"]:.2f} "
-            plt.text(xlim1, plot_dict[y_axis]["sup_limit"], text, horizontalalignment="left", verticalalignment="center", color="#d62728")
+            plt.text(xlim1, plot_dict[y_axis]["sup_limit"], text, horizontalalignment="left", verticalalignment="bottom", color="#d62728")
         if plot_dict[y_axis]["inf_limit"] is not None:
             plt.axhline(y=plot_dict[y_axis]["inf_limit"], linewidth=1, color="#2ca02c", zorder=3)
             text = f" {plot_dict[y_axis]["inf_limit"]:.2f} "
-            plt.text(xlim1, plot_dict[y_axis]["inf_limit"], text, horizontalalignment="left", verticalalignment="center", color="#2ca02c")
+            plt.text(xlim1, plot_dict[y_axis]["inf_limit"], text, horizontalalignment="left", verticalalignment="top", color="#2ca02c")
 
         # Create a shaded region between y axis limit lines
         ylim0, ylim1 = plt.ylim()       # Get current y limits to use for the shaded region if necessary

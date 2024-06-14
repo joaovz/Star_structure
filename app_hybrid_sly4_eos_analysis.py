@@ -89,12 +89,12 @@ def calc_a4_2f_lim(a2, B):
     return (((1 + 2**(1 / 3))**3) / (4 * g0**2)) * (((54 * np.pi**2) / g0**2) * B + 3 * a2)
 
 
-def generate_hybrid_stars(mesh_size=21):
+def generate_hybrid_stars(number_of_samples=10**4):
     """Function that generates a list of meshgrids representing the parameters of hybrid stars.
     This function also creates a dataframe with the parameters of hybrid stars
 
     Args:
-        mesh_size (int, optional): Size of the mesh used to represent the parameters. Defaults to 21
+        number_of_samples (int, optional): Number of samples used. Defaults to 10**4
 
     Returns:
         Arrays of float: Masked meshgrids representing the parameters
@@ -104,7 +104,7 @@ def generate_hybrid_stars(mesh_size=21):
     # Define the (a2, a4, B) rectangular random meshgrid using Latin Hypercube sampler
     seed_value = 123                                            # Fix the seed value to generate the same pseudo-random values each time
     sampler = qmc.LatinHypercube(d=3, seed=seed_value)          # Set the sampler
-    samples = sampler.random(n=mesh_size**3)                    # Create the samples
+    samples = sampler.random(n=number_of_samples)               # Create the samples
     l_bounds = [a2_min**(1 / 2), a4_min, B_min**(1 / 4)]
     u_bounds = [a2_max**(1 / 2), a4_max, B_max**(1 / 4)]
     scaled_samples = qmc.scale(samples, l_bounds, u_bounds)     # Scale the samples
@@ -591,13 +591,13 @@ def main():
     dictionary_json_name = "hybrid_sly4_eos_parameters_limits.json"                 # Name of the json file with the parameters limits
     properties_dictionary_json_name = "hybrid_sly4_eos_properties_limits.json"      # Name of the json file with the properties limits
     parameter_space_mesh_size = 2001                                                # Number of points used in the meshgrid for the parameter space plot
-    scatter_plot_mesh_size = 11                                                     # Number of points used in the meshgrid for the scatter plot
+    number_of_samples = 10**4                                                       # Number of samples used
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figures_path)
 
     # Generate parameters for hybrid stars
-    (a2_masked, a4_masked, B_masked, parameter_dataframe) = generate_hybrid_stars(scatter_plot_mesh_size)
+    (a2_masked, a4_masked, B_masked, parameter_dataframe) = generate_hybrid_stars(number_of_samples)
 
     # Plot the parameter points generated for hybrid stars
     plot_parameter_points_scatter(a2_masked, a4_masked, B_masked, figures_path)

@@ -137,18 +137,22 @@ class StarFamily:
         if solve_first is True:
             self.solve_tov(False)
 
+        # Calculate only the maximum mass using the array directly. Maximum stable properties are only calculated with the stability condition
+        maximum_mass_index = np.argmax(self.mass_array)
+        self.maximum_mass = self.mass_array[maximum_mass_index]
+
         # Create the mass vs p_center interpolated function and calculate its derivative
         mass_p_center_spline = CubicSpline(self.p_center_space, self.mass_array, extrapolate=False)
         dm_dp_center_spline = mass_p_center_spline.derivative()
 
         # Calculate the maximum stable p_center, maximum stable rho_center, and maximum mass
         dm_dp_center_roots = dm_dp_center_spline.roots()
-        if dm_dp_center_roots.size > 0:
-            possible_maximum_masses = mass_p_center_spline(dm_dp_center_roots)
-            maximum_mass_index = np.argmax(possible_maximum_masses)
-            self.maximum_stable_p_center = dm_dp_center_roots[maximum_mass_index]
-            self.maximum_stable_rho_center = self.eos.rho(self.maximum_stable_p_center)
-            self.maximum_mass = possible_maximum_masses[maximum_mass_index]
+        for dm_dp_center_root in dm_dp_center_roots:
+            possible_maximum_mass = mass_p_center_spline(dm_dp_center_root)
+            if possible_maximum_mass > self.maximum_mass:
+                self.maximum_stable_p_center = dm_dp_center_root
+                self.maximum_stable_rho_center = self.eos.rho(self.maximum_stable_p_center)
+                self.maximum_mass = possible_maximum_mass
 
         # Debug graph
         if const.DEBUG is True:

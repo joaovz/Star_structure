@@ -208,11 +208,11 @@ class EOS:
         # Calculate drho_dp, dp_drho, and the error
         drho_dp = self.drho_dp(p_space)
         dp_drho = self.dp_drho(rho_space)
-        derivative_rel_error = np.abs((drho_dp**(-1) - dp_drho) / dp_drho)
+        derivative_abs_error = np.abs(drho_dp * dp_drho**2 - dp_drho)
 
-        # Show warning if derivative error is greater than maximum acceptable error
-        if max(derivative_rel_error) > rtol:
-            print(f"Warning: Error in {self.eos_name} derivatives calculation is larger than the acceptable error: {(max(derivative_rel_error)):e} > {rtol:e}")
+        # Show warning if derivative error is greater than maximum acceptable error (atol = rtol for dp_drho, as dp_drho_max = 1.0)
+        if max(derivative_abs_error) > rtol:
+            print(f"Warning: Error in {self.eos_name} derivatives calculation is larger than the acceptable error: {(max(derivative_abs_error)):e} > {rtol:e}")
 
     def plot_curve(self, x_axis="p", y_axis="rho", figure_path=FIGURES_PATH):
         """Method that plots some curve of the EOS

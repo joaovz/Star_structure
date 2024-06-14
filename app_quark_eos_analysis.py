@@ -215,9 +215,9 @@ def analyze_strange_stars(parameter_dataframe):
         parameter_dataframe.at[index, "k2_max [dimensionless]"] = maximum_k2
 
     # Determine the EOS parameters limits based on observation data and create filtered dataframes
-    M_max_query = f"`M_max [solar mass]` > {M_max_inf_limit} & `M_max [solar mass]` < {M_max_sup_limit}"
-    R_canonical_query = f"`R_canonical [km]` > {R_canonical_inf_limit} & `R_canonical [km]` < {R_canonical_sup_limit}"
-    Lambda_canonical_query = f"`Lambda_canonical [dimensionless]` < {Lambda_canonical_sup_limit}"
+    M_max_query = f"(`M_max [solar mass]` > {M_max_inf_limit}) & (`M_max [solar mass]` < {M_max_sup_limit})"
+    R_canonical_query = f"(`R_canonical [km]` > {R_canonical_inf_limit}) & (`R_canonical [km]` < {R_canonical_sup_limit})"
+    Lambda_canonical_query = f"(`Lambda_canonical [dimensionless]` < {Lambda_canonical_sup_limit})"
     combined_query = f"{M_max_query} & {R_canonical_query} & {Lambda_canonical_query}"
     filtered_M_max_dataframe = parameter_dataframe.query(M_max_query)
     filtered_R_canonical_dataframe = parameter_dataframe.query(R_canonical_query)
@@ -230,29 +230,21 @@ def analyze_strange_stars(parameter_dataframe):
             "M_max": (np.min(filtered_M_max_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_M_max_dataframe.loc[:, "a2^(1/2) [MeV]"])),
             "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_R_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"])),
             "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"])),
+            "combined": (np.min(filtered_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_dataframe.loc[:, "a2^(1/2) [MeV]"])),
         },
         "a4": {
             "M_max": (np.min(filtered_M_max_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_M_max_dataframe.loc[:, "a4 [dimensionless]"])),
             "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_R_canonical_dataframe.loc[:, "a4 [dimensionless]"])),
             "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "a4 [dimensionless]"])),
+            "combined": (np.min(filtered_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_dataframe.loc[:, "a4 [dimensionless]"])),
         },
         "B^(1/4)": {
             "M_max": (np.min(filtered_M_max_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_M_max_dataframe.loc[:, "B^(1/4) [MeV]"])),
             "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_R_canonical_dataframe.loc[:, "B^(1/4) [MeV]"])),
             "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "B^(1/4) [MeV]"])),
+            "combined": (np.min(filtered_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_dataframe.loc[:, "B^(1/4) [MeV]"])),
         },
     }
-
-    # Add the combined limits to the dictionary
-    a2_1_2_min = np.max([parameters_limits["a2^(1/2)"]["M_max"][0], parameters_limits["a2^(1/2)"]["R_canonical"][0], parameters_limits["a2^(1/2)"]["Lambda_canonical"][0]])
-    a2_1_2_max = np.min([parameters_limits["a2^(1/2)"]["M_max"][1], parameters_limits["a2^(1/2)"]["R_canonical"][1], parameters_limits["a2^(1/2)"]["Lambda_canonical"][1]])
-    a4_min = np.max([parameters_limits["a4"]["M_max"][0], parameters_limits["a4"]["R_canonical"][0], parameters_limits["a4"]["Lambda_canonical"][0]])
-    a4_max = np.min([parameters_limits["a4"]["M_max"][1], parameters_limits["a4"]["R_canonical"][1], parameters_limits["a4"]["Lambda_canonical"][1]])
-    B_1_4_min = np.max([parameters_limits["B^(1/4)"]["M_max"][0], parameters_limits["B^(1/4)"]["R_canonical"][0], parameters_limits["B^(1/4)"]["Lambda_canonical"][0]])
-    B_1_4_max = np.min([parameters_limits["B^(1/4)"]["M_max"][1], parameters_limits["B^(1/4)"]["R_canonical"][1], parameters_limits["B^(1/4)"]["Lambda_canonical"][1]])
-    parameters_limits["a2^(1/2)"]["combined"] = (a2_1_2_min, a2_1_2_max)
-    parameters_limits["a4"]["combined"] = (a4_min, a4_max)
-    parameters_limits["B^(1/4)"]["combined"] = (B_1_4_min, B_1_4_max)
 
     # Create a dictionary with the minimum and maximum values of the properties of strange stars
     properties_limits = {

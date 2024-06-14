@@ -18,7 +18,6 @@ from star_family_tides import DeformedStarFamily
 # Constants
 g0 = 930.0                                                      # Gibbs free energy per baryon of quark matter at null pressure [MeV]
 alpha = ((1 / 3) - 8 / (3 * (1 + 2**(1 / 3))**3)) * g0**2       # alpha coefficient of the a2_3f_max vs a4 curve, used in the parameter space graph [MeV^2]
-beta = (4 / (3 * (1 + 2**(1 / 3))**3)) * g0**2                  # beta coefficient of the a2_2f_max vs a4 curve, used in the parameter space graph [MeV^2]
 a2_min = 0.0                                                    # Minimum a2 parameter value [MeV^2]
 a2_max = 300**2                                                 # Maximum a2 parameter value [MeV^2]
 a4_min = 0.0                                                    # Minimum a4 parameter value [dimensionless]
@@ -285,10 +284,10 @@ def analyze_hybrid_stars(parameter_dataframe):
         parameter_dataframe.at[index, "k2_max [dimensionless]"] = maximum_k2
 
     # Determine the EOS parameters limits based on observation data and create filtered dataframes
-    eos_type_query = f"`eos_type [0, 1, or 2]` > {eos_type_inf_limit} & `eos_type [0, 1, or 2]` < {eos_type_sup_limit}"
-    M_max_query = f"`M_max [solar mass]` > {M_max_inf_limit} & `M_max [solar mass]` < {M_max_sup_limit}"
-    R_canonical_query = f"`R_canonical [km]` > {R_canonical_inf_limit} & `R_canonical [km]` < {R_canonical_sup_limit}"
-    Lambda_canonical_query = f"`Lambda_canonical [dimensionless]` < {Lambda_canonical_sup_limit}"
+    eos_type_query = f"(`eos_type [0, 1, or 2]` > {eos_type_inf_limit}) & (`eos_type [0, 1, or 2]` < {eos_type_sup_limit})"
+    M_max_query = f"(`M_max [solar mass]` > {M_max_inf_limit}) & (`M_max [solar mass]` < {M_max_sup_limit})"
+    R_canonical_query = f"(`R_canonical [km]` > {R_canonical_inf_limit}) & (`R_canonical [km]` < {R_canonical_sup_limit})"
+    Lambda_canonical_query = f"(`Lambda_canonical [dimensionless]` < {Lambda_canonical_sup_limit})"
     combined_query = f"{eos_type_query} & {M_max_query} & {R_canonical_query} & {Lambda_canonical_query}"
     filtered_eos_type_dataframe = parameter_dataframe.query(eos_type_query)
     filtered_M_max_dataframe = parameter_dataframe.query(M_max_query)
@@ -303,31 +302,23 @@ def analyze_hybrid_stars(parameter_dataframe):
             "M_max": (np.min(filtered_M_max_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_M_max_dataframe.loc[:, "a2^(1/2) [MeV]"])),
             "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_R_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"])),
             "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "a2^(1/2) [MeV]"])),
+            "combined": (np.min(filtered_dataframe.loc[:, "a2^(1/2) [MeV]"]), np.max(filtered_dataframe.loc[:, "a2^(1/2) [MeV]"])),
         },
         "a4": {
             "eos_type": (np.min(filtered_eos_type_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_eos_type_dataframe.loc[:, "a4 [dimensionless]"])),
             "M_max": (np.min(filtered_M_max_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_M_max_dataframe.loc[:, "a4 [dimensionless]"])),
             "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_R_canonical_dataframe.loc[:, "a4 [dimensionless]"])),
             "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "a4 [dimensionless]"])),
+            "combined": (np.min(filtered_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_dataframe.loc[:, "a4 [dimensionless]"])),
         },
         "B^(1/4)": {
             "eos_type": (np.min(filtered_eos_type_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_eos_type_dataframe.loc[:, "B^(1/4) [MeV]"])),
             "M_max": (np.min(filtered_M_max_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_M_max_dataframe.loc[:, "B^(1/4) [MeV]"])),
             "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_R_canonical_dataframe.loc[:, "B^(1/4) [MeV]"])),
             "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "B^(1/4) [MeV]"])),
+            "combined": (np.min(filtered_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_dataframe.loc[:, "B^(1/4) [MeV]"])),
         },
     }
-
-    # Add the combined limits to the dictionary
-    a2_1_2_min = np.max([parameters_limits["a2^(1/2)"]["eos_type"][0], parameters_limits["a2^(1/2)"]["M_max"][0], parameters_limits["a2^(1/2)"]["R_canonical"][0], parameters_limits["a2^(1/2)"]["Lambda_canonical"][0]])
-    a2_1_2_max = np.min([parameters_limits["a2^(1/2)"]["eos_type"][1], parameters_limits["a2^(1/2)"]["M_max"][1], parameters_limits["a2^(1/2)"]["R_canonical"][1], parameters_limits["a2^(1/2)"]["Lambda_canonical"][1]])
-    a4_min = np.max([parameters_limits["a4"]["eos_type"][0], parameters_limits["a4"]["M_max"][0], parameters_limits["a4"]["R_canonical"][0], parameters_limits["a4"]["Lambda_canonical"][0]])
-    a4_max = np.min([parameters_limits["a4"]["eos_type"][1], parameters_limits["a4"]["M_max"][1], parameters_limits["a4"]["R_canonical"][1], parameters_limits["a4"]["Lambda_canonical"][1]])
-    B_1_4_min = np.max([parameters_limits["B^(1/4)"]["eos_type"][0], parameters_limits["B^(1/4)"]["M_max"][0], parameters_limits["B^(1/4)"]["R_canonical"][0], parameters_limits["B^(1/4)"]["Lambda_canonical"][0]])
-    B_1_4_max = np.min([parameters_limits["B^(1/4)"]["eos_type"][1], parameters_limits["B^(1/4)"]["M_max"][1], parameters_limits["B^(1/4)"]["R_canonical"][1], parameters_limits["B^(1/4)"]["Lambda_canonical"][1]])
-    parameters_limits["a2^(1/2)"]["combined"] = (a2_1_2_min, a2_1_2_max)
-    parameters_limits["a4"]["combined"] = (a4_min, a4_max)
-    parameters_limits["B^(1/4)"]["combined"] = (B_1_4_min, B_1_4_max)
 
     # Create a dictionary with the minimum and maximum values of the properties of hybrid stars
     properties_limits = {

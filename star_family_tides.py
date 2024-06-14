@@ -108,7 +108,7 @@ class DeformedStarFamily(StarFamily):
             if possible_maximum_k2 > self.maximum_k2:
                 self.maximum_k2_star_p_center = dk2_dp_center_root
                 self.maximum_k2_star_rho_center = self.eos.rho(self.maximum_k2_star_p_center)
-                self.maximum_k2 = k2_p_center_spline(self.maximum_k2_star_p_center)
+                self.maximum_k2 = possible_maximum_k2
 
         # Debug graph
         if const.DEBUG is True:

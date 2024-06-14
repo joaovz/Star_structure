@@ -2,6 +2,7 @@ import os
 import math
 import pprint
 import psutil
+from matplotlib.patches import Patch
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
@@ -346,7 +347,11 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
     B_1_4_min_surface_masked = B_min_surface_masked**(1 / 4)
     ax.plot_surface(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, cmap=cm.Reds, rstride=10, cstride=10, alpha=0.8, label="$B_{max}^{1/4}$")
     ax.plot_surface(a2_1_2_masked, a4_masked, B_1_4_min_surface_masked, cmap=cm.Blues, rstride=10, cstride=10, alpha=0.8, label="$B_{min}^{1/4}$")
-    ax.legend(loc=(0.7, 0.25))
+
+    # Create custom legend handles using Patches, and add the legend
+    red_patch = Patch(color=cm.Reds(0.5), label="$B_{max}^{1/4}$")
+    blue_patch = Patch(color=cm.Blues(0.5), label="$B_{min}^{1/4}$")
+    ax.legend(handles=[red_patch, blue_patch], loc=(0.7, 0.25))
 
     # Add each contour plot (grey projections on each plane)
     ax.contourf(a2_1_2_masked, a4_masked, B_1_4_max_surface_masked, levels=0, zdir="x", offset=a2_max**(1 / 2), colors="gray", alpha=0.7, antialiased=True)

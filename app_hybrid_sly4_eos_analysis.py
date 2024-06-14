@@ -2,6 +2,7 @@ import os
 import math
 import pprint
 import psutil
+from matplotlib.patches import Patch
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
@@ -18,6 +19,8 @@ from star_family_tides import DeformedStarFamily
 # Constants
 g0 = 930.0                                                      # Gibbs free energy per baryon of quark matter at null pressure [MeV]
 alpha = ((1 / 3) - 8 / (3 * (1 + 2**(1 / 3))**3)) * g0**2       # alpha coefficient of the a2_3f_max vs a4 curve, used in the parameter space graph [MeV^2]
+beta_1 = 4 * g0**2 / (3 * (1 + 2**(1 / 3))**3)                  # beta_1 coefficient of the a2 vs B_2f curve for a4 = 1, used in the parameter space graph [MeV^2]
+beta_2 = - 54 * np.pi**2 / (3 * g0**2)                          # beta_2 coefficient of the a2 vs B_2f curve for a4 = 1, used in the parameter space graph [MeV^-2]
 a2_min = 0.0                                                    # Minimum a2 parameter value [MeV^2]
 a2_max = 300**2                                                 # Maximum a2 parameter value [MeV^2]
 a4_min = 0.0                                                    # Minimum a4 parameter value [dimensionless]
@@ -403,7 +406,7 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_hybrid_eos"):
     # Apply the mask to the meshgrids
     mesh_mask_3f = (a2 > alpha * a4)
     B_2f_3f_line = calc_B_3f_lim(a2, a2 / alpha)
-    mesh_mask_2f = ((B < B_min) | (B > B_2f_3f_line))
+    mesh_mask_2f = ((B < B_min) | (B > B_2f_3f_line) | (a2 > (beta_1 + beta_2 * B)))
     a2_3f_masked = np.ma.masked_where(mesh_mask_3f, a2)
     a2_2f_masked = np.ma.masked_where(mesh_mask_2f, a2)
     a4_3f_masked = np.ma.masked_where(mesh_mask_3f, a4)
@@ -430,7 +433,11 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_hybrid_eos"):
     B_1_4_2f_masked = B_2f_masked**(1 / 4)
     ax.plot_surface(a2_1_2_3f_masked, a4_3f_masked, B_1_4_3f_lim_surface_masked, cmap=cm.Reds, rstride=10, cstride=10, alpha=0.8, label="$B_{lim}^{1/4}$")
     ax.plot_surface(a2_1_2_2f_masked, a4_2f_lim_surface_masked, B_1_4_2f_masked, cmap=cm.Blues, rstride=10, cstride=10, alpha=0.8, label="$\\tilde{B}_{lim}^{1/4}$")
-    ax.legend(loc=(0.7, 0.25))
+
+    # Create custom legend handles using Patches, and add the legend
+    red_patch = Patch(color=cm.Reds(0.5), label="$B_{lim}^{1/4}$")
+    blue_patch = Patch(color=cm.Blues(0.5), label="$\\tilde{B}_{lim}^{1/4}$")
+    ax.legend(handles=[red_patch, blue_patch], loc=(0.7, 0.25))
 
     # Add each contour plot (grey projections on each plane)
     # B_3f_lim surface

@@ -598,7 +598,7 @@ def main():
     dictionary_json_name = "hybrid_sly4_eos_parameters_limits.json"                 # Name of the json file with the parameters limits
     properties_dictionary_json_name = "hybrid_sly4_eos_properties_limits.json"      # Name of the json file with the properties limits
     parameter_space_mesh_size = 2001                                                # Number of points used in the meshgrid for the parameter space plot
-    number_of_samples = 10**4                                                       # Number of samples used
+    number_of_samples = 5000                                                        # Number of samples used
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figures_path)

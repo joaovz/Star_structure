@@ -105,12 +105,12 @@ def generate_hybrid_stars(number_of_samples=10**4):
     """
 
     # Define the (a2, a4, B) rectangular random meshgrid using Latin Hypercube sampler
-    seed_value = 123                                            # Fix the seed value to generate the same pseudo-random values each time
-    sampler = qmc.LatinHypercube(d=3, seed=seed_value)          # Set the sampler
-    samples = sampler.random(n=number_of_samples)               # Create the samples
+    seed_value = 123                                                                # Fix the seed value to generate the same pseudo-random values each time
+    sampler = qmc.LatinHypercube(d=3, seed=seed_value, optimization="lloyd")        # Set the sampler
+    samples = sampler.random(n=number_of_samples)                                   # Create the samples
     l_bounds = [a2_min**(1 / 2), a4_min, B_min**(1 / 4)]
     u_bounds = [a2_max**(1 / 2), a4_max, B_max**(1 / 4)]
-    scaled_samples = qmc.scale(samples, l_bounds, u_bounds)     # Scale the samples
+    scaled_samples = qmc.scale(samples, l_bounds, u_bounds)                         # Scale the samples
     (a2, a4, B) = (scaled_samples[:, 0]**2, scaled_samples[:, 1], scaled_samples[:, 2]**4)
 
     # Create the mesh masks according to each parameter minimum and maximum allowed values

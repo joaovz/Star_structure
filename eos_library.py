@@ -95,7 +95,7 @@ class EOS:
                 },
                 "c_s": {
                     "name": "Speed of sound",
-                    "label": "$c_s ~ [dimensionless]$",
+                    "label": "$c_s / c ~ [dimensionless]$",
                     "value": self.c_s(self.rho_space),
                 },
             }

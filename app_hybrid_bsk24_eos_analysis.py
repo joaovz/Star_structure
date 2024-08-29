@@ -431,8 +431,8 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_hybrid_eos"):
     a2_1_2_2f_masked = a2_2f_masked**(1 / 2)
     B_1_4_3f_lim_surface_masked = B_3f_lim_surface_masked**(1 / 4)
     B_1_4_2f_masked = B_2f_masked**(1 / 4)
-    ax.plot_surface(a2_1_2_3f_masked, a4_3f_masked, B_1_4_3f_lim_surface_masked, cmap=cm.Reds, rstride=10, cstride=10, alpha=0.8, label="$B_{lim}^{1/4}$")
-    ax.plot_surface(a2_1_2_2f_masked, a4_2f_lim_surface_masked, B_1_4_2f_masked, cmap=cm.Blues, rstride=10, cstride=10, alpha=0.8, label="$\\tilde{B}_{lim}^{1/4}$")
+    ax.plot_surface(a2_1_2_3f_masked, a4_3f_masked, B_1_4_3f_lim_surface_masked, cmap=cm.Reds, rstride=10, cstride=10, alpha=0.8, label="$B_{lim}^{1/4}$", rasterized=True)
+    ax.plot_surface(a2_1_2_2f_masked, a4_2f_lim_surface_masked, B_1_4_2f_masked, cmap=cm.Blues, rstride=10, cstride=10, alpha=0.8, label="$\\tilde{B}_{lim}^{1/4}$", rasterized=True)
 
     # Create custom legend handles using Patches, and add the legend
     red_patch = Patch(color=cm.Reds(0.5), label="$B_{lim}^{1/4}$")
@@ -453,7 +453,7 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_hybrid_eos"):
     os.makedirs(figure_path, exist_ok=True)
     figure_name = "hybrid_eos_parameter_space.pdf"
     complete_path = os.path.join(figure_path, figure_name)
-    plt.savefig(complete_path)
+    plt.savefig(complete_path, dpi=400)
 
     # Show graph
     plt.show()

@@ -490,15 +490,15 @@ def main():
     """
 
     # Constants
-    figures_path = "figures/app_quark_eos/extended_analysis"                    # Path of the figures folder
-    dataframe_csv_path = "results"                                              # Path of the results folder
-    dataframe_csv_name = "quark_eos_analysis.csv"                               # Name of the csv file with the results
-    filtered_dataframe_csv_name = "quark_eos_analysis_filtered.csv"             # Name of the csv file with the results after filtering with observation data restrictions
-    dictionary_json_path = "results"                                            # Path of the results folder
-    dictionary_json_name = "quark_eos_parameters_limits.json"                   # Name of the json file with the parameters limits
-    properties_dictionary_json_name = "quark_eos_properties_limits.json"        # Name of the json file with the properties limits
-    parameter_space_mesh_size = 2001                                            # Number of points used in the meshgrid for the parameter space plot
-    number_of_samples = 10**5                                                   # Number of samples used
+    figures_path = "figures/app_quark_eos/extended_analysis"                                    # Path of the figures folder
+    dataframe_csv_path = "results"                                                              # Path of the results folder
+    dataframe_csv_name = "quark_eos_extended_analysis.csv"                                      # Name of the csv file with the results
+    filtered_dataframe_csv_name = "quark_eos_extended_analysis_filtered.csv"                    # Name of the csv file with the results after filtering with observation data restrictions
+    dictionary_json_path = "results"                                                            # Path of the results folder
+    dictionary_json_name = "quark_eos_extended_analysis_parameters_limits.json"                 # Name of the json file with the parameters limits
+    properties_dictionary_json_name = "quark_eos_extended_analysis_properties_limits.json"      # Name of the json file with the properties limits
+    parameter_space_mesh_size = 2001                                                            # Number of points used in the meshgrid for the parameter space plot
+    number_of_samples = 10**5                                                                   # Number of samples used
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figures_path)

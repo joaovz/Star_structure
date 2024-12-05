@@ -33,6 +33,12 @@ R_canonical_inf_limit = 10.0            # Inferior limit of the radius of the ca
 R_canonical_sup_limit = 13.25           # Superior limit of the radius of the canonical star [km] (Pang)
 Lambda_canonical_sup_limit = 970.0      # Superior limit of the tidal deformability of the canonical star [dimensionless] (Abbott - 2 sigma)
 
+# Quark star candidate data (HESS J1731-347)
+QS_CANDIDATE_M = 0.77
+QS_CANDIDATE_M_ERROR = [[0.17], [0.20]]
+QS_CANDIDATE_R = 10.4
+QS_CANDIDATE_R_ERROR = [[0.78], [0.86]]
+
 # Numerical solver constants
 QUARK_EOS_ANALYSIS_R_INIT = 0.01                        # Initial radial coordinate r of the IVP solve [m]
 QUARK_EOS_ANALYSIS_ATOL_TOV = (1e-25, 1e-20, 1e-6)      # Absolute tolerances for the TOV system solution (ATOL = y_min * RTOL * 0.1, except pressure, with a larger tolerance)
@@ -485,6 +491,66 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
     plt.show()
 
 
+def plot_mass_radius_graph(filtered_dataframe, figures_path="figures/app_quark_eos/analysis"):
+    """Function that creates the mass vs radius graph
+
+    Args:
+        filtered_dataframe (Pandas dataframe of float): Filtered dataframe with the parameters of strange stars
+        figures_path (str, optional): Path used to save the figures. Defaults to "figures/app_quark_eos/analysis"
+    """
+
+    # Create a simple plot
+    plt.figure(figsize=(6.0, 4.5))
+    plt.xlabel("$R ~ [km]$", fontsize=10)
+    plt.ylabel("$M ~ [M_{\\odot}]$", fontsize=10)
+
+    # Create a list with the rows of the dataframe
+    rows_list = [list(row) for row in filtered_dataframe.itertuples()]
+
+    # Execute the TOV solver and add the mass vs radius curve to the graph
+    for row in rows_list:
+
+        # Unpack the row values
+        (index, a2, a4, B_1_4, rho_surface, cs_min, rho_center_max, *_) = row
+        B = B_1_4**4
+
+        # Create the EOS object
+        quark_eos = QuarkEOS(a2, a4, B)
+
+        # Set the central pressure of the star
+        rho_center = rho_center_max * 10**15 * uconv.MASS_DENSITY_CGS_TO_GU     # Central density [m^-2]
+        p_center = quark_eos.p(rho_center)                                      # Central pressure [m^-2]
+
+        # Set the p_center space that characterizes the star family
+        p_center_space = p_center * np.logspace(-3.0, 0.0, 50)
+
+        # Create the star family object
+        star_family_object = DeformedStarFamily(
+            quark_eos, p_center_space,
+            r_init=QUARK_EOS_ANALYSIS_R_INIT,
+            atol_tov=QUARK_EOS_ANALYSIS_ATOL_TOV,
+            atol_tidal=QUARK_EOS_ANALYSIS_ATOL_TIDAL,
+            rtol=QUARK_EOS_ANALYSIS_RTOL)
+
+        # Solve the TOV system
+        star_family_object.solve_tov(False)
+
+        # Add the mass vs radius curve to the graph
+        plt.plot(star_family_object.radius_array / 10**3, star_family_object.mass_array * uconv.MASS_GU_TO_SOLAR_MASS, linewidth=1, color="tab:blue")
+
+    # Add the quark star candidate error bars
+    plt.errorbar(QS_CANDIDATE_R, QS_CANDIDATE_M, xerr=QS_CANDIDATE_R_ERROR, yerr=QS_CANDIDATE_M_ERROR, capsize=10, fmt="o", color="tab:orange")
+
+    # Create the folder if necessary and save the figure
+    os.makedirs(figures_path, exist_ok=True)
+    figure_name = f"mass_vs_radius_curve.pdf"
+    complete_path = os.path.join(figures_path, figure_name)
+    plt.savefig(complete_path, bbox_inches="tight")
+
+    # Show graph at the end
+    plt.show()
+
+
 def main():
     """Main logic
     """
@@ -514,6 +580,9 @@ def main():
 
     # Create all the analysis graphs
     plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path)
+
+    # Create the combined mass vs radius graph
+    plot_mass_radius_graph(filtered_dataframe, figures_path)
 
     # Save the dataframes to csv files
     dataframe_to_csv(dataframe=parameter_dataframe, file_path=dataframe_csv_path, file_name=dataframe_csv_name)

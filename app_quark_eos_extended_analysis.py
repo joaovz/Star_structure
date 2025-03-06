@@ -33,7 +33,7 @@ R_canonical_inf_limit = 10.0            # Inferior limit of the radius of the ca
 R_canonical_sup_limit = 13.25           # Superior limit of the radius of the canonical star [km] (Pang)
 Lambda_canonical_sup_limit = 970.0      # Superior limit of the tidal deformability of the canonical star [dimensionless] (Abbott - 2 sigma)
 
-# Quark star candidate data (HESS J1731-347)
+# Quark star candidate data (XMMU J173203.3-344518)
 QS_CANDIDATE_M = 0.77
 QS_CANDIDATE_M_ERROR = [[0.17], [0.20]]
 QS_CANDIDATE_R = 10.4
@@ -410,14 +410,14 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
         },
         "R_canonical": {
             "name": "Canonical radius",
-            "label": "$R_{canonical} ~ [km]$",
+            "label": "$R_{1.4 M_{\\odot}} ~ [km]$",
             "value": parameter_dataframe.loc[:, "R_canonical [km]"],
             "inf_limit": R_canonical_inf_limit,
             "sup_limit": R_canonical_sup_limit,
         },
         "Lambda_canonical": {
             "name": "Canonical deformability",
-            "label": "$\\log_{10} \\left( \\Lambda_{canonical} [dimensionless] \\right)$",
+            "label": "$\\log_{10} \\left( \\Lambda_{1.4 M_{\\odot}} ~ [dimensionless] \\right)$",
             "value": np.log10(parameter_dataframe.loc[:, "Lambda_canonical [dimensionless]"]),
             "inf_limit": None,
             "sup_limit": np.log10(Lambda_canonical_sup_limit),

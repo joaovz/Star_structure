@@ -11,13 +11,13 @@ def main():
 
     # Constants
     FIGURES_PATH = "figures/app_quark_eos"                      # Path of the figures folder
-    STARS_MAX_RHO = 1.51e15 * uconv.MASS_DENSITY_CGS_TO_GU      # Maximum density used to create the star family [m^-2]
+    STARS_MAX_RHO = 1.70e15 * uconv.MASS_DENSITY_CGS_TO_GU      # Maximum density used to create the star family [m^-2]
     STARS_LOGSPACE = np.logspace(-4.0, 0.0, 50)                 # Logspace used to create the star family
 
     # EOS parameters (values chosen to build a strange star)
-    a2 = 100**2     # Model free parameter [MeV^2]
-    a4 = 0.6        # Model free parameter [dimensionless]
-    B = 130**4      # Model free parameter [MeV^4]
+    a2 = 14.61e3        # Model free parameter [MeV^2]
+    a4 = 0.64           # Model free parameter [dimensionless]
+    B = 130.76**4       # Model free parameter [MeV^4]
 
     # Create the EOS object
     eos = QuarkEOS(a2, a4, B)

@@ -461,7 +461,7 @@ class QuarkEOS(EOS):
         a4 = self.a4
         B = self.B
 
-        mu = (a2 / (2 * a4))**(1 / 2) * (1 + (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p + B))**(1 / 2))**(1 / 2)
+        mu = (a2 / (2 * a4))**(1 / 2) * (1 + np.sign(a2) * (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p + B))**(1 / 2))**(1 / 2)
 
         return mu
 
@@ -475,7 +475,7 @@ class QuarkEOS(EOS):
 
         rho_nu = (
             3 * p_nu + 4 * B + ((3 * a2**2) / (4 * np.pi**2 * a4)) * (
-                1 + (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p_nu + B))**(1 / 2)
+                1 + np.sign(a2) * (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p_nu + B))**(1 / 2)
             )
         )
 
@@ -491,7 +491,7 @@ class QuarkEOS(EOS):
 
         p_nu = (
             (1 / 3) * (rho_nu - 4 * B) - (a2**2 / (12 * np.pi**2 * a4)) * (
-                1 + (1 + ((16 * np.pi**2 * a4) / a2**2) * (rho_nu - B))**(1 / 2)
+                1 + np.sign(a2) * (1 + ((16 * np.pi**2 * a4) / a2**2) * (rho_nu - B))**(1 / 2)
             )
         )
 
@@ -506,7 +506,7 @@ class QuarkEOS(EOS):
         B = self.B
 
         drho_dp = (
-            3 + 2 * (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p_nu + B))**(-1 / 2)
+            3 + 2 * np.sign(a2) * (1 + ((16 * np.pi**2 * a4) / (3 * a2**2)) * (p_nu + B))**(-1 / 2)
         )
 
         return drho_dp      # Return result (dimensionless, so NU and GU are the same)
@@ -520,7 +520,7 @@ class QuarkEOS(EOS):
         B = self.B
 
         dp_drho = (
-            (1 / 3) - (2 / 3) * (1 + ((16 * np.pi**2 * a4) / a2**2) * (rho_nu - B))**(-1 / 2)
+            (1 / 3) - (2 / 3) * np.sign(a2) * (1 + ((16 * np.pi**2 * a4) / a2**2) * (rho_nu - B))**(-1 / 2)
         )
 
         return dp_drho      # Return result (dimensionless, so NU and GU are the same)

@@ -19,7 +19,7 @@ from star_family_tides import DeformedStarFamily
 # Constants
 g0 = 930.0                                                              # Gibbs free energy per baryon of quark matter at null pressure [MeV]
 alpha = ((1 / 3) - 8 / (3 * (1 + 2**(1 / 3))**3)) * g0**2               # alpha coefficient of the a2_max vs a4 curve [MeV^2]
-a2_min = -alpha                                                         # Minimum a2 parameter value [MeV^2]
+a2_min = -3 * alpha                                                     # Minimum a2 parameter value [MeV^2]
 a2_max = alpha                                                          # Maximum a2 parameter value [MeV^2]
 a4_min = 0.05                                                           # Minimum a4 parameter value [dimensionless]
 a4_max = 1.0                                                            # Maximum a4 parameter value [dimensionless]
@@ -73,49 +73,94 @@ def calc_B_min(a2, a4):
 
 
 def generate_strange_stars(number_of_samples=10**4):
-    """Function that generates a list of meshgrids representing the parameters of strange stars.
+    """Function that generates a list of points in the parameter space of strange stars.
     This function also creates a dataframe with the parameters of strange stars
 
     Args:
         number_of_samples (int, optional): Number of samples used. Defaults to 10**4
 
     Returns:
-        Arrays of float: Masked meshgrids representing the parameters
+        Arrays of float: Points in the (a2, a4, B) parameter space of strange stars
         Pandas dataframe of float: Dataframe with the parameters of strange stars
     """
 
-    # Define the (a2, a4, B) rectangular random meshgrid using Latin Hypercube sampler
+    # 1. Create points in the (a2, a4, B) space using quasi-random Latin Hypercube sampler
     seed_value = 123                                            # Fix the seed value to generate the same pseudo-random values each time
     sampler = qmc.LatinHypercube(d=3, seed=seed_value)          # Set the sampler
     samples = sampler.random(n=number_of_samples)               # Create the samples
-    l_bounds = [a2_min, a4_min, B_min**(1 / 4)]
-    u_bounds = [a2_max, a4_max, B_max**(1 / 4)]
+    l_bounds = [a2_min, a4_min, B_min**(1 / 8)]
+    u_bounds = [a2_max, a4_max, B_max**(1 / 8)]
     scaled_samples = qmc.scale(samples, l_bounds, u_bounds)     # Scale the samples
-    (a2, a4, B) = (scaled_samples[:, 0], scaled_samples[:, 1], scaled_samples[:, 2]**4)
+    (a2, a4, B) = (scaled_samples[:, 0], scaled_samples[:, 1], scaled_samples[:, 2]**8)
 
-    # Create the mesh masks according to each parameter minimum and maximum allowed values
-    a2_max_mesh_mask = (a2 >= alpha * a4)
-    a2_min_mesh_mask = (a2 <= a2_min)
-    a4_max_mesh_mask = (a4 > a4_max)
-    a4_min_mesh_mask = (a4 <= a4_min)
-    B_max_mesh_mask = (B >= calc_B_max(a2, a4))
-    B_min_mesh_mask = (B <= calc_B_min(a2, a4))
+    # Define the mask with all the constraints
+    mask = (
+        (a2 >= a2_min) &
+        (a2 <= alpha * a4) &
+        (a4 >= a4_min) &
+        (a4 <= a4_max) &
+        (B >= calc_B_min(a2, a4)) &
+        (B <= calc_B_max(a2, a4))
+    )
 
-    # Create the combined mask and apply to each mesh grid
-    mesh_mask = a2_max_mesh_mask | a2_min_mesh_mask | a4_max_mesh_mask | a4_min_mesh_mask | B_max_mesh_mask | B_min_mesh_mask
-    a2_masked = np.ma.masked_where(mesh_mask, a2)
-    a4_masked = np.ma.masked_where(mesh_mask, a4)
-    B_masked = np.ma.masked_where(mesh_mask, B)
+    # Apply the mask to extract valid points - inside the allowed volume
+    (a2_inside, a4_inside, B_inside) = (a2[mask], a4[mask], B[mask])
 
-    # Loop over the mask and store the parameter points of the strange stars in a dataframe
-    iterator = np.nditer(mesh_mask, flags=["multi_index"])
-    parameter_points = []
-    for x in iterator:
-        if bool(x) is False:
-            index = iterator.multi_index
-            star_parameters = (a2[index], a4[index], B[index]**(1 / 4))
-            parameter_points.append(star_parameters)
-    parameter_dataframe = pd.DataFrame(parameter_points, columns=["a2 [MeV^2]", "a4 [dimensionless]", "B^(1/4) [MeV]"])
+    # 2. Create points in the surface B_min(a2, a4) using quasi-random Latin Hypercube sampler
+    seed_value = 456                                                    # Fix the seed value to generate the same pseudo-random values each time
+    sampler = qmc.LatinHypercube(d=2, seed=seed_value)                  # Set the sampler
+    samples = sampler.random(n=2 * int(number_of_samples**(2 / 3)))     # Create the samples
+    l_bounds = [a2_min, a4_min]
+    u_bounds = [a2_max, a4_max]
+    scaled_samples = qmc.scale(samples, l_bounds, u_bounds)             # Scale the samples
+    a2 = scaled_samples[:, 0]
+    a4 = scaled_samples[:, 1]
+    B = calc_B_min(a2, a4)
+
+    # Define the mask with all the constraints
+    mask = (
+        (a2 >= a2_min) &
+        (a2 <= alpha * a4) &
+        (a4 >= a4_min) &
+        (a4 <= a4_max)
+    )
+
+    # Apply the mask to extract valid points - on the surface B_min
+    (a2_surface_B_min, a4_surface_B_min, B_surface_B_min) = (a2[mask], a4[mask], B[mask])
+
+    # 3. Create points in the surface B_max(a2, a4) using quasi-random Latin Hypercube sampler
+    seed_value = 789                                                    # Fix the seed value to generate the same pseudo-random values each time
+    sampler = qmc.LatinHypercube(d=2, seed=seed_value)                  # Set the sampler
+    samples = sampler.random(n=2 * int(number_of_samples**(2 / 3)))     # Create the samples
+    l_bounds = [a2_min, a4_min]
+    u_bounds = [a2_max, a4_max]
+    scaled_samples = qmc.scale(samples, l_bounds, u_bounds)             # Scale the samples
+    a2 = scaled_samples[:, 0]
+    a4 = scaled_samples[:, 1]
+    B = calc_B_max(a2, a4)
+
+    # Define the mask with all the constraints
+    mask = (
+        (a2 >= a2_min) &
+        (a2 <= alpha * a4) &
+        (a4 >= a4_min) &
+        (a4 <= a4_max)
+    )
+
+    # Apply the mask to extract valid points - on the surface B_max
+    (a2_surface_B_max, a4_surface_B_max, B_surface_B_max) = (a2[mask], a4[mask], B[mask])
+
+    # 4. Group the sample points across all sources (interior, B_min surface, B_max surface)
+    a2_masked = np.concatenate([a2_inside, a2_surface_B_min, a2_surface_B_max])
+    a4_masked = np.concatenate([a4_inside, a4_surface_B_min, a4_surface_B_max])
+    B_masked = np.concatenate([B_inside, B_surface_B_min, B_surface_B_max])
+
+    # Create the dataframe with the parameter points of strange stars
+    parameter_dataframe = pd.DataFrame({
+        "a2 [10^3 MeV^2]": a2_masked * 10**(-3),
+        "a4 [dimensionless]": a4_masked,
+        "B^(1/4) [MeV]": B_masked**(1 / 4)
+    })
 
     return (a2_masked, a4_masked, B_masked, parameter_dataframe)
 
@@ -137,11 +182,8 @@ def analyze_strange_star_family(dataframe_row):
     # Create the EOS object
     quark_eos = QuarkEOS(a2, a4, B)
 
-    # EOS analysis
-
-    # Get the surface pressure and minimum sound speed
+    # Get the surface density
     rho_surface = quark_eos.rho(0.0)
-    minimum_cs = quark_eos.c_s(rho_surface)
 
     # TOV and tidal analysis
 
@@ -164,7 +206,6 @@ def analyze_strange_star_family(dataframe_row):
     star_family_object.find_maximum_mass_star()
     maximum_stable_rho_center = star_family_object.maximum_stable_rho_center
     maximum_mass = star_family_object.maximum_mass
-    maximum_cs = quark_eos.c_s(maximum_stable_rho_center)
 
     # Find the canonical star
     star_family_object.find_canonical_star()
@@ -176,6 +217,12 @@ def analyze_strange_star_family(dataframe_row):
     star_family_object.find_maximum_k2_star()
     maximum_k2_star_rho_center = star_family_object.maximum_k2_star_rho_center
     maximum_k2 = star_family_object.maximum_k2
+
+    # Get the minimum and maximum sound speeds
+    cs_rho_surface = quark_eos.c_s(rho_surface)
+    cs_rho_center_max = quark_eos.c_s(maximum_stable_rho_center)
+    minimum_cs = min(cs_rho_surface, cs_rho_center_max)
+    maximum_cs = max(cs_rho_surface, cs_rho_center_max)
 
     # Return the index and results
     return (index, rho_surface, minimum_cs, maximum_stable_rho_center, maximum_mass, maximum_cs, canonical_rho_center, canonical_radius, canonical_lambda, maximum_k2_star_rho_center, maximum_k2)
@@ -235,22 +282,22 @@ def analyze_strange_stars(parameter_dataframe):
 
     # Create a dictionary with the minimum and maximum values of the parameters for each observation data restrictions
     parameters_limits = {
-        "a2": {
-            "M_max": (np.min(filtered_M_max_dataframe.loc[:, "a2 [MeV^2]"]), np.max(filtered_M_max_dataframe.loc[:, "a2 [MeV^2]"])),
-            "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "a2 [MeV^2]"]), np.max(filtered_R_canonical_dataframe.loc[:, "a2 [MeV^2]"])),
-            "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "a2 [MeV^2]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "a2 [MeV^2]"])),
-            "combined": (np.min(filtered_dataframe.loc[:, "a2 [MeV^2]"]), np.max(filtered_dataframe.loc[:, "a2 [MeV^2]"])),
+        "a2 [10^3 MeV^2]": {
+            "M_max [solar mass]": (np.min(filtered_M_max_dataframe.loc[:, "a2 [10^3 MeV^2]"]), np.max(filtered_M_max_dataframe.loc[:, "a2 [10^3 MeV^2]"])),
+            "R_canonical [km]": (np.min(filtered_R_canonical_dataframe.loc[:, "a2 [10^3 MeV^2]"]), np.max(filtered_R_canonical_dataframe.loc[:, "a2 [10^3 MeV^2]"])),
+            "Lambda_canonical [dimensionless]": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "a2 [10^3 MeV^2]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "a2 [10^3 MeV^2]"])),
+            "combined": (np.min(filtered_dataframe.loc[:, "a2 [10^3 MeV^2]"]), np.max(filtered_dataframe.loc[:, "a2 [10^3 MeV^2]"])),
         },
-        "a4": {
-            "M_max": (np.min(filtered_M_max_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_M_max_dataframe.loc[:, "a4 [dimensionless]"])),
-            "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_R_canonical_dataframe.loc[:, "a4 [dimensionless]"])),
-            "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "a4 [dimensionless]"])),
+        "a4 [dimensionless]": {
+            "M_max [solar mass]": (np.min(filtered_M_max_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_M_max_dataframe.loc[:, "a4 [dimensionless]"])),
+            "R_canonical [km]": (np.min(filtered_R_canonical_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_R_canonical_dataframe.loc[:, "a4 [dimensionless]"])),
+            "Lambda_canonical [dimensionless]": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "a4 [dimensionless]"])),
             "combined": (np.min(filtered_dataframe.loc[:, "a4 [dimensionless]"]), np.max(filtered_dataframe.loc[:, "a4 [dimensionless]"])),
         },
-        "B^(1/4)": {
-            "M_max": (np.min(filtered_M_max_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_M_max_dataframe.loc[:, "B^(1/4) [MeV]"])),
-            "R_canonical": (np.min(filtered_R_canonical_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_R_canonical_dataframe.loc[:, "B^(1/4) [MeV]"])),
-            "Lambda_canonical": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "B^(1/4) [MeV]"])),
+        "B^(1/4) [MeV]": {
+            "M_max [solar mass]": (np.min(filtered_M_max_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_M_max_dataframe.loc[:, "B^(1/4) [MeV]"])),
+            "R_canonical [km]": (np.min(filtered_R_canonical_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_R_canonical_dataframe.loc[:, "B^(1/4) [MeV]"])),
+            "Lambda_canonical [dimensionless]": (np.min(filtered_Lambda_canonical_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_Lambda_canonical_dataframe.loc[:, "B^(1/4) [MeV]"])),
             "combined": (np.min(filtered_dataframe.loc[:, "B^(1/4) [MeV]"]), np.max(filtered_dataframe.loc[:, "B^(1/4) [MeV]"])),
         },
     }
@@ -282,15 +329,15 @@ def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"
     """Function that plots the scatter graph of the parameter points
 
     Args:
-        a2 (3D array of float): Meshgrid with the a2 parameter of the EOS [MeV^2]
-        a4 (3D array of float): Meshgrid with the a4 parameter of the EOS [dimensionless]
-        B (3D array of float): Meshgrid with the B parameter of the EOS [MeV^4]
+        a2 (Array of float): Array with the a2 parameter values of the EOS [MeV^2]
+        a4 (Array of float): Array with the a4 parameter values of the EOS [dimensionless]
+        B (Array of float): Array with the B parameter values of the EOS [MeV^4]
         figure_path (str, optional): Path used to save the figure. Defaults to "figures/app_quark_eos"
     """
 
     # Create figure and change properties
     (fig, ax) = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(5.0, 4.0), constrained_layout=True)
-    ax.view_init(elev=15, azim=-115, roll=0)
+    ax.view_init(elev=15, azim=-70, roll=0)
     ax.set_xlim3d(a2_min * 10**(-3), a2_max * 10**(-3))
     ax.set_ylim3d(a4_min, a4_max)
     ax.set_zlim3d(B_min**(1 / 4), B_max**(1 / 4))
@@ -298,10 +345,10 @@ def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"
     ax.set_ylabel("$a_4 ~ [dimensionless]$", fontsize=10, rotation=0)
     ax.set_zlabel("$B^{1/4} ~ [MeV]$", fontsize=10, rotation=90)
     ax.zaxis.set_rotate_label(False)
-    ax.set_position([0.0, -0.05, 1.05, 1.2])        # Adjust plot position and size inside image to remove excessive whitespaces
+    ax.set_position([-0.06, -0.05, 1.05, 1.2])      # Adjust plot position and size inside image to remove excessive whitespaces
 
     # Add each scatter point
-    ax.scatter(a2 * 10**(-3), a4, B**(1 / 4), s=2.5**2)
+    ax.scatter(a2 * 10**(-3), a4, B**(1 / 4), s=2.0**2)
 
     # Create the folder if necessary and save the figure
     os.makedirs(figure_path, exist_ok=True)
@@ -339,7 +386,7 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
 
     # Create figure and change properties
     (fig, ax) = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(5.0, 4.0), constrained_layout=True)
-    ax.view_init(elev=15, azim=-115, roll=0)
+    ax.view_init(elev=15, azim=-70, roll=0)
     ax.set_xlim3d(a2_min * 10**(-3), a2_max * 10**(-3))
     ax.set_ylim3d(a4_min, a4_max)
     ax.set_zlim3d(B_min**(1 / 4), B_max**(1 / 4))
@@ -347,7 +394,7 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
     ax.set_ylabel("$a_4 ~ [dimensionless]$", fontsize=10, rotation=0)
     ax.set_zlabel("$B^{1/4} ~ [MeV]$", fontsize=10, rotation=90)
     ax.zaxis.set_rotate_label(False)
-    ax.set_position([0.0, -0.05, 1.05, 1.2])        # Adjust plot position and size inside image to remove excessive whitespaces
+    ax.set_position([-0.06, -0.05, 1.05, 1.2])      # Adjust plot position and size inside image to remove excessive whitespaces
 
     # Add each surface plot
     B_1_4_max_surface_masked = B_max_surface_masked**(1 / 4)
@@ -358,11 +405,10 @@ def plot_parameter_space(mesh_size=1000, figure_path="figures/app_quark_eos"):
     # Create custom legend handles using Patches, and add the legend
     red_patch = Patch(color=cm.Reds(0.5), label="$B_{max}^{1/4}$")
     blue_patch = Patch(color=cm.Blues(0.5), label="$B_{min}^{1/4}$")
-    ax.legend(handles=[red_patch, blue_patch], loc=(0.7, 0.25))
+    ax.legend(handles=[red_patch, blue_patch], loc=(0.3, 0.22))
 
     # Add each contour plot (grey projections on each plane)
-    ax.contourf(a2_masked * 10**(-3), a4_masked, B_1_4_max_surface_masked, levels=0, zdir="x", offset=a2_max * 10**(-3), colors="gray", alpha=0.7, antialiased=True)
-    ax.contourf(a2_masked * 10**(-3), a4_masked, B_1_4_max_surface_masked, levels=0, zdir="y", offset=a4_max, colors="gray", alpha=0.7, antialiased=True)
+    ax.contourf(a2_masked * 10**(-3), a4_masked, B_1_4_max_surface_masked, levels=0, zdir="x", offset=a2_min * 10**(-3), colors="gray", alpha=0.7, antialiased=True)
     ax.contourf(a2_masked * 10**(-3), a4_masked, B_1_4_max_surface_masked, levels=0, zdir="z", offset=0, colors="gray", alpha=0.7, antialiased=True)
 
     # Create the folder if necessary and save the figure
@@ -386,36 +432,36 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
 
     # Create a dictionary with all the functions used in plotting, with each name and label description
     plot_dict = {
-        "a2": {
+        "a2 [10^3 MeV^2]": {
             "name": "a2",
-            "label": "$a_2 ~ [MeV^2]$",
-            "value": parameter_dataframe.loc[:, "a2 [MeV^2]"],
+            "label": "$a_2 ~ [10^3 ~ MeV^2]$",
+            "value": parameter_dataframe.loc[:, "a2 [10^3 MeV^2]"],
         },
-        "a4": {
+        "a4 [dimensionless]": {
             "name": "a4",
             "label": "$a_4 ~ [dimensionless]$",
             "value": parameter_dataframe.loc[:, "a4 [dimensionless]"],
         },
-        "B^(1/4)": {
-            "name": "B^(1/4)",
+        "B^(1/4) [MeV]": {
+            "name": "B",
             "label": "$B^{1/4} ~ [MeV]$",
             "value": parameter_dataframe.loc[:, "B^(1/4) [MeV]"],
         },
-        "M_max": {
+        "M_max [solar mass]": {
             "name": "Maximum mass",
             "label": "$M_{max} ~ [M_{\\odot}]$",
             "value": parameter_dataframe.loc[:, "M_max [solar mass]"],
             "inf_limit": M_max_inf_limit,
             "sup_limit": M_max_sup_limit,
         },
-        "R_canonical": {
+        "R_canonical [km]": {
             "name": "Canonical radius",
             "label": "$R_{1.4 M_{\\odot}} ~ [km]$",
             "value": parameter_dataframe.loc[:, "R_canonical [km]"],
             "inf_limit": R_canonical_inf_limit,
             "sup_limit": R_canonical_sup_limit,
         },
-        "Lambda_canonical": {
+        "Lambda_canonical [dimensionless]": {
             "name": "Canonical deformability",
             "label": "$\\log_{10} \\left( \\Lambda_{1.4 M_{\\odot}} ~ [dimensionless] \\right)$",
             "value": np.log10(parameter_dataframe.loc[:, "Lambda_canonical [dimensionless]"]),
@@ -426,15 +472,15 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
 
     # Create a list with all the graphs to be plotted
     graphs_list = [
-        ["a2", "M_max"],
-        ["a4", "M_max"],
-        ["B^(1/4)", "M_max"],
-        ["a2", "R_canonical"],
-        ["a4", "R_canonical"],
-        ["B^(1/4)", "R_canonical"],
-        ["a2", "Lambda_canonical"],
-        ["a4", "Lambda_canonical"],
-        ["B^(1/4)", "Lambda_canonical"],
+        ["a2 [10^3 MeV^2]", "M_max [solar mass]"],
+        ["a4 [dimensionless]", "M_max [solar mass]"],
+        ["B^(1/4) [MeV]", "M_max [solar mass]"],
+        ["a2 [10^3 MeV^2]", "R_canonical [km]"],
+        ["a4 [dimensionless]", "R_canonical [km]"],
+        ["B^(1/4) [MeV]", "R_canonical [km]"],
+        ["a2 [10^3 MeV^2]", "Lambda_canonical [dimensionless]"],
+        ["a4 [dimensionless]", "Lambda_canonical [dimensionless]"],
+        ["B^(1/4) [MeV]", "Lambda_canonical [dimensionless]"],
     ]
 
     # Plot all graphs specified in graphs_list
@@ -442,7 +488,7 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
 
         # Create the plot
         plt.figure(figsize=(6.0, 4.5))
-        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"], s=2.5**2, zorder=2)
+        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"], s=2.0**2, zorder=2)
         plt.xlabel(plot_dict[x_axis]["label"], fontsize=10)
         plt.ylabel(plot_dict[y_axis]["label"], fontsize=10)
 
@@ -564,7 +610,7 @@ def main():
     dictionary_json_name = "quark_eos_extended_analysis_parameters_limits.json"                 # Name of the json file with the parameters limits
     properties_dictionary_json_name = "quark_eos_extended_analysis_properties_limits.json"      # Name of the json file with the properties limits
     parameter_space_mesh_size = 2001                                                            # Number of points used in the meshgrid for the parameter space plot
-    number_of_samples = 10**5                                                                   # Number of samples used
+    number_of_samples = 4 * 10**5                                                               # Number of samples used
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figures_path)

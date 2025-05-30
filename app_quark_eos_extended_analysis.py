@@ -1,5 +1,6 @@
 import os
 import math
+import multiprocessing
 import pprint
 import psutil
 from matplotlib.patches import Patch
@@ -8,7 +9,6 @@ from matplotlib import cm
 import numpy as np
 import pandas as pd
 from scipy.stats import qmc
-from tqdm.contrib.concurrent import process_map
 from constants import Constants as const
 from constants import UnitConversion as uconv
 from data_handling import dataframe_to_csv, dict_to_json
@@ -176,7 +176,8 @@ def analyze_strange_star_family(dataframe_row):
     """
 
     # Unpack the row values
-    (index, a2, a4, B_1_4, *_) = dataframe_row
+    (index, a2_1000, a4, B_1_4, *_) = dataframe_row
+    a2 = a2_1000 * 10**3
     B = B_1_4**4
 
     # Create the EOS object
@@ -240,6 +241,9 @@ def analyze_strange_stars(parameter_dataframe):
         dict: Dictionary with the minimum and maximum values of the parameters for each observation data restrictions
         dict: Dictionary with the minimum and maximum values of the properties of strange stars
     """
+
+    # Import tqdm multiprocessing tool only inside the function it is used to ensure correct setup
+    from tqdm.contrib.concurrent import process_map
 
     # Calculate the number of rows, number of processes and number of calculations per process (chunksize)
     n_rows = parameter_dataframe.shape[0]
@@ -557,7 +561,8 @@ def plot_mass_radius_graph(filtered_dataframe, figures_path="figures/app_quark_e
     for row in rows_list:
 
         # Unpack the row values
-        (index, a2, a4, B_1_4, rho_surface, cs_min, rho_center_max, *_) = row
+        (index, a2_1000, a4, B_1_4, rho_surface, cs_min, rho_center_max, *_) = row
+        a2 = a2_1000 * 10**3
         B = B_1_4**4
 
         # Create the EOS object
@@ -641,4 +646,5 @@ def main():
 
 # This logic is only executed when this file is run directly in the command prompt
 if __name__ == "__main__":
+    multiprocessing.set_start_method("spawn", force=True)       # Force the multiprocessing start method to "spawn" on every environment
     main()

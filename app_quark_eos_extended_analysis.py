@@ -88,10 +88,10 @@ def generate_strange_stars(number_of_samples=10**4):
     seed_value = 123                                            # Fix the seed value to generate the same pseudo-random values each time
     sampler = qmc.LatinHypercube(d=3, seed=seed_value)          # Set the sampler
     samples = sampler.random(n=number_of_samples)               # Create the samples
-    l_bounds = [a2_min, a4_min, B_min**(1 / 8)]
-    u_bounds = [a2_max, a4_max, B_max**(1 / 8)]
+    l_bounds = [a2_min, a4_min, B_min**(1 / 4)]
+    u_bounds = [a2_max, a4_max, B_max**(1 / 4)]
     scaled_samples = qmc.scale(samples, l_bounds, u_bounds)     # Scale the samples
-    (a2, a4, B) = (scaled_samples[:, 0], scaled_samples[:, 1], scaled_samples[:, 2]**8)
+    (a2, a4, B) = (scaled_samples[:, 0], scaled_samples[:, 1], scaled_samples[:, 2]**4)
 
     # Define the mask with all the constraints
     mask = (
@@ -615,7 +615,7 @@ def main():
     dictionary_json_name = "quark_eos_extended_analysis_parameters_limits.json"                 # Name of the json file with the parameters limits
     properties_dictionary_json_name = "quark_eos_extended_analysis_properties_limits.json"      # Name of the json file with the properties limits
     parameter_space_mesh_size = 2001                                                            # Number of points used in the meshgrid for the parameter space plot
-    number_of_samples = 4 * 10**5                                                               # Number of samples used
+    number_of_samples = 3 * 10**6                                                               # Number of samples used
 
     # Create the parameter space plot
     plot_parameter_space(parameter_space_mesh_size, figures_path)

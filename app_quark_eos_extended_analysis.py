@@ -352,13 +352,13 @@ def plot_parameter_points_scatter(a2, a4, B, figure_path="figures/app_quark_eos"
     ax.set_position([-0.06, -0.05, 1.05, 1.2])      # Adjust plot position and size inside image to remove excessive whitespaces
 
     # Add each scatter point
-    ax.scatter(a2 * 10**(-3), a4, B**(1 / 4), s=2.0**2)
+    ax.scatter(a2 * 10**(-3), a4, B**(1 / 4), s=2.0**2, rasterized=True)
 
     # Create the folder if necessary and save the figure
     os.makedirs(figure_path, exist_ok=True)
     figure_name = "quark_eos_parameter_points.pdf"
     complete_path = os.path.join(figure_path, figure_name)
-    plt.savefig(complete_path)
+    plt.savefig(complete_path, dpi=400)
 
     # Show graph
     plt.show()
@@ -492,7 +492,7 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
 
         # Create the plot
         plt.figure(figsize=(6.0, 4.5))
-        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"], s=2.0**2, zorder=2)
+        plt.scatter(plot_dict[x_axis]["value"], plot_dict[y_axis]["value"], s=2.0**2, zorder=2, rasterized=True)
         plt.xlabel(plot_dict[x_axis]["label"], fontsize=10)
         plt.ylabel(plot_dict[y_axis]["label"], fontsize=10)
 
@@ -535,7 +535,7 @@ def plot_analysis_graphs(parameter_dataframe, parameters_limits, figures_path="f
         y_axis_name = plot_dict[y_axis]["name"].lower().replace(" ", "_").replace("/", "_")
         figure_name = f"{y_axis_name}_vs_{x_axis_name}_graph.pdf"
         complete_path = os.path.join(figures_path, figure_name)
-        plt.savefig(complete_path, bbox_inches="tight")
+        plt.savefig(complete_path, bbox_inches="tight", dpi=400)
 
     # Show graphs at the end
     plt.show()
@@ -587,7 +587,7 @@ def plot_mass_radius_graph(filtered_dataframe, figures_path="figures/app_quark_e
         star_family_object.solve_tov(False)
 
         # Add the mass vs radius curve to the graph
-        plt.plot(star_family_object.radius_array / 10**3, star_family_object.mass_array * uconv.MASS_GU_TO_SOLAR_MASS, linewidth=1, color="tab:blue")
+        plt.plot(star_family_object.radius_array / 10**3, star_family_object.mass_array * uconv.MASS_GU_TO_SOLAR_MASS, linewidth=1, color="tab:blue", rasterized=True)
 
     # Add the quark star candidate error bars
     plt.errorbar(QS_CANDIDATE_R, QS_CANDIDATE_M, xerr=QS_CANDIDATE_R_ERROR, yerr=QS_CANDIDATE_M_ERROR, capsize=10, fmt="o", color="tab:orange")
@@ -596,7 +596,7 @@ def plot_mass_radius_graph(filtered_dataframe, figures_path="figures/app_quark_e
     os.makedirs(figures_path, exist_ok=True)
     figure_name = f"mass_vs_radius_curve.pdf"
     complete_path = os.path.join(figures_path, figure_name)
-    plt.savefig(complete_path, bbox_inches="tight")
+    plt.savefig(complete_path, bbox_inches="tight", dpi=400)
 
     # Show graph at the end
     plt.show()
